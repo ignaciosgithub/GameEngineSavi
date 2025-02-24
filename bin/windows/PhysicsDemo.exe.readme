@@ -1,0 +1,16 @@
+This is a placeholder for the Windows executable of the physics demo.
+The actual executable would be built on a Windows machine using the provided build_windows.bat script.
+
+Features implemented:
+- Rigid body physics with variable mass
+- Collision detection and response
+- Variable friction coefficients (multiplicative with normal force)
+- Configurable gravity (can be enabled/disabled per object)
+- Torque calculation and application
+- Cross-platform support (Windows and Linux)
+
+To build on Windows:
+1. Open a Visual Studio Developer Command Prompt
+2. Navigate to the GameEngineSavi directory
+3. Run build_windows.bat
+4. The executable will be created as PhysicsDemo.exe

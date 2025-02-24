@@ -12,16 +12,19 @@ if %ERRORLEVEL% NEQ 0 (
 REM Set compiler flags
 set CFLAGS=/EHsc /std:c++14 /DPLATFORM_WINDOWS
 
+REM Create output directory
+if not exist bin\windows mkdir bin\windows
+
 REM Compile source files
 cl %CFLAGS% /c Vector3.cpp
-cl %CFLAGS% /c SuperSimplePhysicsDemo.cpp
+cl %CFLAGS% /c SuperSimplePhysicsDemo_Windows.cpp
 
 REM Link object files
-link Vector3.obj SuperSimplePhysicsDemo.obj /OUT:SuperSimplePhysicsDemo.exe
+link Vector3.obj SuperSimplePhysicsDemo_Windows.obj /OUT:bin\windows\SuperSimplePhysicsDemo.exe
 
 echo Build complete.
-if exist SuperSimplePhysicsDemo.exe (
-    echo SuperSimplePhysicsDemo.exe created successfully.
+if exist bin\windows\SuperSimplePhysicsDemo.exe (
+    echo SuperSimplePhysicsDemo.exe created successfully in bin\windows directory.
 ) else (
     echo Build failed.
 )
