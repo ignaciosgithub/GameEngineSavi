@@ -1,28 +1,35 @@
 CXX = g++
 CXXFLAGS = -std=c++11 -Wall -Wextra -I. -DPLATFORM_LINUX
 
-# Source files for the Linux demo
-LINUX_SOURCES = LinuxPhysicsDemo.cpp \
-                PhysicsSystem.cpp \
-                CollisionSystem.cpp \
-                RigidBody.cpp \
-                Vector3.cpp
+# Source files for the simplified Linux demo
+SIMPLE_SOURCES = SimplifiedPhysicsDemo.cpp \
+                 PhysicsSystem.cpp \
+                 Vector3.cpp
 
-# Object files for the Linux demo
-LINUX_OBJECTS = $(LINUX_SOURCES:.cpp=.o)
+# Object files for the simplified Linux demo
+SIMPLE_OBJECTS = $(SIMPLE_SOURCES:.cpp=.o)
 
-# Executable for the Linux demo
-LINUX_TARGET = LinuxPhysicsDemo
+# Executable for the simplified Linux demo
+SIMPLE_TARGET = SimplifiedPhysicsDemo
 
-all: $(LINUX_TARGET)
+all: $(SIMPLE_TARGET)
 
-$(LINUX_TARGET): $(LINUX_OBJECTS)
+$(SIMPLE_TARGET): $(SIMPLE_OBJECTS)
 	$(CXX) $(CXXFLAGS) -o $@ $^
 
 %.o: %.cpp
 	$(CXX) $(CXXFLAGS) -c $< -o $@
 
 clean:
-	rm -f $(LINUX_OBJECTS) $(LINUX_TARGET)
+	rm -f $(SIMPLE_OBJECTS) $(SIMPLE_TARGET)
 
-.PHONY: all clean
+# Windows build instructions (for documentation)
+windows:
+	@echo "To build on Windows:"
+	@echo "1. Open Visual Studio and create a new C++ project"
+	@echo "2. Add all source files to the project"
+	@echo "3. Set the project to use C++11 or later"
+	@echo "4. Link against OpenGL libraries (opengl32.lib, glu32.lib)"
+	@echo "5. Build the project"
+
+.PHONY: all clean windows
