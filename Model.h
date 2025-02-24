@@ -1,12 +1,14 @@
-#include <windows.h>
-#include <gl/gl.h>
-#include <GL/glu.h>
-#include <windows.h>
-#include <gl/gl.h>
-#include<math.h>
+#ifndef MODEL_H
+#define MODEL_H
+
+#include "platform.h"
+#include "Vector3.h"
+#include "PointLight.h"
 #include <vector>
-#include<string>
-#include "Texture.h"
+#include <string>
+
+// Forward declaration for Texture
+class Texture;
 
 class Model {
 public:
@@ -17,18 +19,17 @@ public:
     Vector3 rotation, position;
     int frameCounter;
     Vector3 pcolorsum;
-    //std::vector<Vector3> colourmap;
     std::vector<Vector3> colourmap;
     
     Texture* albedoTexture;
     Texture* normalTexture;
     Texture* opacityTexture;
     
-    Model() : albedoTexture(nullptr), normalTexture(nullptr), opacityTexture(nullptr) {}
+    Model() : albedoTexture(nullptr), normalTexture(nullptr), opacityTexture(nullptr), frameCounter(0), high_poly(false) {}
 
     Model(std::string filePath, Vector3 _rotation, Vector3 _position)
         : rotation(_rotation), position(_position), albedoTexture(nullptr), 
-          normalTexture(nullptr), opacityTexture(nullptr) {
+          normalTexture(nullptr), opacityTexture(nullptr), frameCounter(0), high_poly(false) {
             loadOBJ(filePath);
     }
 
@@ -38,10 +39,34 @@ public:
     void loadTexture(const std::string& path, const std::string& type);
     void setTiling(float x, float y);
 
+    // Calculate normal for a vertex at index i
+    Vector3 calculateNormal(size_t i) const {
+        // Simple normal calculation for a triangle
+        if (i + 2 < vertices.size()) {
+            Vector3 v1(vertices[i], vertices[i+1], vertices[i+2]);
+            Vector3 v2(vertices[i+3], vertices[i+4], vertices[i+5]);
+            Vector3 v3(vertices[i+6], vertices[i+7], vertices[i+8]);
+            
+            Vector3 edge1 = v2 - v1;
+            Vector3 edge2 = v3 - v1;
+            
+            // Cross product to get normal
+            Vector3 normal = edge1.cross(edge2);
+            normal.normalize();
+            return normal;
+        }
+        return Vector3(0, 1, 0); // Default normal
+    }
+
     // methods for translation, rotation and drawing ...
-    void translate(const Vector3& vec);
+    void translate(const Vector3& vec) {
+        position += vec;
+    }
+    
     void Render(const std::vector<PointLight>& pointLights);
     void draw(const std::vector<PointLight>& pointLights);
     void rotate();
     void drawcomp(const std::vector<PointLight>& pointLights);
 };
+
+#endif // MODEL_H
