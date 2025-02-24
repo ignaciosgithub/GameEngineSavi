@@ -1,27 +1,26 @@
 CXX = g++
 CXXFLAGS = -std=c++11 -Wall -Wextra -I. -DPLATFORM_LINUX
 
-# Source files for the simplified Linux demo
-SIMPLE_SOURCES = SimplifiedPhysicsDemo.cpp \
-                 PhysicsSystem.cpp \
-                 Vector3.cpp
+# Source files for the super simple Linux demo
+SUPER_SIMPLE_SOURCES = SuperSimplePhysicsDemo.cpp \
+                       Vector3.cpp
 
-# Object files for the simplified Linux demo
-SIMPLE_OBJECTS = $(SIMPLE_SOURCES:.cpp=.o)
+# Object files for the super simple Linux demo
+SUPER_SIMPLE_OBJECTS = $(SUPER_SIMPLE_SOURCES:.cpp=.o)
 
-# Executable for the simplified Linux demo
-SIMPLE_TARGET = SimplifiedPhysicsDemo
+# Executable for the super simple Linux demo
+SUPER_SIMPLE_TARGET = SuperSimplePhysicsDemo
 
-all: $(SIMPLE_TARGET)
+all: $(SUPER_SIMPLE_TARGET)
 
-$(SIMPLE_TARGET): $(SIMPLE_OBJECTS)
+$(SUPER_SIMPLE_TARGET): $(SUPER_SIMPLE_OBJECTS)
 	$(CXX) $(CXXFLAGS) -o $@ $^
 
 %.o: %.cpp
 	$(CXX) $(CXXFLAGS) -c $< -o $@
 
 clean:
-	rm -f $(SIMPLE_OBJECTS) $(SIMPLE_TARGET)
+	rm -f $(SUPER_SIMPLE_OBJECTS) $(SUPER_SIMPLE_TARGET)
 
 # Windows build instructions (for documentation)
 windows:
