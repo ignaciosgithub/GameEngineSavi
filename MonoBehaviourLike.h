@@ -1,3 +1,6 @@
+#ifndef MONOBEHAVIOURLIKE_H
+#define MONOBEHAVIOURLIKE_H
+
 class MonoBehaviourLike
 {
 public:
@@ -32,3 +35,5 @@ public:
     // Destructor to handle cleanup if necessary
     virtual ~MonoBehaviourLike() {}
 };
+
+#endif // MONOBEHAVIOURLIKE_H

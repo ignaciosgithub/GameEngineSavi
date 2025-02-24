@@ -1,3 +1,8 @@
+#ifndef TIME_H
+#define TIME_H
+
+#include <chrono>
+
 class Time
 {
 private:
@@ -16,7 +21,9 @@ public:
     void Update();
 
     // Get the time it took to render the last frame
-    float DeltaTime() const;
+    float DeltaTime() const { return deltaTime; }
    
     // Since we're not dynamically allocating memory, we don't need a destructor in this case
-};  
+};
+
+#endif // TIME_H
