@@ -16,18 +16,20 @@ public:
     Vector3 position;
     Vector3 rotation;
     SimplifiedModel model;
-    std::unique_ptr<RigidBody> rigidBody;
+    RigidBody* rigidBody;
     
     SimpleGameObject(const std::string& _name, const Vector3& _position)
-        : name(_name), position(_position), rotation(0, 0, 0) {
+        : name(_name), position(_position), rotation(0, 0, 0), rigidBody(nullptr) {
         model = SimplifiedModel(position, rotation);
     }
     
     void Update(float deltaTime) {
         // Update position and rotation from rigid body if available
         if (rigidBody) {
-            position = rigidBody->GetGameObject()->position;
-            rotation = rigidBody->GetGameObject()->rotation;
+            // For the demo, we'll just update the position directly
+            // since we don't have a full GameObject implementation
+            position.y += rigidBody->GetVelocity().y * deltaTime;
+            rotation += Vector3(0.1f, 0.1f, 0.1f) * deltaTime; // Simple rotation for demo
             model.position = position;
             model.rotation = rotation;
         }
@@ -35,14 +37,15 @@ public:
 };
 
 // Simple GameObject implementation for RigidBody
-class SimpleGameObjectImpl : public GameObject {
+class SimpleGameObjectImpl {
 public:
-    SimpleGameObjectImpl(const std::string& name, const Vector3& position)
-        : GameObject(name, position, Vector3(0, 0, 0), Vector3(1, 1, 1), std::vector<PointLight>()) {
-    }
+    std::string name;
+    Vector3 position;
+    Vector3 rotation;
+    Vector3 size;
     
-    void Render(const std::vector<PointLight>& lights) override {
-        // No rendering in Linux demo
+    SimpleGameObjectImpl(const std::string& _name, const Vector3& _position)
+        : name(_name), position(_position), rotation(0, 0, 0), size(1, 1, 1) {
     }
 };
 
@@ -51,49 +54,51 @@ int main() {
     std::cout << "===================" << std::endl;
     
     // Create physics and collision systems
-    auto physicsSystem = std::make_unique<PhysicsSystem>();
-    auto collisionSystem = std::make_unique<CollisionSystem>();
+    PhysicsSystem physicsSystem;
+    CollisionSystem collisionSystem;
     
     // Connect the systems
-    physicsSystem->SetCollisionSystem(collisionSystem.get());
+    physicsSystem.SetCollisionSystem(&collisionSystem);
     
     // Set gravity
-    physicsSystem->SetGravity(-9.81f);
+    physicsSystem.SetGravity(-9.81f);
     
     // Create top pyramid with gravity
-    auto topPyramid = std::make_unique<SimpleGameObject>("TopPyramid", Vector3(0, 2, 0));
+    SimpleGameObject* topPyramid = new SimpleGameObject("TopPyramid", Vector3(0, 2, 0));
     topPyramid->model.createPyramid();
     
-    auto topGameObject = std::make_unique<SimpleGameObjectImpl>("TopPyramid", Vector3(0, 2, 0));
-    auto topRb = std::make_unique<RigidBody>();
+    SimpleGameObjectImpl* topGameObject = new SimpleGameObjectImpl("TopPyramid", Vector3(0, 2, 0));
+    
+    RigidBody* topRb = new RigidBody();
     topRb->EnableGravity(true);
     topRb->SetFrictionCoefficient(0.5f);
     topRb->SetMass(1.0f);
-    topRb->SetGameObject(topGameObject.get());
+    topRb->SetGameObject(reinterpret_cast<GameObject*>(topGameObject));
     
     // Add the rigid body to the physics system
-    physicsSystem->AddBody(topRb.get());
-    topPyramid->rigidBody = std::move(topRb);
+    physicsSystem.AddBody(topRb);
+    topPyramid->rigidBody = topRb;
     
     // Create bottom pyramid without gravity
-    auto bottomPyramid = std::make_unique<SimpleGameObject>("BottomPyramid", Vector3(0, 0, 0));
+    SimpleGameObject* bottomPyramid = new SimpleGameObject("BottomPyramid", Vector3(0, 0, 0));
     bottomPyramid->model.createPyramid();
     
-    auto bottomGameObject = std::make_unique<SimpleGameObjectImpl>("BottomPyramid", Vector3(0, 0, 0));
-    auto bottomRb = std::make_unique<RigidBody>();
+    SimpleGameObjectImpl* bottomGameObject = new SimpleGameObjectImpl("BottomPyramid", Vector3(0, 0, 0));
+    
+    RigidBody* bottomRb = new RigidBody();
     bottomRb->EnableGravity(false);
     bottomRb->SetFrictionCoefficient(0.3f);
     bottomRb->SetMass(2.0f);
-    bottomRb->SetGameObject(bottomGameObject.get());
+    bottomRb->SetGameObject(reinterpret_cast<GameObject*>(bottomGameObject));
     
     // Add the rigid body to the physics system
-    physicsSystem->AddBody(bottomRb.get());
-    bottomPyramid->rigidBody = std::move(bottomRb);
+    physicsSystem.AddBody(bottomRb);
+    bottomPyramid->rigidBody = bottomRb;
     
     // Simulate physics for 10 seconds
     float deltaTime = 0.016f; // 60 FPS
     for (int i = 0; i < 600; i++) {
-        physicsSystem->Update(deltaTime);
+        physicsSystem.Update(deltaTime);
         
         // Update game objects
         topPyramid->Update(deltaTime);
@@ -112,6 +117,14 @@ int main() {
         // Simulate frame rate
         std::this_thread::sleep_for(std::chrono::milliseconds(16));
     }
+    
+    // Clean up
+    delete topPyramid;
+    delete bottomPyramid;
+    delete topGameObject;
+    delete bottomGameObject;
+    delete topRb;
+    delete bottomRb;
     
     std::cout << "Physics simulation complete." << std::endl;
     return 0;
