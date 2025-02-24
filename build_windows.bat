@@ -1,35 +1,111 @@
 @echo off
+echo ===================================================
 echo Building Physics Demo for Windows...
+echo ===================================================
 
 REM Check if Visual Studio is installed
+echo Checking for Visual Studio compiler...
 where cl >nul 2>nul
 if %ERRORLEVEL% NEQ 0 (
-    echo Visual Studio compiler not found.
+    echo ERROR: Visual Studio compiler not found.
     echo Please run this script from a Visual Studio Developer Command Prompt.
+    echo You can find this in Start Menu -^> Visual Studio -^> Developer Command Prompt
+    pause
     exit /b 1
 )
+echo Visual Studio compiler found.
 
 REM Set compiler flags
+echo Setting compiler flags...
 set CFLAGS=/EHsc /std:c++14 /DPLATFORM_WINDOWS
 
 REM Create output directory
-if not exist bin\windows mkdir bin\windows
+echo Creating output directories...
+if not exist bin\windows (
+    echo Creating bin\windows directory...
+    mkdir bin\windows
+    if %ERRORLEVEL% NEQ 0 (
+        echo ERROR: Failed to create bin\windows directory.
+        pause
+        exit /b 1
+    )
+)
+echo Output directories created successfully.
 
 REM Compile source files
+echo.
+echo ===================================================
+echo Compiling source files...
+echo ===================================================
+
+echo Compiling Vector3.cpp...
 cl %CFLAGS% /c Vector3.cpp
-cl %CFLAGS% /c PhysicsSystem.cpp
-cl %CFLAGS% /c CollisionSystem.cpp
-cl %CFLAGS% /c RigidBody.cpp
-cl %CFLAGS% /c PhysicsDemo.cpp
-
-REM Link object files
-link Vector3.obj PhysicsSystem.obj CollisionSystem.obj RigidBody.obj PhysicsDemo.obj /OUT:bin\windows\PhysicsDemo.exe opengl32.lib glu32.lib user32.lib gdi32.lib
-
-echo Build complete.
-if exist bin\windows\PhysicsDemo.exe (
-    echo PhysicsDemo.exe created successfully in bin\windows directory.
-) else (
-    echo Build failed.
+if %ERRORLEVEL% NEQ 0 (
+    echo ERROR: Failed to compile Vector3.cpp
+    pause
+    exit /b 1
 )
 
+echo Compiling PhysicsSystem.cpp...
+cl %CFLAGS% /c PhysicsSystem.cpp
+if %ERRORLEVEL% NEQ 0 (
+    echo ERROR: Failed to compile PhysicsSystem.cpp
+    pause
+    exit /b 1
+)
+
+echo Compiling CollisionSystem.cpp...
+cl %CFLAGS% /c CollisionSystem.cpp
+if %ERRORLEVEL% NEQ 0 (
+    echo ERROR: Failed to compile CollisionSystem.cpp
+    pause
+    exit /b 1
+)
+
+echo Compiling RigidBody.cpp...
+cl %CFLAGS% /c RigidBody.cpp
+if %ERRORLEVEL% NEQ 0 (
+    echo ERROR: Failed to compile RigidBody.cpp
+    pause
+    exit /b 1
+)
+
+echo Compiling PhysicsDemo.cpp...
+cl %CFLAGS% /c PhysicsDemo.cpp
+if %ERRORLEVEL% NEQ 0 (
+    echo ERROR: Failed to compile PhysicsDemo.cpp
+    pause
+    exit /b 1
+)
+
+REM Link object files
+echo.
+echo ===================================================
+echo Linking object files...
+echo ===================================================
+echo link Vector3.obj PhysicsSystem.obj CollisionSystem.obj RigidBody.obj PhysicsDemo.obj /OUT:bin\windows\PhysicsDemo.exe opengl32.lib glu32.lib user32.lib gdi32.lib
+link Vector3.obj PhysicsSystem.obj CollisionSystem.obj RigidBody.obj PhysicsDemo.obj /OUT:bin\windows\PhysicsDemo.exe opengl32.lib glu32.lib user32.lib gdi32.lib
+if %ERRORLEVEL% NEQ 0 (
+    echo ERROR: Failed to link object files.
+    pause
+    exit /b 1
+)
+
+echo.
+echo ===================================================
+echo Build complete.
+echo ===================================================
+if exist bin\windows\PhysicsDemo.exe (
+    echo PhysicsDemo.exe created successfully in bin\windows directory.
+    echo File size: 
+    dir bin\windows\PhysicsDemo.exe | findstr "PhysicsDemo.exe"
+) else (
+    echo ERROR: Build failed. PhysicsDemo.exe was not created.
+    pause
+    exit /b 1
+)
+
+echo.
+echo Press any key to exit...
+pause > nul
 exit /b 0
