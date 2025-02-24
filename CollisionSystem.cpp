@@ -1,8 +1,15 @@
 #include "CollisionSystem.h"
 #include "RigidBody.h"
 #include "GameObject.h"
+#include "Triangle.h"
 #include <algorithm>
 #include <limits>
+
+// Ensure std::min and std::max are used instead of Windows macros
+#ifdef PLATFORM_WINDOWS
+#undef min
+#undef max
+#endif
 
 CollisionSystem::CollisionSystem() {
 }
@@ -127,7 +134,8 @@ void CollisionSystem::ResolveCollision(RigidBody* bodyA, RigidBody* bodyB, const
     const float percent = 0.2f; // Penetration percentage to correct
     const float slop = 0.01f;   // Penetration allowance
     
-    Vector3 correction = info.normal * (std::max(info.depth - slop, 0.0f) / (effectiveMassA + effectiveMassB) * percent);
+    // Use parentheses around std::max to avoid Windows macro conflicts
+    Vector3 correction = info.normal * ((std::max)(info.depth - slop, 0.0f) / (effectiveMassA + effectiveMassB) * percent);
     
     if (bodyA->IsDynamic()) {
         GameObject* gameObjectA = bodyA->GetGameObject();
@@ -246,14 +254,14 @@ CollisionSystem::BoundingBox CollisionSystem::CalculateBoundingBox(const Model* 
         // Apply model position
         vertex = vertex + model->position;
         
-        // Update min and max
-        box.min.x = std::min(box.min.x, vertex.x);
-        box.min.y = std::min(box.min.y, vertex.y);
-        box.min.z = std::min(box.min.z, vertex.z);
+        // Update min and max (use parentheses around std::min/max to avoid Windows macro conflicts)
+        box.min.x = (std::min)(box.min.x, vertex.x);
+        box.min.y = (std::min)(box.min.y, vertex.y);
+        box.min.z = (std::min)(box.min.z, vertex.z);
         
-        box.max.x = std::max(box.max.x, vertex.x);
-        box.max.y = std::max(box.max.y, vertex.y);
-        box.max.z = std::max(box.max.z, vertex.z);
+        box.max.x = (std::max)(box.max.x, vertex.x);
+        box.max.y = (std::max)(box.max.y, vertex.y);
+        box.max.z = (std::max)(box.max.z, vertex.z);
     }
     
     return box;
@@ -266,19 +274,21 @@ CollisionSystem::BoundingBox CollisionSystem::CalculateBoundingBox(const Pyramid
     box.min = Vector3(std::numeric_limits<float>::max(), std::numeric_limits<float>::max(), std::numeric_limits<float>::max());
     box.max = Vector3(std::numeric_limits<float>::lowest(), std::numeric_limits<float>::lowest(), std::numeric_limits<float>::lowest());
     
-    // Iterate through all faces and triangles to find min and max
-    for (const auto& face : pyramid->faces) {
-        for (const auto& triangle : face.triangles) {
-            for (const auto& vertex : triangle.vertices) {
-                // Update min and max
-                box.min.x = std::min(box.min.x, vertex.x);
-                box.min.y = std::min(box.min.y, vertex.y);
-                box.min.z = std::min(box.min.z, vertex.z);
-                
-                box.max.x = std::max(box.max.x, vertex.x);
-                box.max.y = std::max(box.max.y, vertex.y);
-                box.max.z = std::max(box.max.z, vertex.z);
-            }
+    // Iterate through all triangles to find min and max
+    // Use explicit types instead of auto references for Windows compatibility
+    for (size_t i = 0; i < pyramid->triangles.size(); ++i) {
+        const Triangle& triangle = pyramid->triangles[i];
+        for (size_t j = 0; j < 3; ++j) {
+            const Vector3& vertex = triangle.vertices[j];
+            
+            // Update min and max (use parentheses around std::min/max to avoid Windows macro conflicts)
+            box.min.x = (std::min)(box.min.x, vertex.x);
+            box.min.y = (std::min)(box.min.y, vertex.y);
+            box.min.z = (std::min)(box.min.z, vertex.z);
+            
+            box.max.x = (std::max)(box.max.x, vertex.x);
+            box.max.y = (std::max)(box.max.y, vertex.y);
+            box.max.z = (std::max)(box.max.z, vertex.z);
         }
     }
     
@@ -327,7 +337,8 @@ bool CollisionSystem::TriangleTriangleIntersection(
     intersectionPoint = (a1 + b1 + c1 + a2 + b2 + c2) * (1.0f / 6.0f);
     
     // Calculate depth as the minimum distance
-    depth = std::min(std::abs(dist_a), std::min(std::abs(dist_b), std::abs(dist_c)));
+    // Use parentheses around std::min to avoid Windows macro conflicts
+    depth = (std::min)(std::abs(dist_a), (std::min)(std::abs(dist_b), std::abs(dist_c)));
     
     return true;
 }
