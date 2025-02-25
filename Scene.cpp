@@ -1,7 +1,9 @@
 #include "Scene.h"
 #include "MonoBehaviourLike.h"
+#include "EngineCondition.h"
 #include <thread>
 #include <chrono>
+#include <iostream>
 
 void Scene::Load() {
     // Load a scene here (e.g., create GameObjects and Cameras)
@@ -20,6 +22,19 @@ void Scene::Run() {
 
     isRunning = true;
 
+    // Set the appropriate engine state based on context
+    if (EngineCondition::IsInEditor()) {
+        EngineCondition::EnterPlayMode();
+    }
+
+    #ifdef DEBUG_BUILD
+    std::cout << "Scene running in " << 
+        (EngineCondition::IsInEditorPlaying() ? "editor play mode" : 
+         EngineCondition::IsDebugBuild() ? "debug build" : 
+         EngineCondition::IsReleaseBuild() ? "release build" : "unknown mode") 
+        << std::endl;
+    #endif
+
     while (isRunning) {
         time->Update(); // Update the Time class to get the deltaTime
         
@@ -35,9 +50,25 @@ void Scene::Run() {
             }
         }
 
+        // Additional debug information in debug builds
+        #ifdef DEBUG_BUILD
+        if (EngineCondition::IsDebugBuild() && frameCount % 300 == 0) { // Every ~5 seconds at 60 FPS
+            std::cout << "Debug info: " << gameObjects.size() << " objects, " 
+                      << "Frame time: " << time->DeltaTime() * 1000.0f << "ms" << std::endl;
+        }
+        frameCount++;
+        #endif
+
         RenderScene(); // Renders all objects in the scene
 
-        std::this_thread::sleep_for(std::chrono::milliseconds(16)); // Simulate frame rate (60 FPS)
+        // Different frame rates based on build type
+        if (EngineCondition::IsDebugBuild()) {
+            std::this_thread::sleep_for(std::chrono::milliseconds(16)); // 60 FPS in debug
+        } else if (EngineCondition::IsReleaseBuild()) {
+            std::this_thread::sleep_for(std::chrono::milliseconds(8)); // 120 FPS in release
+        } else {
+            std::this_thread::sleep_for(std::chrono::milliseconds(16)); // Default 60 FPS
+        }
     }
 }
 
@@ -47,6 +78,11 @@ void Scene::Stop() {
         for (auto& mb : gameObject->GetComponents<MonoBehaviourLike>()) {
             mb->OnDestroy();
         }
+    }
+
+    // If we're in editor, switch back to edit mode
+    if (EngineCondition::IsInEditorPlaying()) {
+        EngineCondition::EnterEditMode();
     }
 
     gameObjects.clear();
