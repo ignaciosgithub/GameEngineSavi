@@ -26,8 +26,8 @@ namespace EngineCondition {
         IN_EDITOR_COMPILING,    // Game is being compiled in the editor
         
         // Build states
-        DEBUG_BUILD,            // Debug build with additional checks and logging
-        RELEASE_BUILD,          // Release build optimized for performance
+        DEBUG_BUILD_STATE,      // Debug build with additional checks and logging
+        RELEASE_BUILD_STATE,    // Release build optimized for performance
         
         // Standalone states
         STANDALONE_RUNNING      // Game is running as a standalone application
