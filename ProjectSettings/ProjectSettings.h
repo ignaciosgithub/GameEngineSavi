@@ -3,22 +3,19 @@
 
 #include "platform.h"
 #include <string>
-#include <memory>
-#include <map>
 #include <vector>
+#include <map>
+#include <memory>
 
-// Forward declarations
-class ProjectSettings;
-
-// Project settings singleton
 class ProjectSettings {
 private:
+    // Singleton instance
     static std::unique_ptr<ProjectSettings> instance;
     
     // Project data
     std::string projectName;
-    std::string projectPath;
     std::string engineVersion;
+    std::string projectPath;
     
     // Build settings
     struct BuildSettings {
@@ -38,7 +35,7 @@ private:
         } physics;
         
         // Rendering settings
-        struct RenderSettings {
+        struct RenderingSettings {
             int targetFPS;
             bool vsync;
             int msaa;
@@ -52,6 +49,9 @@ private:
     // Private constructor for singleton
     ProjectSettings();
     
+    // Platform-specific directory creation
+    bool CreateDirectories(const std::string& path);
+    
 public:
     // Get singleton instance
     static ProjectSettings& GetInstance();
@@ -63,56 +63,50 @@ public:
     bool SaveToFile(const std::string& filePath);
     
     // Create a new project with default settings
-    bool CreateNewProject(const std::string& projectName, const std::string& projectPath);
+    bool CreateNewProject(const std::string& name, const std::string& path);
     
     // Getters and setters
-    std::string GetProjectName() const { return projectName; }
-    void SetProjectName(const std::string& name) { projectName = name; }
+    std::string GetProjectName() const;
+    void SetProjectName(const std::string& name);
     
-    std::string GetProjectPath() const { return projectPath; }
-    void SetProjectPath(const std::string& path) { projectPath = path; }
+    std::string GetEngineVersion() const;
+    void SetEngineVersion(const std::string& version);
     
-    std::string GetEngineVersion() const { return engineVersion; }
+    bool GetDebugSymbols() const;
+    void SetDebugSymbols(bool enabled);
     
-    // Build settings
-    bool GetDebugSymbols() const { return buildSettings.debugSymbols; }
-    void SetDebugSymbols(bool enable) { buildSettings.debugSymbols = enable; }
+    bool GetOptimization() const;
+    void SetOptimization(bool enabled);
     
-    bool GetOptimization() const { return buildSettings.optimization; }
-    void SetOptimization(bool enable) { buildSettings.optimization = enable; }
+    std::vector<std::string> GetTargetPlatforms() const;
+    void SetTargetPlatforms(const std::vector<std::string>& platforms);
     
-    std::vector<std::string> GetTargetPlatforms() const { return buildSettings.targetPlatforms; }
-    void SetTargetPlatforms(const std::vector<std::string>& platforms) { buildSettings.targetPlatforms = platforms; }
+    std::string GetOutputDirectory() const;
+    void SetOutputDirectory(const std::string& directory);
     
-    std::string GetOutputDirectory() const { return buildSettings.outputDirectory; }
-    void SetOutputDirectory(const std::string& dir) { buildSettings.outputDirectory = dir; }
+    float GetFixedTimeStep() const;
+    void SetFixedTimeStep(float timeStep);
     
-    // Physics settings
-    float GetFixedTimeStep() const { return engineSettings.physics.fixedTimeStep; }
-    void SetFixedTimeStep(float timeStep) { engineSettings.physics.fixedTimeStep = timeStep; }
+    float GetGravity() const;
+    void SetGravity(float gravity);
     
-    float GetGravity() const { return engineSettings.physics.gravity; }
-    void SetGravity(float gravity) { engineSettings.physics.gravity = gravity; }
+    bool GetEnableCollisions() const;
+    void SetEnableCollisions(bool enabled);
     
-    bool GetEnableCollisions() const { return engineSettings.physics.enableCollisions; }
-    void SetEnableCollisions(bool enable) { engineSettings.physics.enableCollisions = enable; }
+    int GetTargetFPS() const;
+    void SetTargetFPS(int fps);
     
-    // Rendering settings
-    int GetTargetFPS() const { return engineSettings.rendering.targetFPS; }
-    void SetTargetFPS(int fps) { engineSettings.rendering.targetFPS = fps; }
+    bool GetVSync() const;
+    void SetVSync(bool enabled);
     
-    bool GetVSync() const { return engineSettings.rendering.vsync; }
-    void SetVSync(bool enable) { engineSettings.rendering.vsync = enable; }
+    int GetMSAA() const;
+    void SetMSAA(int msaa);
     
-    int GetMSAA() const { return engineSettings.rendering.msaa; }
-    void SetMSAA(int msaa) { engineSettings.rendering.msaa = msaa; }
+    bool GetShadows() const;
+    void SetShadows(bool enabled);
     
-    bool GetShadows() const { return engineSettings.rendering.shadows; }
-    void SetShadows(bool enable) { engineSettings.rendering.shadows = enable; }
-    
-    // Asset paths
-    std::string GetAssetPath(const std::string& assetType) const;
-    void SetAssetPath(const std::string& assetType, const std::string& path);
+    std::string GetAssetPath(const std::string& type) const;
+    void SetAssetPath(const std::string& type, const std::string& path);
 };
 
 #endif // PROJECT_SETTINGS_H

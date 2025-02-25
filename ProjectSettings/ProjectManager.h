@@ -3,22 +3,32 @@
 
 #include "ProjectSettings.h"
 #include <string>
-#include <vector>
+#include <memory>
+#include <fstream>
 
-// Project manager class for handling project operations
 class ProjectManager {
 private:
+    // Singleton instance
+    static std::unique_ptr<ProjectManager> instance;
+    
+    // Current project path
     std::string currentProjectPath;
-    std::vector<std::string> recentProjects;
+    
+    // Private constructor for singleton
+    ProjectManager() {}
     
 public:
-    ProjectManager();
+    // Get singleton instance
+    static ProjectManager& GetInstance();
     
     // Create a new project
-    bool CreateProject(const std::string& projectName, const std::string& projectPath);
+    bool CreateProject(const std::string& name, const std::string& path);
+    
+    // Check if a project exists at the specified path
+    bool ProjectExists(const std::string& path);
     
     // Open an existing project
-    bool OpenProject(const std::string& projectPath);
+    bool OpenProject(const std::string& path);
     
     // Save the current project
     bool SaveProject();
@@ -27,16 +37,7 @@ public:
     void CloseProject();
     
     // Get the current project path
-    std::string GetCurrentProjectPath() const { return currentProjectPath; }
-    
-    // Get the list of recent projects
-    std::vector<std::string> GetRecentProjects() const { return recentProjects; }
-    
-    // Add a project to the recent projects list
-    void AddToRecentProjects(const std::string& projectPath);
-    
-    // Check if a project exists at the given path
-    bool ProjectExists(const std::string& projectPath) const;
+    std::string GetCurrentProjectPath() const;
 };
 
 #endif // PROJECT_MANAGER_H

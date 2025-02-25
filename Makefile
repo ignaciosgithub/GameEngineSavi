@@ -1,5 +1,5 @@
 CXX = g++
-CXXFLAGS = -std=c++11 -Wall -Wextra -I. -DPLATFORM_LINUX
+CXXFLAGS = -std=c++11 -Wall -Wextra -I. -IThirdParty -DPLATFORM_LINUX
 
 # Define different LDFLAGS for different targets
 # Full OpenGL flags for graphics-related targets
@@ -119,3 +119,10 @@ help:
 	@echo "  help                - Show this help message"
 
 .PHONY: all directories clean windows help
+
+# Project management system
+PROJECT_SOURCES = ProjectSettings/ProjectSettings.cpp ProjectSettings/ProjectManager.cpp
+PROJECT_OBJECTS = $(PROJECT_SOURCES:.cpp=.o)
+
+# Add project management system to all targets
+OBJECTS += $(PROJECT_OBJECTS)

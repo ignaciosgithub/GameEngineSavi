@@ -1,60 +1,63 @@
 #include "ProjectManager.h"
 #include <iostream>
-#include <fstream>
-#include <algorithm>
 
-ProjectManager::ProjectManager() : currentProjectPath("") {
-    // Load recent projects from a file
-    // In a real implementation, we would load this from a file
-    // For now, we'll just initialize with an empty list
+// Initialize static instance
+std::unique_ptr<ProjectManager> ProjectManager::instance = nullptr;
+
+// Get singleton instance
+ProjectManager& ProjectManager::GetInstance() {
+    if (!instance) {
+        instance.reset(new ProjectManager());
+    }
+    return *instance;
 }
 
 // Create a new project
-bool ProjectManager::CreateProject(const std::string& projectName, const std::string& projectPath) {
-    // Check if a project already exists at the given path
-    if (ProjectExists(projectPath)) {
-        std::cout << "A project already exists at " << projectPath << std::endl;
+bool ProjectManager::CreateProject(const std::string& name, const std::string& path) {
+    // Check if a project already exists at the specified path
+    if (ProjectExists(path)) {
+        std::cout << "A project already exists at " << path << std::endl;
         return false;
     }
     
-    // Create a new project using the ProjectSettings singleton
-    bool success = ProjectSettings::GetInstance().CreateNewProject(projectName, projectPath);
-    
-    if (success) {
-        // Set the current project path
-        currentProjectPath = projectPath;
-        
-        // Add to recent projects
-        AddToRecentProjects(projectPath);
-        
-        std::cout << "Project created successfully at " << projectPath << std::endl;
+    // Create a new project
+    auto& settings = ProjectSettings::GetInstance();
+    if (!settings.CreateNewProject(name, path)) {
+        return false;
     }
     
-    return success;
+    // Set the current project path
+    currentProjectPath = path;
+    
+    std::cout << "Project created successfully at " << currentProjectPath << std::endl;
+    return true;
+}
+
+// Check if a project exists at the specified path
+bool ProjectManager::ProjectExists(const std::string& path) {
+    std::ifstream file(path + "/project.json");
+    return file.good();
 }
 
 // Open an existing project
-bool ProjectManager::OpenProject(const std::string& projectPath) {
-    // Check if the project exists
-    if (!ProjectExists(projectPath)) {
-        std::cout << "No project found at " << projectPath << std::endl;
+bool ProjectManager::OpenProject(const std::string& path) {
+    // Check if a project exists at the specified path
+    if (!ProjectExists(path)) {
+        std::cout << "No project found at " << path << std::endl;
         return false;
     }
     
     // Load the project settings
-    bool success = ProjectSettings::GetInstance().LoadFromFile(projectPath + "/project.json");
-    
-    if (success) {
-        // Set the current project path
-        currentProjectPath = projectPath;
-        
-        // Add to recent projects
-        AddToRecentProjects(projectPath);
-        
-        std::cout << "Project opened successfully from " << projectPath << std::endl;
+    auto& settings = ProjectSettings::GetInstance();
+    if (!settings.LoadFromFile(path + "/project.json")) {
+        return false;
     }
     
-    return success;
+    // Set the current project path
+    currentProjectPath = path;
+    
+    std::cout << "Project opened successfully from " << currentProjectPath << std::endl;
+    return true;
 }
 
 // Save the current project
@@ -66,13 +69,13 @@ bool ProjectManager::SaveProject() {
     }
     
     // Save the project settings
-    bool success = ProjectSettings::GetInstance().SaveToFile(currentProjectPath + "/project.json");
-    
-    if (success) {
-        std::cout << "Project saved successfully to " << currentProjectPath << std::endl;
+    auto& settings = ProjectSettings::GetInstance();
+    if (!settings.SaveToFile(currentProjectPath + "/project.json")) {
+        return false;
     }
     
-    return success;
+    std::cout << "Project saved successfully to " << currentProjectPath << std::endl;
+    return true;
 }
 
 // Close the current project
@@ -83,36 +86,13 @@ void ProjectManager::CloseProject() {
         return;
     }
     
-    // Reset the current project path
+    // Clear the current project path
     currentProjectPath = "";
     
     std::cout << "Project closed" << std::endl;
 }
 
-// Add a project to the recent projects list
-void ProjectManager::AddToRecentProjects(const std::string& projectPath) {
-    // Check if the project is already in the list
-    auto it = std::find(recentProjects.begin(), recentProjects.end(), projectPath);
-    
-    // If it's already in the list, remove it so we can add it to the front
-    if (it != recentProjects.end()) {
-        recentProjects.erase(it);
-    }
-    
-    // Add the project to the front of the list
-    recentProjects.insert(recentProjects.begin(), projectPath);
-    
-    // Limit the list to 10 projects
-    if (recentProjects.size() > 10) {
-        recentProjects.resize(10);
-    }
-    
-    // In a real implementation, we would save the list to a file
-}
-
-// Check if a project exists at the given path
-bool ProjectManager::ProjectExists(const std::string& projectPath) const {
-    // Check if the project.json file exists
-    std::ifstream file(projectPath + "/project.json");
-    return file.good();
+// Get the current project path
+std::string ProjectManager::GetCurrentProjectPath() const {
+    return currentProjectPath;
 }

@@ -4,6 +4,10 @@
  **************************/
 
 #include "platform.h"
+#ifdef PLATFORM_WINDOWS
+#include <windows.h>
+#include <gl/gl.h>
+#endif
 #include <vector>
 #include <string>
 #include <cstring>
