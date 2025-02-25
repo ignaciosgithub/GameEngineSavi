@@ -1,5 +1,5 @@
 CXX = g++
-CXXFLAGS = -std=c++11 -Wall -Wextra -I. -DPLATFORM_WINDOWS
+CXXFLAGS = -std=c++11 -Wall -Wextra -I.
 LDFLAGS = -lopengl32 -lglu32
 
 # Source files for the engine
