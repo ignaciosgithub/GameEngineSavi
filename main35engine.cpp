@@ -21,6 +21,7 @@
 #include "Time.h"
 #include "Scene.h"
 #include "EngineCondition.h"
+#include "GUI/GUI.h"
 #include <iostream>
 #include <fstream>
 #include <cstdlib>
@@ -39,6 +40,9 @@
 inline float toRadians(float degrees) {
     return degrees * static_cast<float>(M_PI) / 180.0f;
 }
+
+// Global GUI instance
+std::unique_ptr<GUI> gui;
 
 #ifdef PLATFORM_WINDOWS
 LRESULT CALLBACK WndProc (HWND hWnd, UINT message,
@@ -87,6 +91,19 @@ int main(int argc, char** argv)
         }
     }
     #endif
+
+    // Initialize GUI
+    gui = std::make_unique<GUI>();
+    auto editorPanel = std::make_unique<Panel>(10, 10, 200, 580);
+    auto playButton = std::make_unique<Button>(20, 20, 80, 30, "Play");
+    playButton->SetOnClick([]() {
+        if (EngineCondition::IsInEditorEditing()) {
+            EngineCondition::EnterPlayMode();
+            std::cout << "Entering play mode" << std::endl;
+        }
+    });
+    editorPanel->AddElement(std::move(playButton));
+    gui->AddElement(std::move(editorPanel));
 
     #ifdef PLATFORM_WINDOWS
     WNDCLASS wc;
@@ -147,6 +164,12 @@ int main(int argc, char** argv)
                 std::this_thread::sleep_for(std::chrono::seconds(2));
                 EngineCondition::EnterEditMode();
             }
+            
+            // Draw GUI
+            gui->Draw();
+            
+            // Swap buffers
+            SwapBuffers(hDC);
         }
     }
 
@@ -179,6 +202,9 @@ int main(int argc, char** argv)
             std::this_thread::sleep_for(std::chrono::seconds(2));
             EngineCondition::EnterEditMode();
         }
+        
+        // In a real implementation, we would draw the GUI here
+        // gui->Draw();
         
         std::this_thread::sleep_for(std::chrono::seconds(1));
     }
@@ -231,6 +257,14 @@ LRESULT CALLBACK WndProc (HWND hWnd, UINT message,
             }
             return 0;
         }
+        return 0;
+        
+    case WM_LBUTTONDOWN:
+        gui->HandleInput(LOWORD(lParam), HIWORD(lParam), true);
+        return 0;
+        
+    case WM_MOUSEMOVE:
+        gui->HandleInput(LOWORD(lParam), HIWORD(lParam), false);
         return 0;
 
     default:

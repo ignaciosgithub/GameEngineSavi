@@ -40,6 +40,9 @@ LINUX_PHYSICS_DEMO_SOURCES = LinuxPhysicsDemo.cpp \
                             PhysicsSystem.cpp \
                             RigidBody.cpp
 
+# Source files for the GUI system
+GUI_SOURCES = GUI/GUI.cpp
+
 # Source files for the main engine demo
 MAIN_ENGINE_SOURCES = main35engine.cpp \
                      $(ENGINE_SOURCES)
@@ -49,7 +52,8 @@ ENGINE_OBJECTS = $(ENGINE_SOURCES:.cpp=.o)
 PHYSICS_OBJECTS = $(PHYSICS_SOURCES:.cpp=.o)
 SUPER_SIMPLE_OBJECTS = $(SUPER_SIMPLE_SOURCES:.cpp=.o)
 LINUX_PHYSICS_DEMO_OBJECTS = $(LINUX_PHYSICS_DEMO_SOURCES:.cpp=.o)
-MAIN_ENGINE_OBJECTS = $(MAIN_ENGINE_SOURCES:.cpp=.o)
+GUI_OBJECTS = $(GUI_SOURCES:.cpp=.o)
+MAIN_ENGINE_OBJECTS = $(MAIN_ENGINE_SOURCES:.cpp=.o) $(GUI_OBJECTS)
 
 # Executables
 SUPER_SIMPLE_TARGET = bin/linux/SuperSimplePhysicsDemo
