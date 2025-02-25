@@ -61,14 +61,8 @@ void Scene::Run() {
 
         RenderScene(); // Renders all objects in the scene
 
-        // Different frame rates based on build type
-        if (EngineCondition::IsDebugBuild()) {
-            std::this_thread::sleep_for(std::chrono::milliseconds(16)); // 60 FPS in debug
-        } else if (EngineCondition::IsReleaseBuild()) {
-            std::this_thread::sleep_for(std::chrono::milliseconds(8)); // 120 FPS in release
-        } else {
-            std::this_thread::sleep_for(std::chrono::milliseconds(16)); // Default 60 FPS
-        }
+        // Use consistent frame rate
+        std::this_thread::sleep_for(std::chrono::milliseconds(16)); // 60 FPS
     }
 }
 
