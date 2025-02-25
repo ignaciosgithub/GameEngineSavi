@@ -149,7 +149,7 @@ void RigidBody::OnCollision(RigidBody* other, const CollisionInfo& info) {
     OnCollisionEnter();
 }
 
-void RigidBody::Update() {
+void RigidBody::Update(float deltaTime) {
     // This is called by the GameObject's Update loop
     // Physics updates are handled by PhysicsSystem
 }

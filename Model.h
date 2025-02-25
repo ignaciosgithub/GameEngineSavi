@@ -6,6 +6,7 @@
 #include "PointLight.h"
 #include <vector>
 #include <string>
+#include <functional>
 
 // Forward declaration for Texture
 class Texture;
@@ -16,8 +17,8 @@ public:
     std::vector<GLuint> indices; // Stores the indices representing triangles
     std::vector<GLfloat> texCoords; // Stores texture coordinates
     bool high_poly;
-    Vector3 rotation, position;
     int frameCounter;
+    Vector3 rotation, position;
     Vector3 pcolorsum;
     std::vector<Vector3> colourmap;
     
@@ -25,15 +26,27 @@ public:
     Texture* normalTexture;
     Texture* opacityTexture;
     
-    Model() : albedoTexture(nullptr), normalTexture(nullptr), opacityTexture(nullptr), frameCounter(0), high_poly(false) {}
+    // Callback for vertex updates
+    std::function<void(const Model*)> onVerticesUpdated;
+    
+    // Fixed initialization order to match declaration order
+    Model() : high_poly(false), frameCounter(0), 
+              albedoTexture(nullptr), normalTexture(nullptr), opacityTexture(nullptr) {}
 
+    // Fixed initialization order to match declaration order
     Model(std::string filePath, Vector3 _rotation, Vector3 _position)
-        : rotation(_rotation), position(_position), albedoTexture(nullptr), 
-          normalTexture(nullptr), opacityTexture(nullptr), frameCounter(0), high_poly(false) {
+        : high_poly(false), frameCounter(0), rotation(_rotation), position(_position),
+          albedoTexture(nullptr), normalTexture(nullptr), opacityTexture(nullptr) {
             loadOBJ(filePath);
     }
 
     void loadOBJ(std::string path);
+    
+    // Load model from file
+    bool LoadFromFile(const std::string& path) {
+        loadOBJ(path);
+        return true; // For now, assume loading always succeeds
+    }
 
     // Texture methods
     void loadTexture(const std::string& path, const std::string& type);
@@ -58,10 +71,11 @@ public:
         return Vector3(0, 1, 0); // Default normal
     }
 
-    // methods for translation, rotation and drawing ...
-    void translate(const Vector3& vec) {
-        position += vec;
-    }
+    // Translation method - declaration only, implementation in Model.cpp
+    void translate(const Vector3& vec);
+    
+    // Animation and vertex update methods
+    void UpdateVertices(const std::vector<GLfloat>& newVertices);
     
     void Render(const std::vector<PointLight>& pointLights);
     void draw(const std::vector<PointLight>& pointLights);

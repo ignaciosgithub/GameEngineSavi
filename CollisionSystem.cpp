@@ -18,6 +18,11 @@ CollisionSystem::CollisionSystem() {
 CollisionSystem::~CollisionSystem() {
 }
 
+void CollisionSystem::UpdateModelCollisionData(const Model* model) {
+    // Calculate and cache the bounding box for the model
+    boundingBoxCache[model] = CalculateBoundingBox(model);
+}
+
 bool CollisionSystem::CheckCollision(const RigidBody* bodyA, const RigidBody* bodyB, CollisionInfo& info) {
     // Get the game objects associated with the rigid bodies
     GameObject* gameObjectA = bodyA->GetGameObject();
@@ -150,9 +155,25 @@ void CollisionSystem::ResolveCollision(RigidBody* bodyA, RigidBody* bodyB, const
 }
 
 bool CollisionSystem::CheckModelCollision(const Model* modelA, const Model* modelB, CollisionInfo& info) {
-    // First, do a quick bounding box check
-    BoundingBox boxA = CalculateBoundingBox(modelA);
-    BoundingBox boxB = CalculateBoundingBox(modelB);
+    // First, check if we have cached bounding boxes for these models
+    BoundingBox boxA, boxB;
+    
+    // Use cached bounding box if available, otherwise calculate it
+    auto itA = boundingBoxCache.find(modelA);
+    if (itA != boundingBoxCache.end()) {
+        boxA = itA->second;
+    } else {
+        boxA = CalculateBoundingBox(modelA);
+        boundingBoxCache[modelA] = boxA;
+    }
+    
+    auto itB = boundingBoxCache.find(modelB);
+    if (itB != boundingBoxCache.end()) {
+        boxB = itB->second;
+    } else {
+        boxB = CalculateBoundingBox(modelB);
+        boundingBoxCache[modelB] = boxB;
+    }
     
     if (!CheckBoundingBoxCollision(boxA, boxB)) {
         return false;
@@ -214,7 +235,17 @@ bool CollisionSystem::CheckPyramidCollision(const Pyramid* pyramidA, const Pyram
 
 bool CollisionSystem::CheckModelPyramidCollision(const Model* model, const Pyramid* pyramid, CollisionInfo& info) {
     // Similar to model-model collision, but using model and pyramid vertices
-    BoundingBox boxA = CalculateBoundingBox(model);
+    BoundingBox boxA;
+    
+    // Use cached bounding box if available, otherwise calculate it
+    auto it = boundingBoxCache.find(model);
+    if (it != boundingBoxCache.end()) {
+        boxA = it->second;
+    } else {
+        boxA = CalculateBoundingBox(model);
+        boundingBoxCache[model] = boxA;
+    }
+    
     BoundingBox boxB = CalculateBoundingBox(pyramid);
     
     if (!CheckBoundingBoxCollision(boxA, boxB)) {

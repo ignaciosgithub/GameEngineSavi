@@ -4,6 +4,7 @@
 #include "CollisionInfo.h"
 #include "Model.h"
 #include "Pyramid.h"
+#include <unordered_map>
 
 class RigidBody;
 
@@ -17,6 +18,9 @@ public:
     
     // Resolve collision between two rigid bodies
     void ResolveCollision(RigidBody* bodyA, RigidBody* bodyB, const CollisionInfo& info);
+    
+    // Update collision data for a model
+    void UpdateModelCollisionData(const Model* model);
     
 private:
     // Helper methods for collision detection
@@ -35,6 +39,9 @@ private:
         Vector3 min;
         Vector3 max;
     };
+    
+    // Cache of bounding boxes for quick lookup
+    std::unordered_map<const Model*, BoundingBox> boundingBoxCache;
     
     BoundingBox CalculateBoundingBox(const Model* model);
     BoundingBox CalculateBoundingBox(const Pyramid* pyramid);
