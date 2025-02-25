@@ -14,6 +14,8 @@ PhysicsSystem::~PhysicsSystem() {
 }
 
 void PhysicsSystem::Update(float deltaTime) {
+    // Physics simulation is now always updated with fixed timestep (60Hz)
+    // No need to scale forces/velocities since deltaTime is constant
     // Apply gravity and update physics for all bodies
     for (auto body : bodies) {
         if (body->IsGravityEnabled()) {

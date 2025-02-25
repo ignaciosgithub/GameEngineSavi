@@ -17,6 +17,9 @@ private:
     std::unique_ptr<PhysicsSystem> physicsSystem;
     std::atomic<bool> isRunning;
     unsigned int frameCount = 0; // For debug information
+    float targetFPS = 60.0f;           // Target frames per second
+    float physicsTimeStep = 1.0f/60.0f; // Fixed physics timestep (60Hz)
+    float physicsAccumulator = 0.0f;    // Accumulator for physics updates
 
 public:
     Scene() : isRunning(false) {}
@@ -29,6 +32,10 @@ public:
     // Add GameObjects and Cameras to the scene
     void AddGameObject(std::unique_ptr<GameObject> gameObject);
     void AddCamera(std::unique_ptr<Camera> camera);
+    
+    // Frame rate configuration
+    void SetTargetFPS(float fps) { targetFPS = fps > 0.0f ? fps : 60.0f; }
+    float GetTargetFPS() const { return targetFPS; }
     
     // Physics system management
     void SetPhysicsSystem(std::unique_ptr<PhysicsSystem> system);
