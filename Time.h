@@ -2,6 +2,7 @@
 #define TIME_H
 
 #include <chrono>
+#include <ctime> // Add explicit include for time.h
 
 class Time
 {
@@ -26,4 +27,4 @@ public:
     // Since we're not dynamically allocating memory, we don't need a destructor in this case
 };
 
-#endif // TIME_H
+#endif // TIME_H      

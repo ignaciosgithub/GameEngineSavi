@@ -1,6 +1,8 @@
+#include "platform.h"
 #include <iostream>
 #include <vector>
 #include <chrono>
+#include <ctime>  // Explicit include for time.h
 #include <thread>
 #include "Vector3.h"
 

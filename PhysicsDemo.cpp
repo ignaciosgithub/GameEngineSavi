@@ -10,7 +10,15 @@
 #include "Vector3.h"
 #include "PointLight.h"
 #include "Face.h"
-#include "Triangle.h"
+// Don't include Triangle.h here to avoid redefinition
+
+// C++11 implementation of make_unique (since we're targeting C++11)
+namespace std {
+    template<typename T, typename... Args>
+    std::unique_ptr<T> make_unique(Args&&... args) {
+        return std::unique_ptr<T>(new T(std::forward<Args>(args)...));
+    }
+}
 
 // Create a red pyramid
 std::unique_ptr<GameObject> CreateRedPyramid(const std::string& name, const Vector3& position) {
@@ -20,51 +28,51 @@ std::unique_ptr<GameObject> CreateRedPyramid(const std::string& name, const Vect
     // Base (square)
     Face baseFace;
     Triangle baseTriangle1;
-    baseTriangle1.vertices.push_back(Vector3(-0.5f, -0.5f, -0.5f));
-    baseTriangle1.vertices.push_back(Vector3(0.5f, -0.5f, -0.5f));
-    baseTriangle1.vertices.push_back(Vector3(0.5f, -0.5f, 0.5f));
+    baseTriangle1.vertices[0] = Vector3(-0.5f, -0.5f, -0.5f);
+    baseTriangle1.vertices[1] = Vector3(0.5f, -0.5f, -0.5f);
+    baseTriangle1.vertices[2] = Vector3(0.5f, -0.5f, 0.5f);
     baseFace.triangles.push_back(baseTriangle1);
     
     Triangle baseTriangle2;
-    baseTriangle2.vertices.push_back(Vector3(-0.5f, -0.5f, -0.5f));
-    baseTriangle2.vertices.push_back(Vector3(0.5f, -0.5f, 0.5f));
-    baseTriangle2.vertices.push_back(Vector3(-0.5f, -0.5f, 0.5f));
+    baseTriangle2.vertices[0] = Vector3(-0.5f, -0.5f, -0.5f);
+    baseTriangle2.vertices[1] = Vector3(0.5f, -0.5f, 0.5f);
+    baseTriangle2.vertices[2] = Vector3(-0.5f, -0.5f, 0.5f);
     baseFace.triangles.push_back(baseTriangle2);
     faces.push_back(baseFace);
     
     // Front face (triangle)
     Face frontFace;
     Triangle frontTriangle;
-    frontTriangle.vertices.push_back(Vector3(0.0f, 0.5f, 0.0f));
-    frontTriangle.vertices.push_back(Vector3(-0.5f, -0.5f, 0.5f));
-    frontTriangle.vertices.push_back(Vector3(0.5f, -0.5f, 0.5f));
+    frontTriangle.vertices[0] = Vector3(0.0f, 0.5f, 0.0f);
+    frontTriangle.vertices[1] = Vector3(-0.5f, -0.5f, 0.5f);
+    frontTriangle.vertices[2] = Vector3(0.5f, -0.5f, 0.5f);
     frontFace.triangles.push_back(frontTriangle);
     faces.push_back(frontFace);
     
     // Back face (triangle)
     Face backFace;
     Triangle backTriangle;
-    backTriangle.vertices.push_back(Vector3(0.0f, 0.5f, 0.0f));
-    backTriangle.vertices.push_back(Vector3(0.5f, -0.5f, -0.5f));
-    backTriangle.vertices.push_back(Vector3(-0.5f, -0.5f, -0.5f));
+    backTriangle.vertices[0] = Vector3(0.0f, 0.5f, 0.0f);
+    backTriangle.vertices[1] = Vector3(0.5f, -0.5f, -0.5f);
+    backTriangle.vertices[2] = Vector3(-0.5f, -0.5f, -0.5f);
     backFace.triangles.push_back(backTriangle);
     faces.push_back(backFace);
     
     // Left face (triangle)
     Face leftFace;
     Triangle leftTriangle;
-    leftTriangle.vertices.push_back(Vector3(0.0f, 0.5f, 0.0f));
-    leftTriangle.vertices.push_back(Vector3(-0.5f, -0.5f, -0.5f));
-    leftTriangle.vertices.push_back(Vector3(-0.5f, -0.5f, 0.5f));
+    leftTriangle.vertices[0] = Vector3(0.0f, 0.5f, 0.0f);
+    leftTriangle.vertices[1] = Vector3(-0.5f, -0.5f, -0.5f);
+    leftTriangle.vertices[2] = Vector3(-0.5f, -0.5f, 0.5f);
     leftFace.triangles.push_back(leftTriangle);
     faces.push_back(leftFace);
     
     // Right face (triangle)
     Face rightFace;
     Triangle rightTriangle;
-    rightTriangle.vertices.push_back(Vector3(0.0f, 0.5f, 0.0f));
-    rightTriangle.vertices.push_back(Vector3(0.5f, -0.5f, 0.5f));
-    rightTriangle.vertices.push_back(Vector3(0.5f, -0.5f, -0.5f));
+    rightTriangle.vertices[0] = Vector3(0.0f, 0.5f, 0.0f);
+    rightTriangle.vertices[1] = Vector3(0.5f, -0.5f, 0.5f);
+    rightTriangle.vertices[2] = Vector3(0.5f, -0.5f, -0.5f);
     rightFace.triangles.push_back(rightTriangle);
     faces.push_back(rightFace);
     
