@@ -1,7 +1,8 @@
 #include "CollisionSystem.h"
 #include "RigidBody.h"
 #include "GameObject.h"
-#include "Triangle.h"
+// Don't include Triangle.h directly to avoid redefinition
+// It's already included via Pyramid.h
 #include <algorithm>
 #include <limits>
 
@@ -338,7 +339,10 @@ bool CollisionSystem::TriangleTriangleIntersection(
     
     // Calculate depth as the minimum distance
     // Use parentheses around std::min to avoid Windows macro conflicts
-    depth = (std::min)(std::abs(dist_a), (std::min)(std::abs(dist_b), std::abs(dist_c)));
+    float depth_a = std::abs(dist_a);
+    float depth_b = std::abs(dist_b);
+    float depth_c = std::abs(dist_c);
+    depth = (std::min)(depth_a, (std::min)(depth_b, depth_c));
     
     return true;
 }
