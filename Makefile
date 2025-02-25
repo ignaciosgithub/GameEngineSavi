@@ -124,5 +124,9 @@ help:
 PROJECT_SOURCES = ProjectSettings/ProjectSettings.cpp ProjectSettings/ProjectManager.cpp
 PROJECT_OBJECTS = $(PROJECT_SOURCES:.cpp=.o)
 
-# Add project management system to all targets
-OBJECTS += $(PROJECT_OBJECTS)
+# Debugger system
+DEBUGGER_SOURCES = Debugger.cpp
+DEBUGGER_OBJECTS = $(DEBUGGER_SOURCES:.cpp=.o)
+
+# Add project management and debugger systems to all targets
+OBJECTS += $(PROJECT_OBJECTS) $(DEBUGGER_OBJECTS)

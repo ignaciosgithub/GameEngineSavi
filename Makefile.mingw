@@ -42,6 +42,9 @@ GUI_SOURCES = GUI/GUI.cpp \
 PROJECT_SOURCES = ProjectSettings/ProjectSettings.cpp \
                  ProjectSettings/ProjectManager.cpp
 
+# Source files for the debugger system
+DEBUGGER_SOURCES = Debugger.cpp
+
 # Source files for the main engine demo
 MAIN_ENGINE_SOURCES = main35engine.cpp \
                      $(ENGINE_SOURCES)
@@ -53,7 +56,8 @@ SUPER_SIMPLE_OBJECTS = $(SUPER_SIMPLE_SOURCES:.cpp=.o)
 WINDOWS_PHYSICS_DEMO_OBJECTS = $(WINDOWS_PHYSICS_DEMO_SOURCES:.cpp=.o)
 GUI_OBJECTS = $(GUI_SOURCES:.cpp=.o)
 PROJECT_OBJECTS = $(PROJECT_SOURCES:.cpp=.o)
-MAIN_ENGINE_OBJECTS = $(MAIN_ENGINE_SOURCES:.cpp=.o) $(GUI_OBJECTS) $(PROJECT_OBJECTS)
+DEBUGGER_OBJECTS = $(DEBUGGER_SOURCES:.cpp=.o)
+MAIN_ENGINE_OBJECTS = $(MAIN_ENGINE_SOURCES:.cpp=.o) $(GUI_OBJECTS) $(PROJECT_OBJECTS) $(DEBUGGER_OBJECTS)
 
 # Executables
 SUPER_SIMPLE_TARGET = bin/windows/SuperSimplePhysicsDemo.exe

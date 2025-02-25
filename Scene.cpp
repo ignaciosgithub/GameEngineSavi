@@ -1,6 +1,7 @@
 #include "Scene.h"
 #include "MonoBehaviourLike.h"
 #include "EngineCondition.h"
+#include "Debugger.h"
 #include <thread>
 #include <chrono>
 #include <iostream>
@@ -13,10 +14,13 @@ void Scene::Load() {
 
 void Scene::Run() {
     // Initialize objects and components
+    auto& debugger = Debugger::GetInstance();
     for (auto& gameObject : gameObjects) {
         for (auto& mb : gameObject->GetComponents<MonoBehaviourLike>()) {
-            mb->Awake();
-            mb->Start();
+            debugger.TryExecute([&]() {
+                mb->Awake();
+                mb->Start();
+            }, gameObject->GetName(), "Awake/Start");
         }
     }
 
@@ -53,7 +57,9 @@ void Scene::Run() {
         // Call Update() on all MonoBehaviourLike components in the scene
         for (auto& gameObject : gameObjects) {
             for (auto& mb : gameObject->GetComponents<MonoBehaviourLike>()) {
-                mb->Update();
+                debugger.TryExecute([&]() {
+                    mb->Update();
+                }, gameObject->GetName(), "Update");
             }
         }
 
@@ -83,9 +89,12 @@ void Scene::Run() {
 
 void Scene::Stop() {
     // Call OnDestroy() on all MonoBehaviourLike components
+    auto& debugger = Debugger::GetInstance();
     for (auto& gameObject : gameObjects) {
         for (auto& mb : gameObject->GetComponents<MonoBehaviourLike>()) {
-            mb->OnDestroy();
+            debugger.TryExecute([&]() {
+                mb->OnDestroy();
+            }, gameObject->GetName(), "OnDestroy");
         }
     }
 
