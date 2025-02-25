@@ -9,31 +9,11 @@
 #include <vector>
 
 // Forward declarations
-class TextField;
 class Checkbox;
 class Dropdown;
 
-// Text field for editing string values
-class TextField : public GUIElement {
-private:
-  std::string text;
-  std::string label;
-  std::function<void(const std::string &)> onTextChanged;
-
-public:
-  TextField(float x, float y, float w, float h, const std::string &label,
-            const std::string &initialText = "");
-
-  void Draw() override;
-  bool HandleInput(int mouseX, int mouseY, bool clicked) override;
-
-  std::string GetText() const { return text; }
-  void SetText(const std::string &newText) { text = newText; }
-
-  void SetOnTextChanged(std::function<void(const std::string &)> callback) {
-    onTextChanged = callback;
-  }
-};
+// Use the TextField class from TextField.h
+#include "TextField.h"
 
 // Checkbox for editing boolean values
 class Checkbox : public GUIElement {

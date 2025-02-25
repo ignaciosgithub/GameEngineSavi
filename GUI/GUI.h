@@ -50,6 +50,7 @@ public:
     Panel(float x, float y, float w, float h);
     void Draw() override;
     bool HandleInput(int x, int y, bool clicked) override;
+    void AddElement(GUIElement* element);
     void AddElement(std::unique_ptr<GUIElement> element);
 };
 
@@ -62,6 +63,7 @@ public:
     GUI();
     void Draw();
     void HandleInput(int x, int y, bool clicked);
+    void AddElement(GUIElement* element);
     void AddElement(std::unique_ptr<GUIElement> element);
     void SetVisible(bool visible);
 };

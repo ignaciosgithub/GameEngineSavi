@@ -3,62 +3,7 @@
 #include <iostream>
 #include <sstream>
 
-// TextField implementation
-TextField::TextField(float x, float y, float w, float h,
-                     const std::string &label, const std::string &initialText)
-    : GUIElement(x, y, w, h), text(initialText), label(label),
-      onTextChanged(nullptr) {}
-
-void TextField::Draw() {
-  if (!visible)
-    return;
-
-  // Draw label
-  glColor3f(0.0f, 0.0f, 0.0f);
-  glRasterPos2f(x, y - 5);
-
-  // Draw text field background
-  glBegin(GL_QUADS);
-  glColor3f(1.0f, 1.0f, 1.0f);
-  glVertex2f(x, y);
-  glVertex2f(x + width, y);
-  glVertex2f(x + width, y + height);
-  glVertex2f(x, y + height);
-  glEnd();
-
-  // Draw text field border
-  glBegin(GL_LINE_LOOP);
-  glColor3f(0.5f, 0.5f, 0.5f);
-  glVertex2f(x, y);
-  glVertex2f(x + width, y);
-  glVertex2f(x + width, y + height);
-  glVertex2f(x, y + height);
-  glEnd();
-
-  // Draw text
-  glColor3f(0.0f, 0.0f, 0.0f);
-  glRasterPos2f(x + 5, y + height / 2);
-
-  // Note: Actual text rendering would be implemented here
-  // For now, we'll just use a simplified approach
-}
-
-bool TextField::HandleInput(int mouseX, int mouseY, bool clicked) {
-  if (!enabled || !visible)
-    return false;
-
-  bool inside =
-      mouseX >= x && mouseX <= x + width && mouseY >= y && mouseY <= y + height;
-
-  if (inside && clicked) {
-    // In a real implementation, we would handle text input here
-    // For now, we'll just simulate text input
-    std::cout << "Clicked on text field: " << label << std::endl;
-    return true;
-  }
-
-  return false;
-}
+// TextField implementation is in TextField.cpp
 
 // Checkbox implementation
 Checkbox::Checkbox(float x, float y, float size, const std::string &label,
@@ -255,89 +200,85 @@ SettingsPanel::SettingsPanel(float x, float y, float w, float h)
   // Project settings
   projectNameField = std::unique_ptr<TextField>(new TextField(
       x + labelWidth, currentY, controlWidth, controlHeight, "Project Name"));
-  AddElement(std::move(std::unique_ptr<GUIElement>(projectNameField.get())));
+  AddElement(projectNameField.get());
   currentY += spacing;
 
   // Build settings
   debugSymbolsCheckbox = std::unique_ptr<Checkbox>(
       new Checkbox(x + labelWidth, currentY, controlHeight, "Debug Symbols"));
-  AddElement(
-      std::move(std::unique_ptr<GUIElement>(debugSymbolsCheckbox.get())));
+  AddElement(debugSymbolsCheckbox.get());
   currentY += spacing;
 
   optimizationCheckbox = std::unique_ptr<Checkbox>(
       new Checkbox(x + labelWidth, currentY, controlHeight, "Optimization"));
-  AddElement(
-      std::move(std::unique_ptr<GUIElement>(optimizationCheckbox.get())));
+  AddElement(optimizationCheckbox.get());
   currentY += spacing;
 
   outputDirectoryField = std::unique_ptr<TextField>(
       new TextField(x + labelWidth, currentY, controlWidth, controlHeight,
                     "Output Directory"));
-  AddElement(
-      std::move(std::unique_ptr<GUIElement>(outputDirectoryField.get())));
+  AddElement(outputDirectoryField.get());
   currentY += spacing;
 
   // Physics settings
   fixedTimeStepField = std::unique_ptr<TextField>(
       new TextField(x + labelWidth, currentY, controlWidth, controlHeight,
-                    "Fixed Time Step"));
-  AddElement(std::move(std::unique_ptr<GUIElement>(fixedTimeStepField.get())));
+                    "Fixed EngineTime Step"));
+  AddElement(fixedTimeStepField.get());
   currentY += spacing;
 
   gravityField = std::unique_ptr<TextField>(new TextField(
       x + labelWidth, currentY, controlWidth, controlHeight, "Gravity"));
-  AddElement(std::move(std::unique_ptr<GUIElement>(gravityField.get())));
+  AddElement(gravityField.get());
   currentY += spacing;
 
   enableCollisionsCheckbox = std::unique_ptr<Checkbox>(new Checkbox(
       x + labelWidth, currentY, controlHeight, "Enable Collisions"));
-  AddElement(
-      std::move(std::unique_ptr<GUIElement>(enableCollisionsCheckbox.get())));
+  AddElement(enableCollisionsCheckbox.get());
   currentY += spacing;
 
   // Rendering settings
   targetFPSField = std::unique_ptr<TextField>(new TextField(
       x + labelWidth, currentY, controlWidth, controlHeight, "Target FPS"));
-  AddElement(std::move(std::unique_ptr<GUIElement>(targetFPSField.get())));
+  AddElement(targetFPSField.get());
   currentY += spacing;
 
   vsyncCheckbox = std::unique_ptr<Checkbox>(
       new Checkbox(x + labelWidth, currentY, controlHeight, "VSync"));
-  AddElement(std::move(std::unique_ptr<GUIElement>(vsyncCheckbox.get())));
+  AddElement(vsyncCheckbox.get());
   currentY += spacing;
 
   std::vector<std::string> msaaOptions = {"Off", "2x", "4x", "8x"};
   msaaDropdown = std::unique_ptr<Dropdown>(
       new Dropdown(x + labelWidth, currentY, controlWidth, controlHeight,
                    "MSAA", msaaOptions));
-  AddElement(std::move(std::unique_ptr<GUIElement>(msaaDropdown.get())));
+  AddElement(msaaDropdown.get());
   currentY += spacing;
 
   shadowsCheckbox = std::unique_ptr<Checkbox>(
       new Checkbox(x + labelWidth, currentY, controlHeight, "Shadows"));
-  AddElement(std::move(std::unique_ptr<GUIElement>(shadowsCheckbox.get())));
+  AddElement(shadowsCheckbox.get());
   currentY += spacing;
 
   // Asset paths
   modelsPathField = std::unique_ptr<TextField>(new TextField(
       x + labelWidth, currentY, controlWidth, controlHeight, "Models Path"));
-  AddElement(std::move(std::unique_ptr<GUIElement>(modelsPathField.get())));
+  AddElement(modelsPathField.get());
   currentY += spacing;
 
   texturesPathField = std::unique_ptr<TextField>(new TextField(
       x + labelWidth, currentY, controlWidth, controlHeight, "Textures Path"));
-  AddElement(std::move(std::unique_ptr<GUIElement>(texturesPathField.get())));
+  AddElement(texturesPathField.get());
   currentY += spacing;
 
   soundsPathField = std::unique_ptr<TextField>(new TextField(
       x + labelWidth, currentY, controlWidth, controlHeight, "Sounds Path"));
-  AddElement(std::move(std::unique_ptr<GUIElement>(soundsPathField.get())));
+  AddElement(soundsPathField.get());
   currentY += spacing;
 
   scriptsPathField = std::unique_ptr<TextField>(new TextField(
       x + labelWidth, currentY, controlWidth, controlHeight, "Scripts Path"));
-  AddElement(std::move(std::unique_ptr<GUIElement>(scriptsPathField.get())));
+  AddElement(scriptsPathField.get());
   currentY += spacing;
 
   // Save button
@@ -347,7 +288,7 @@ SettingsPanel::SettingsPanel(float x, float y, float w, float h)
     SaveToSettings();
     std::cout << "Settings saved!" << std::endl;
   });
-  AddElement(std::move(std::unique_ptr<GUIElement>(saveButton.get())));
+  AddElement(saveButton.get());
 
   // Initialize with current settings
   UpdateFromSettings();

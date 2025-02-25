@@ -1,13 +1,16 @@
 #include "GUI.h"
-#ifdef PLATFORM_WINDOWS
+#include "../platform.h"
+#ifdef PLATFORM_LINUX
+#include <GL/gl.h>
+#elif defined(PLATFORM_WINDOWS)
 #include <windows.h>
-#include <gl/gl.h>
-#else
 #include <GL/gl.h>
 #endif
+#include <iostream>
 
 GUIElement::GUIElement(float x, float y, float w, float h)
-    : x(x), y(y), width(w), height(h), visible(true), enabled(true) {}
+    : x(x), y(y), width(w), height(h), visible(true), enabled(true) {
+}
 
 void GUIElement::SetPosition(float x, float y) {
     this->x = x;
@@ -15,8 +18,8 @@ void GUIElement::SetPosition(float x, float y) {
 }
 
 void GUIElement::SetSize(float w, float h) {
-    width = w;
-    height = h;
+    this->width = w;
+    this->height = h;
 }
 
 void GUIElement::SetVisible(bool visible) {
@@ -28,14 +31,15 @@ void GUIElement::SetEnabled(bool enabled) {
 }
 
 Button::Button(float x, float y, float w, float h, const std::string& text)
-    : GUIElement(x, y, w, h), text(text) {}
+    : GUIElement(x, y, w, h), text(text) {
+}
 
 void Button::Draw() {
     if (!visible) return;
     
     // Draw button background
-    glBegin(GL_QUADS);
     glColor3f(0.7f, 0.7f, 0.7f);
+    glBegin(GL_QUADS);
     glVertex2f(x, y);
     glVertex2f(x + width, y);
     glVertex2f(x + width, y + height);
@@ -43,45 +47,35 @@ void Button::Draw() {
     glEnd();
     
     // Draw button border
+    glColor3f(0.0f, 0.0f, 0.0f);
     glBegin(GL_LINE_LOOP);
-    glColor3f(0.3f, 0.3f, 0.3f);
     glVertex2f(x, y);
     glVertex2f(x + width, y);
     glVertex2f(x + width, y + height);
     glVertex2f(x, y + height);
     glEnd();
     
-    // Draw text (simplified for prototype)
+    // Draw button text
     glColor3f(0.0f, 0.0f, 0.0f);
-    glRasterPos2f(x + 5, y + height/2);
-    
-    // Note: We'll need to handle text rendering differently based on platform
-    // For now, we'll use a simplified approach that will be replaced later
-    // with proper text rendering
-    #ifdef PLATFORM_WINDOWS
-    // On Windows, we would use wglUseFontBitmaps or similar
-    // This is a placeholder for now
-    #else
-    // On Linux, we would use XFT or similar
-    // This is a placeholder for now
-    #endif
-    
-    // For the prototype, we'll skip actual text rendering
-    // as it requires platform-specific code
+    glRasterPos2f(x + 5, y + height / 2);
+    // Draw text (simplified for prototype)
 }
 
 bool Button::HandleInput(int mouseX, int mouseY, bool clicked) {
-    if (!enabled || !visible) return false;
+    if (!enabled || !visible) {
+        return false;
+    }
     
-    bool inside = mouseX >= x && mouseX <= x + width &&
-                 mouseY >= y && mouseY <= y + height;
-                 
-    if (inside && clicked && onClick) {
+    // Check if mouse is over the button
+    bool isOver = mouseX >= x && mouseX <= x + width && mouseY >= y && mouseY <= y + height;
+    
+    // Handle click
+    if (isOver && clicked && onClick) {
         onClick();
         return true;
     }
     
-    return false;
+    return isOver;
 }
 
 void Button::SetOnClick(std::function<void()> callback) {
@@ -89,14 +83,24 @@ void Button::SetOnClick(std::function<void()> callback) {
 }
 
 Panel::Panel(float x, float y, float w, float h)
-    : GUIElement(x, y, w, h) {}
+    : GUIElement(x, y, w, h) {
+}
 
 void Panel::Draw() {
     if (!visible) return;
     
     // Draw panel background
+    glColor3f(0.5f, 0.5f, 0.5f);
     glBegin(GL_QUADS);
-    glColor3f(0.8f, 0.8f, 0.8f);
+    glVertex2f(x, y);
+    glVertex2f(x + width, y);
+    glVertex2f(x + width, y + height);
+    glVertex2f(x, y + height);
+    glEnd();
+    
+    // Draw panel border
+    glColor3f(0.0f, 0.0f, 0.0f);
+    glBegin(GL_LINE_LOOP);
     glVertex2f(x, y);
     glVertex2f(x + width, y);
     glVertex2f(x + width, y + height);
@@ -104,63 +108,62 @@ void Panel::Draw() {
     glEnd();
     
     // Draw children
-    for (auto& element : children) {
-        element->Draw();
+    for (auto& child : children) {
+        child->Draw();
     }
 }
 
 bool Panel::HandleInput(int mouseX, int mouseY, bool clicked) {
-    if (!enabled || !visible) return false;
+    if (!enabled || !visible) {
+        return false;
+    }
     
-    for (auto& element : children) {
-        if (element->HandleInput(mouseX, mouseY, clicked)) {
-            return true;
+    // Check if mouse is over the panel
+    bool isOver = mouseX >= x && mouseX <= x + width && mouseY >= y && mouseY <= y + height;
+    
+    // If mouse is over the panel, check if any child handles the input
+    if (isOver) {
+        for (auto& child : children) {
+            if (child->HandleInput(mouseX, mouseY, clicked)) {
+                return true;
+            }
         }
     }
     
-    return false;
+    return isOver;
+}
+
+void Panel::AddElement(GUIElement* element) {
+    children.push_back(std::unique_ptr<GUIElement>(element));
 }
 
 void Panel::AddElement(std::unique_ptr<GUIElement> element) {
     children.push_back(std::move(element));
 }
 
-GUI::GUI() : visible(true) {}
+GUI::GUI() : visible(true) {
+}
 
 void GUI::Draw() {
     if (!visible) return;
     
-    // Save OpenGL state
-    glPushAttrib(GL_ALL_ATTRIB_BITS);
-    glMatrixMode(GL_PROJECTION);
-    glPushMatrix();
-    glLoadIdentity();
-    glOrtho(0, 800, 600, 0, -1, 1);
-    glMatrixMode(GL_MODELVIEW);
-    glPushMatrix();
-    glLoadIdentity();
-    
-    // Draw all elements
     for (auto& element : elements) {
         element->Draw();
     }
-    
-    // Restore OpenGL state
-    glMatrixMode(GL_PROJECTION);
-    glPopMatrix();
-    glMatrixMode(GL_MODELVIEW);
-    glPopMatrix();
-    glPopAttrib();
 }
 
-void GUI::HandleInput(int x, int y, bool clicked) {
+void GUI::HandleInput(int mouseX, int mouseY, bool clicked) {
     if (!visible) return;
     
     for (auto& element : elements) {
-        if (element->HandleInput(x, y, clicked)) {
+        if (element->HandleInput(mouseX, mouseY, clicked)) {
             break;
         }
     }
+}
+
+void GUI::AddElement(GUIElement* element) {
+    elements.push_back(std::unique_ptr<GUIElement>(element));
 }
 
 void GUI::AddElement(std::unique_ptr<GUIElement> element) {
