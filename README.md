@@ -12,6 +12,10 @@ GameEngineSavi is a lightweight C++ game engine designed for creating 3D games w
 - **Time Management**: Precise time tracking for frame-rate independent gameplay
 - **Math Utilities**: Vector3 and Matrix4x4 implementations for 3D mathematics
 - **Prefab System**: Create reusable game object templates
+- **Physics System**: Rigid body physics with collision detection and response
+- **Texture System**: Support for texture mapping with tiling, opacity, and normal maps
+- **Engine Condition System**: Different engine states for editing, playing, and compiling
+- **Debugger System**: Comprehensive error handling for script errors
 
 ## Architecture
 
@@ -32,6 +36,12 @@ The engine is structured around these core components:
 - **Camera**: Manages the view perspective
 - **PointLight**: Implements dynamic lighting with attenuation
 
+### Physics System
+
+- **PhysicsSystem**: Manages physics simulation with fixed timestep
+- **RigidBody**: Handles physical properties like mass, velocity, and forces
+- **CollisionSystem**: Detects and resolves collisions between objects
+
 ### Math Utilities
 
 - **Vector3**: 3D vector implementation with common operations
@@ -41,6 +51,9 @@ The engine is structured around these core components:
 ### Additional Features
 
 - **Prefab**: Template system for creating reusable game objects
+- **GUI**: User interface system for creating editor and game interfaces
+- **ProjectSettings**: Project configuration management
+- **Debugger**: Error handling and reporting system
 
 ## Getting Started
 
@@ -85,9 +98,36 @@ scene->AddCamera(std::move(mainCamera));
 scene->Run();
 ```
 
+## Test Suite
+
+The engine includes a comprehensive test suite that verifies each component through console output. To run the tests:
+
+### Linux
+```bash
+cd TestSuite
+make
+./run_tests
+```
+
+### Windows
+```batch
+cd TestSuite
+run_tests.bat
+```
+
+The test suite verifies:
+- Vector3 operations (addition, subtraction, multiplication, normalization, etc.)
+- Physics simulation (gravity, velocity integration, collision detection)
+- GameObject component management
+- Scene management
+- Engine condition state transitions
+- Debugger error handling
+
+Each test outputs detailed information to the console, allowing verification of component functionality without requiring visual inspection.
+
 ## Requirements
 
-- Windows operating system
+- Windows or Linux operating system
 - OpenGL support
 - C++ compiler with C++11 support
 

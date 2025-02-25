@@ -1,3 +1,7 @@
+#ifndef CAMERA_H
+#define CAMERA_H
+
+#include "Vector3.h"
 
 class Camera
 {
@@ -10,3 +14,5 @@ public:
    
     Camera(Vector3 pos, Vector3 dir, float fov) : position(pos), lookDirection(dir), fieldOfView(fov) {}
 };
+
+#endif // CAMERA_H
