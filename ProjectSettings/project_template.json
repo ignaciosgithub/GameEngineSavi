@@ -1,0 +1,29 @@
+{
+    "projectName": "New Project",
+    "engineVersion": "1.0.0",
+    "buildSettings": {
+        "debugSymbols": true,
+        "optimization": false,
+        "targetPlatforms": ["Windows", "Linux"],
+        "outputDirectory": "Build"
+    },
+    "engineSettings": {
+        "physics": {
+            "fixedTimeStep": 0.01666667,
+            "gravity": 9.81,
+            "enableCollisions": true
+        },
+        "rendering": {
+            "targetFPS": 60,
+            "vsync": true,
+            "msaa": 4,
+            "shadows": true
+        }
+    },
+    "assetPaths": {
+        "models": "Assets/Models",
+        "textures": "Assets/Textures",
+        "sounds": "Assets/Sounds",
+        "scripts": "Assets/Scripts"
+    }
+}

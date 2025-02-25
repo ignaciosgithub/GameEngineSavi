@@ -1,5 +1,5 @@
 CXX = g++
-CXXFLAGS = -std=c++11 -Wall -Wextra -I.
+CXXFLAGS = -std=c++11 -Wall -Wextra -I. -IThirdParty
 LDFLAGS = -lopengl32 -lglu32
 
 # Source files for the engine
@@ -35,7 +35,12 @@ WINDOWS_PHYSICS_DEMO_SOURCES = PhysicsDemo.cpp \
                               RigidBody.cpp
 
 # Source files for the GUI system
-GUI_SOURCES = GUI/GUI.cpp
+GUI_SOURCES = GUI/GUI.cpp \
+             GUI/SettingsPanel.cpp
+
+# Source files for the project management system
+PROJECT_SOURCES = ProjectSettings/ProjectSettings.cpp \
+                 ProjectSettings/ProjectManager.cpp
 
 # Source files for the main engine demo
 MAIN_ENGINE_SOURCES = main35engine.cpp \
@@ -47,12 +52,14 @@ PHYSICS_OBJECTS = $(PHYSICS_SOURCES:.cpp=.o)
 SUPER_SIMPLE_OBJECTS = $(SUPER_SIMPLE_SOURCES:.cpp=.o)
 WINDOWS_PHYSICS_DEMO_OBJECTS = $(WINDOWS_PHYSICS_DEMO_SOURCES:.cpp=.o)
 GUI_OBJECTS = $(GUI_SOURCES:.cpp=.o)
-MAIN_ENGINE_OBJECTS = $(MAIN_ENGINE_SOURCES:.cpp=.o) $(GUI_OBJECTS)
+PROJECT_OBJECTS = $(PROJECT_SOURCES:.cpp=.o)
+MAIN_ENGINE_OBJECTS = $(MAIN_ENGINE_SOURCES:.cpp=.o) $(GUI_OBJECTS) $(PROJECT_OBJECTS)
 
 # Executables
 SUPER_SIMPLE_TARGET = bin/windows/SuperSimplePhysicsDemo.exe
 WINDOWS_PHYSICS_DEMO_TARGET = bin/windows/PhysicsDemo.exe
 MAIN_ENGINE_TARGET = bin/windows/MainEngine.exe
+PROJECT_DEMO_TARGET = bin/windows/ProjectDemo.exe
 
 # Default target
 all: directories $(SUPER_SIMPLE_TARGET) $(WINDOWS_PHYSICS_DEMO_TARGET)
@@ -73,8 +80,12 @@ $(WINDOWS_PHYSICS_DEMO_TARGET): $(WINDOWS_PHYSICS_DEMO_OBJECTS)
 $(MAIN_ENGINE_TARGET): $(MAIN_ENGINE_OBJECTS)
 	$(CXX) $(CXXFLAGS) -o $@ $^ $(LDFLAGS)
 
+# Build the project demo
+$(PROJECT_DEMO_TARGET): ProjectSettings/ProjectDemo.cpp $(PROJECT_OBJECTS)
+	$(CXX) $(CXXFLAGS) -o $@ $^ $(LDFLAGS)
+
 # Build the engine library
-libengine.a: $(ENGINE_OBJECTS) $(PHYSICS_OBJECTS)
+libengine.a: $(ENGINE_OBJECTS) $(PHYSICS_OBJECTS) $(GUI_OBJECTS) $(PROJECT_OBJECTS)
 	ar rcs $@ $^
 
 # Generic rule for object files
@@ -83,8 +94,8 @@ libengine.a: $(ENGINE_OBJECTS) $(PHYSICS_OBJECTS)
 
 # Clean up
 clean:
-	rm -f $(ENGINE_OBJECTS) $(PHYSICS_OBJECTS) $(SUPER_SIMPLE_OBJECTS) $(WINDOWS_PHYSICS_DEMO_OBJECTS) $(MAIN_ENGINE_OBJECTS)
-	rm -f $(SUPER_SIMPLE_TARGET) $(WINDOWS_PHYSICS_DEMO_TARGET) $(MAIN_ENGINE_TARGET) libengine.a
+	rm -f $(ENGINE_OBJECTS) $(PHYSICS_OBJECTS) $(SUPER_SIMPLE_OBJECTS) $(WINDOWS_PHYSICS_DEMO_OBJECTS) $(GUI_OBJECTS) $(PROJECT_OBJECTS) $(MAIN_ENGINE_OBJECTS)
+	rm -f $(SUPER_SIMPLE_TARGET) $(WINDOWS_PHYSICS_DEMO_TARGET) $(MAIN_ENGINE_TARGET) $(PROJECT_DEMO_TARGET) libengine.a
 
 # Help target
 help:
@@ -93,6 +104,7 @@ help:
 	@echo "  $(SUPER_SIMPLE_TARGET)   - Build the super simple physics demo"
 	@echo "  $(WINDOWS_PHYSICS_DEMO_TARGET)   - Build the Windows physics demo"
 	@echo "  $(MAIN_ENGINE_TARGET)   - Build the main engine demo"
+	@echo "  $(PROJECT_DEMO_TARGET)   - Build the project management demo"
 	@echo "  libengine.a         - Build the engine as a static library"
 	@echo "  clean               - Remove all built files"
 	@echo "  help                - Show this help message"
