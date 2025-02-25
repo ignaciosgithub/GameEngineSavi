@@ -1,5 +1,10 @@
 #include "GUI.h"
+#ifdef PLATFORM_WINDOWS
+#include <windows.h>
+#include <gl/gl.h>
+#else
 #include <GL/gl.h>
+#endif
 
 GUIElement::GUIElement(float x, float y, float w, float h)
     : x(x), y(y), width(w), height(h), visible(true), enabled(true) {}

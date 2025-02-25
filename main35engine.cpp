@@ -6,6 +6,7 @@
 #include "platform.h"
 #include <vector>
 #include <string>
+#include <cstring>
 #include "Vector3.h"
 #include "Triangle.h"
 #include "Matrix4x4.h"
@@ -68,10 +69,10 @@ int main(int argc, char** argv)
     // Set the initial engine condition based on command line arguments
     // This would normally be set by the editor or build system
     #ifdef DEBUG_BUILD
-    EngineCondition::SetState(EngineCondition::State::DEBUG_BUILD);
+    EngineCondition::SetState(EngineCondition::State::DEBUG_BUILD_STATE);
     std::cout << "Starting engine in DEBUG mode" << std::endl;
     #else
-    EngineCondition::SetState(EngineCondition::State::RELEASE_BUILD);
+    EngineCondition::SetState(EngineCondition::State::RELEASE_BUILD_STATE);
     std::cout << "Starting engine in RELEASE mode" << std::endl;
     #endif
 
@@ -93,15 +94,24 @@ int main(int argc, char** argv)
     #endif
 
     // Initialize GUI
-    gui = std::make_unique<GUI>();
-    auto editorPanel = std::make_unique<Panel>(10, 10, 200, 580);
-    auto playButton = std::make_unique<Button>(20, 20, 80, 30, "Play");
+    // Use C++11 compatible way to create unique_ptr
+    gui.reset(new GUI());
+    
+    // Create editor panel
+    std::unique_ptr<Panel> editorPanel(new Panel(10, 10, 200, 580));
+    
+    // Create play button
+    std::unique_ptr<Button> playButton(new Button(20, 20, 80, 30, "Play"));
+    
+    // Set button click handler
     playButton->SetOnClick([]() {
         if (EngineCondition::IsInEditorEditing()) {
             EngineCondition::EnterPlayMode();
             std::cout << "Entering play mode" << std::endl;
         }
     });
+    
+    // Add button to panel and panel to GUI
     editorPanel->AddElement(std::move(playButton));
     gui->AddElement(std::move(editorPanel));
 
