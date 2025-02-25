@@ -2,12 +2,15 @@
 #define TEXTURE_H
 
 #include <string>
-#include <gl/gl.h>
+#include "platform.h" // Include platform.h for platform-specific macros
 
-// Forward declaration of stbi functions to avoid including the full header here
-// The implementation will be in Texture.cpp
-unsigned char* stbi_load(char const* filename, int* x, int* y, int* channels_in_file, int desired_channels);
-void stbi_image_free(void* retval_from_stbi_load);
+// Platform-specific OpenGL includes
+#ifdef PLATFORM_WINDOWS
+#include <windows.h>
+#include <gl/gl.h>
+#else
+#include <GL/gl.h>
+#endif
 
 class Texture {
 public:
