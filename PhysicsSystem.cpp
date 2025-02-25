@@ -69,10 +69,10 @@ void PhysicsSystem::Update(float deltaTime) {
         }
     }
     
-    // In editor compiling mode, we pause physics updates
-    if (EngineCondition::IsInEditorCompiling()) {
+    // Pause physics updates in editor editing and compiling modes
+    if (EngineCondition::IsInEditorEditing() || EngineCondition::IsInEditorCompiling()) {
         #ifdef DEBUG_BUILD
-        std::cout << "Physics updates paused during compilation" << std::endl;
+        std::cout << "Physics updates paused in editor" << std::endl;
         #endif
         return;
     }
