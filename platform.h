@@ -12,6 +12,42 @@
     #error "Unsupported platform"
 #endif
 
+// Compiler detection
+#if defined(__GNUC__) || defined(__GNUG__)
+    #define COMPILER_GCC
+#elif defined(_MSC_VER)
+    #define COMPILER_MSVC
+#elif defined(__clang__)
+    #define COMPILER_CLANG
+#endif
+
+// GCC-specific configuration
+#ifdef COMPILER_GCC
+    // Disable min/max macros to avoid conflicts with std::min/std::max
+    #define NOMINMAX
+    
+    // Enable optimizations
+    #pragma GCC optimize("O2")
+    
+    // Enable specific warnings
+    #pragma GCC diagnostic warning "-Wall"
+    #pragma GCC diagnostic warning "-Wextra"
+    #pragma GCC diagnostic warning "-Wpedantic"
+    
+    // Disable specific warnings that might be too noisy
+    #pragma GCC diagnostic ignored "-Wunused-parameter"
+    
+    // Define inline functions for performance
+    #define FORCE_INLINE __attribute__((always_inline)) inline
+#elif defined(COMPILER_MSVC)
+    // MSVC-specific configuration
+    #define NOMINMAX
+    #define FORCE_INLINE __forceinline
+#else
+    // Default configuration for other compilers
+    #define FORCE_INLINE inline
+#endif
+
 // Platform-specific includes
 #ifdef PLATFORM_WINDOWS
     #include <windows.h>
