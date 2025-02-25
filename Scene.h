@@ -16,6 +16,7 @@ private:
     std::unique_ptr<Time> time;
     std::unique_ptr<PhysicsSystem> physicsSystem;
     std::atomic<bool> isRunning;
+    unsigned int frameCount = 0; // For debug information
 
 public:
     Scene() : isRunning(false) {}
