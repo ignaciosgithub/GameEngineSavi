@@ -38,9 +38,16 @@ void Scene::Run() {
     while (isRunning) {
         time->Update(); // Update the Time class to get the deltaTime
         
-        // Update physics if we have a physics system
-        if (physicsSystem) {
-            physicsSystem->Update(time->DeltaTime());
+        // Add frame time to physics accumulator
+        physicsAccumulator += time->DeltaTime();
+        
+        // Update physics at fixed timestep (60Hz)
+        while (physicsAccumulator >= physicsTimeStep) {
+            if (physicsSystem && !EngineCondition::IsInEditorEditing() && 
+                !EngineCondition::IsInEditorCompiling()) {
+                physicsSystem->Update(physicsTimeStep);
+            }
+            physicsAccumulator -= physicsTimeStep;
         }
 
         // Call Update() on all MonoBehaviourLike components in the scene
@@ -61,8 +68,16 @@ void Scene::Run() {
 
         RenderScene(); // Renders all objects in the scene
 
-        // Use consistent frame rate
-        std::this_thread::sleep_for(std::chrono::milliseconds(16)); // 60 FPS
+        // Sleep to maintain target frame rate
+        if (targetFPS > 0.0f) {
+            float targetFrameTime = 1.0f / targetFPS;
+            float elapsedTime = time->DeltaTime();
+            if (elapsedTime < targetFrameTime) {
+                std::this_thread::sleep_for(std::chrono::microseconds(
+                    static_cast<long long>((targetFrameTime - elapsedTime) * 1000000)
+                ));
+            }
+        }
     }
 }
 
