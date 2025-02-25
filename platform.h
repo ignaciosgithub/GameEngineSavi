@@ -1,6 +1,9 @@
 #ifndef PLATFORM_H
 #define PLATFORM_H
 
+// Include engine condition system
+#include "EngineCondition.h"
+
 // Platform detection
 #if defined(_WIN32) || defined(_WIN64)
     #define PLATFORM_WINDOWS
