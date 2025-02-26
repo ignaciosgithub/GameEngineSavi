@@ -31,6 +31,12 @@ PHYSICS_SOURCES = CollisionSystem.cpp \
                  PhysicsSystem.cpp \
                  RigidBody.cpp
 
+# Source files for the animation system
+ANIMATION_SOURCES = Animation/KeyFrame.cpp \
+                   Animation/Animation.cpp \
+                   Animation/AnimationComponent.cpp \
+                   Animation/AnimationLoader.cpp
+
 # Source files for the super simple Linux demo
 SUPER_SIMPLE_SOURCES = SuperSimplePhysicsDemo.cpp \
                        Vector3.cpp
@@ -57,7 +63,14 @@ EDITOR_SOURCES = Editor/Editor.cpp \
                 Editor/InspectorPanel.cpp \
                 Editor/ProjectPanel.cpp \
                 Editor/EditorMain.cpp \
-                Editor/Vector3Field.cpp
+                Editor/Vector3Field.cpp \
+                Editor/AnimationPanel.cpp
+
+# Source files for the animation test
+ANIMATION_TEST_SOURCES = test_animations/AnimationTest.cpp \
+                        $(ANIMATION_SOURCES) \
+                        Vector3.cpp \
+                        Model.cpp
 
 # Source files for the main engine demo
 MAIN_ENGINE_SOURCES = main35engine.cpp \
@@ -66,10 +79,12 @@ MAIN_ENGINE_SOURCES = main35engine.cpp \
 # Object files
 ENGINE_OBJECTS = $(ENGINE_SOURCES:.cpp=.o)
 PHYSICS_OBJECTS = $(PHYSICS_SOURCES:.cpp=.o)
+ANIMATION_OBJECTS = $(ANIMATION_SOURCES:.cpp=.o)
 SUPER_SIMPLE_OBJECTS = $(SUPER_SIMPLE_SOURCES:.cpp=.o)
 LINUX_PHYSICS_DEMO_OBJECTS = $(LINUX_PHYSICS_DEMO_SOURCES:.cpp=.o)
 GUI_OBJECTS = $(GUI_SOURCES:.cpp=.o)
 EDITOR_OBJECTS = $(EDITOR_SOURCES:.cpp=.o)
+ANIMATION_TEST_OBJECTS = $(ANIMATION_TEST_SOURCES:.cpp=.o)
 MAIN_ENGINE_OBJECTS = $(MAIN_ENGINE_SOURCES:.cpp=.o) $(GUI_OBJECTS)
 
 # Executables
@@ -77,9 +92,10 @@ SUPER_SIMPLE_TARGET = bin/linux/SuperSimplePhysicsDemo
 LINUX_PHYSICS_DEMO_TARGET = bin/linux/LinuxPhysicsDemo
 MAIN_ENGINE_TARGET = bin/linux/MainEngine
 EDITOR_TARGET = bin/linux/Editor
+ANIMATION_TEST_TARGET = bin/linux/AnimationTest
 
 # Default target
-all: directories $(SUPER_SIMPLE_TARGET) $(LINUX_PHYSICS_DEMO_TARGET) $(EDITOR_TARGET)
+all: directories $(SUPER_SIMPLE_TARGET) $(LINUX_PHYSICS_DEMO_TARGET) $(EDITOR_TARGET) $(ANIMATION_TEST_TARGET)
 
 # Create necessary directories
 directories:
@@ -98,11 +114,15 @@ $(MAIN_ENGINE_TARGET): $(MAIN_ENGINE_OBJECTS)
 	$(CXX) $(CXXFLAGS) -o $@ $^ $(OPENGL_LDFLAGS)
 	
 # Build the editor
-$(EDITOR_TARGET): $(EDITOR_OBJECTS) $(ENGINE_OBJECTS) $(PHYSICS_OBJECTS) $(GUI_OBJECTS) ProjectSettings/ProjectSettings.o ProjectSettings/ProjectManager.o EngineCondition.o
+$(EDITOR_TARGET): $(EDITOR_OBJECTS) $(ENGINE_OBJECTS) $(PHYSICS_OBJECTS) $(GUI_OBJECTS) $(ANIMATION_OBJECTS) ProjectSettings/ProjectSettings.o ProjectSettings/ProjectManager.o EngineCondition.o
 	$(CXX) $(CXXFLAGS) -o $@ $^ $(OPENGL_LDFLAGS)
 
+# Build the animation test
+$(ANIMATION_TEST_TARGET): $(ANIMATION_TEST_OBJECTS)
+	$(CXX) $(CXXFLAGS) -o $@ $^ $(SIMPLE_LDFLAGS)
+
 # Build the engine library
-libengine.a: $(ENGINE_OBJECTS) $(PHYSICS_OBJECTS)
+libengine.a: $(ENGINE_OBJECTS) $(PHYSICS_OBJECTS) $(ANIMATION_OBJECTS)
 	ar rcs $@ $^
 
 # Generic rule for object files
@@ -111,15 +131,15 @@ libengine.a: $(ENGINE_OBJECTS) $(PHYSICS_OBJECTS)
 
 # Clean up
 clean:
-	rm -f $(ENGINE_OBJECTS) $(PHYSICS_OBJECTS) $(SUPER_SIMPLE_OBJECTS) $(LINUX_PHYSICS_DEMO_OBJECTS) $(MAIN_ENGINE_OBJECTS) $(EDITOR_OBJECTS)
-	rm -f $(SUPER_SIMPLE_TARGET) $(LINUX_PHYSICS_DEMO_TARGET) $(MAIN_ENGINE_TARGET) $(EDITOR_TARGET) libengine.a
+	rm -f $(ENGINE_OBJECTS) $(PHYSICS_OBJECTS) $(ANIMATION_OBJECTS) $(SUPER_SIMPLE_OBJECTS) $(LINUX_PHYSICS_DEMO_OBJECTS) $(MAIN_ENGINE_OBJECTS) $(EDITOR_OBJECTS) $(ANIMATION_TEST_OBJECTS)
+	rm -f $(SUPER_SIMPLE_TARGET) $(LINUX_PHYSICS_DEMO_TARGET) $(MAIN_ENGINE_TARGET) $(EDITOR_TARGET) $(ANIMATION_TEST_TARGET) libengine.a
 
 # Windows build instructions (for documentation)
 windows:
 	@echo "To build on Windows:"
-	@echo "1. Open Visual Studio and create a new C++ project"
-	@echo "2. Add all source files to the project"
-	@echo "3. Set the project to use C++11 or later"
+	@echo "1. Open Visual Studio"
+	@echo "2. Create a new project and add all source files"
+	@echo "3. Set the project to use C++14 or later"
 	@echo "4. Link against OpenGL libraries (opengl32.lib, glu32.lib)"
 	@echo "5. Build the project"
 	@echo ""
@@ -131,11 +151,12 @@ windows:
 # Help target
 help:
 	@echo "Available targets:"
-	@echo "  all                  - Build the super simple physics demo, Linux physics demo, and editor"
+	@echo "  all                  - Build the super simple physics demo, Linux physics demo, editor, and animation test"
 	@echo "  $(SUPER_SIMPLE_TARGET)   - Build the super simple physics demo"
 	@echo "  $(LINUX_PHYSICS_DEMO_TARGET)   - Build the Linux physics demo"
 	@echo "  $(MAIN_ENGINE_TARGET)   - Build the main engine demo"
 	@echo "  $(EDITOR_TARGET)   - Build the editor"
+	@echo "  $(ANIMATION_TEST_TARGET)   - Build the animation test"
 	@echo "  libengine.a         - Build the engine as a static library"
 	@echo "  clean               - Remove all built files"
 	@echo "  windows             - Show Windows build instructions"

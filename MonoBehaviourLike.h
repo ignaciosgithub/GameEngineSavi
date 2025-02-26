@@ -8,7 +8,7 @@ public:
     virtual void Awake() {}
     virtual void Start() {}
     virtual void FixedUpdate() {}
-    virtual void Update() {}
+    virtual void Update(float deltaTime) {}
     virtual void LateUpdate() {}
     virtual void OnDestroy() {}
 

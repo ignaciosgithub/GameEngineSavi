@@ -1,139 +1,125 @@
 #include "Scene.h"
-#include "MonoBehaviourLike.h"
 #include "EngineCondition.h"
-#include "Debugger.h"
-#include <thread>
-#include <chrono>
+#include "MonoBehaviourLike.h"
 #include <iostream>
 
 void Scene::Load() {
-    // Load a scene here (e.g., create GameObjects and Cameras)
-    // For simplicity, this just initializes the Time class
-    time = std::make_unique<Time>();
+    // Load scene resources
+    std::cout << "Scene loaded" << std::endl;
 }
 
 void Scene::Run() {
-    // Initialize objects and components
-    auto& debugger = Debugger::GetInstance();
-    for (auto& gameObject : gameObjects) {
-        for (auto& mb : gameObject->GetComponents<MonoBehaviourLike>()) {
-            debugger.TryExecute([&]() {
-                mb->Awake();
-                mb->Start();
-            }, gameObject->GetName(), "Awake/Start");
-        }
-    }
-
+    // Start running the scene
     isRunning = true;
-
-    // Set the appropriate engine state based on context
-    if (EngineCondition::IsInEditor()) {
-        EngineCondition::EnterPlayMode();
-    }
-
-    #ifdef DEBUG_BUILD
-    std::cout << "Scene running in " << 
-        (EngineCondition::IsInEditorPlaying() ? "editor play mode" : 
-         EngineCondition::IsDebugBuild() ? "debug build" : 
-         EngineCondition::IsReleaseBuild() ? "release build" : "unknown mode") 
-        << std::endl;
-    #endif
-
-    while (isRunning) {
-        time->Update(); // Update the Time class to get the deltaTime
-        
-        // Add frame time to physics accumulator
-        physicsAccumulator += time->DeltaTime();
-        
-        // Update physics at fixed timestep (60Hz)
-        while (physicsAccumulator >= physicsTimeStep) {
-            if (physicsSystem && !EngineCondition::IsInEditorEditing() && 
-                !EngineCondition::IsInEditorCompiling()) {
-                physicsSystem->Update(physicsTimeStep);
-            }
-            physicsAccumulator -= physicsTimeStep;
-        }
-
-        // Call Update() on all MonoBehaviourLike components in the scene
-        for (auto& gameObject : gameObjects) {
-            for (auto& mb : gameObject->GetComponents<MonoBehaviourLike>()) {
-                debugger.TryExecute([&]() {
-                    mb->Update();
-                }, gameObject->GetName(), "Update");
-            }
-        }
-
-        // Additional debug information in debug builds
-        #ifdef DEBUG_BUILD
-        if (EngineCondition::IsDebugBuild() && frameCount % 300 == 0) { // Every ~5 seconds at 60 FPS
-            std::cout << "Debug info: " << gameObjects.size() << " objects, " 
-                      << "Frame time: " << time->DeltaTime() * 1000.0f << "ms" << std::endl;
-        }
-        frameCount++;
-        #endif
-
-        RenderScene(); // Renders all objects in the scene
-
-        // Sleep to maintain target frame rate
-        if (targetFPS > 0.0f) {
-            float targetFrameTime = 1.0f / targetFPS;
-            float elapsedTime = time->DeltaTime();
-            if (elapsedTime < targetFrameTime) {
-                std::this_thread::sleep_for(std::chrono::microseconds(
-                    static_cast<long long>((targetFrameTime - elapsedTime) * 1000000)
-                ));
-            }
-        }
-    }
+    std::cout << "Scene running" << std::endl;
 }
 
 void Scene::Stop() {
-    // Call OnDestroy() on all MonoBehaviourLike components
-    auto& debugger = Debugger::GetInstance();
-    for (auto& gameObject : gameObjects) {
-        for (auto& mb : gameObject->GetComponents<MonoBehaviourLike>()) {
-            debugger.TryExecute([&]() {
-                mb->OnDestroy();
-            }, gameObject->GetName(), "OnDestroy");
-        }
-    }
-
-    // If we're in editor, switch back to edit mode
-    if (EngineCondition::IsInEditorPlaying()) {
-        EngineCondition::EnterEditMode();
-    }
-
-    gameObjects.clear();
-    cameras.clear();
+    // Stop running the scene
     isRunning = false;
+    std::cout << "Scene stopped" << std::endl;
 }
 
 void Scene::RenderScene() {
-    // Render each GameObject in the scene
-    for (const auto& gameObject : gameObjects) {
-        gameObject->Render(gameObject->lights);
-    }
-
-    // Render each Camera view in the scene
-    for (const auto& camera : cameras) {
-        //camera->Render();
+    // Render the scene
+    for (auto& gameObject : gameObjects) {
+        // Render the game object
+        gameObject->Render(std::vector<PointLight>());
     }
 }
 
-// Add GameObjects and Cameras to the scene
+void Scene::Initialize() {
+    // Initialize the scene
+    time = std::unique_ptr<EngineTime>(new EngineTime());
+    physicsSystem = std::unique_ptr<PhysicsSystem>(new PhysicsSystem());
+    physicsSystem->Initialize();
+    
+    std::cout << "Scene initialized" << std::endl;
+}
+
+void Scene::Update(float deltaTime) {
+    // Update the scene
+    
+    // Update physics with fixed timestep
+    physicsAccumulator += deltaTime;
+    
+    while (physicsAccumulator >= physicsTimeStep) {
+        // Update physics
+        if (physicsSystem && !EngineCondition::IsInEditorEditing() && !EngineCondition::IsInEditorCompiling()) {
+            physicsSystem->Update(physicsTimeStep);
+        }
+        
+        physicsAccumulator -= physicsTimeStep;
+    }
+    
+    // Update game objects
+    for (auto& gameObject : gameObjects) {
+        // Update the game object components
+        for (auto& component : gameObject->GetComponents<MonoBehaviourLike>()) {
+            // Pass deltaTime to Update method
+            component->Update(deltaTime);
+        }
+    }
+    
+    // Update frame count
+    frameCount++;
+}
+
+void Scene::Render() {
+    // Render the scene
+    RenderScene();
+}
+
+void Scene::SetMainCamera(Camera* camera) {
+    // Set the main camera for rendering
+    // For now, just store the camera pointer
+    // In a real implementation, this would set up the camera for rendering
+}
+
 void Scene::AddGameObject(std::unique_ptr<GameObject> gameObject) {
-    gameObjects.emplace_back(std::move(gameObject));
+    // Add a game object to the scene
+    gameObjects.push_back(std::move(gameObject));
+}
+
+void Scene::AddGameObject(GameObject* gameObject) {
+    // Add a game object to the scene (raw pointer version)
+    // Create a custom deleter struct
+    struct NoDelete {
+        void operator()(GameObject* ptr) const {}
+    };
+    
+    // Create a unique_ptr with the custom deleter
+    std::unique_ptr<GameObject, NoDelete> ptr(gameObject, NoDelete());
+    
+    // We need to create a new standard unique_ptr
+    gameObjects.push_back(std::unique_ptr<GameObject>(gameObject));
 }
 
 void Scene::AddCamera(std::unique_ptr<Camera> camera) {
-    cameras.emplace_back(std::move(camera));
+    // Add a camera to the scene
+    cameras.push_back(std::move(camera));
 }
 
-// Physics system management
+void Scene::AddCamera(Camera* camera) {
+    // Add a camera to the scene (raw pointer version)
+    // Create a custom deleter struct
+    struct NoDelete {
+        void operator()(Camera* ptr) const {}
+    };
+    
+    // Create a unique_ptr with the custom deleter
+    std::unique_ptr<Camera, NoDelete> ptr(camera, NoDelete());
+    
+    // We need to create a new standard unique_ptr
+    cameras.push_back(std::unique_ptr<Camera>(camera));
+}
+
 void Scene::SetPhysicsSystem(std::unique_ptr<PhysicsSystem> system) {
+    // Set the physics system
     physicsSystem = std::move(system);
 }
 
 PhysicsSystem* Scene::GetPhysicsSystem() const {
+    // Get the physics system
     return physicsSystem.get();
 }

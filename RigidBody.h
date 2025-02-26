@@ -60,7 +60,7 @@ public:
     void OnCollision(RigidBody* other, const CollisionInfo& info);
     
     // MonoBehaviourLike overrides
-    void Update() override;
+    void Update(float deltaTime) override;
     void OnCollisionEnter() override;
     void OnCollisionStay() override;
     void OnCollisionExit() override;

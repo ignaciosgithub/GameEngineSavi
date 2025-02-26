@@ -1,0 +1,23 @@
+{
+    "animationName": "cube_walk",
+    "duration": 1.0,
+    "isLooping": true,
+    "keyframes": [
+        {
+            "timestamp": 0.0,
+            "objFilePath": "test_animations/walk/cube_pose1.obj"
+        },
+        {
+            "timestamp": 0.25,
+            "objFilePath": "test_animations/walk/cube_pose2.obj"
+        },
+        {
+            "timestamp": 0.5,
+            "objFilePath": "test_animations/walk/cube_pose3.obj"
+        },
+        {
+            "timestamp": 0.75,
+            "objFilePath": "test_animations/walk/cube_pose4.obj"
+        }
+    ]
+}
