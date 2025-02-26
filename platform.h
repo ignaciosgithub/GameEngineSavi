@@ -15,6 +15,30 @@
     #error "Unsupported platform"
 #endif
 
+// Platform-specific networking includes
+#ifdef PLATFORM_WINDOWS
+    #include <winsock2.h>
+    #include <ws2tcpip.h>
+    #pragma comment(lib, "ws2_32.lib")
+#else
+    #include <sys/socket.h>
+    #include <netinet/in.h>
+    #include <arpa/inet.h>
+    #include <netdb.h>
+    #include <fcntl.h>
+#endif
+
+// Cross-platform socket type
+#ifdef PLATFORM_WINDOWS
+    typedef SOCKET SocketHandle;
+    #define INVALID_SOCKET_HANDLE INVALID_SOCKET
+    #define SOCKET_ERROR_RETURN SOCKET_ERROR
+#else
+    typedef int SocketHandle;
+    #define INVALID_SOCKET_HANDLE (-1)
+    #define SOCKET_ERROR_RETURN (-1)
+#endif
+
 // Compiler detection
 #if defined(__GNUC__) || defined(__GNUG__)
     #define COMPILER_GCC
