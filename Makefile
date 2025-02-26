@@ -37,6 +37,13 @@ ANIMATION_SOURCES = Animation/KeyFrame.cpp \
                    Animation/AnimationComponent.cpp \
                    Animation/AnimationLoader.cpp
 
+# Source files for the networking system
+NETWORK_SOURCES = Network/NetworkSystem.cpp \
+                 Network/Connection.cpp \
+                 Network/Packet.cpp \
+                 Network/NetworkComponent.cpp \
+                 Network/NetworkDebugger.cpp
+
 # Source files for the super simple Linux demo
 SUPER_SIMPLE_SOURCES = SuperSimplePhysicsDemo.cpp \
                        Vector3.cpp
@@ -50,6 +57,18 @@ LINUX_PHYSICS_DEMO_SOURCES = LinuxPhysicsDemo.cpp \
                             EngineCondition.cpp \
                             ProjectSettings/ProjectSettings.cpp \
                             ProjectSettings/ProjectManager.cpp
+
+# Source files for the network demo
+NETWORK_DEMO_SOURCES = test_network/NetworkDemo.cpp \
+                      Network/NetworkSystem.cpp \
+                      Network/Connection.cpp \
+                      Network/Packet.cpp \
+                      Network/NetworkComponent.cpp \
+                      Network/NetworkDebugger.cpp \
+                      Vector3.cpp \
+                      Scene.cpp \
+                      EngineCondition.cpp \
+                      ProjectSettings/ProjectSettings.cpp
 
 # Source files for the GUI system
 GUI_SOURCES = GUI/GUI.cpp \
@@ -80,12 +99,14 @@ MAIN_ENGINE_SOURCES = main35engine.cpp \
 ENGINE_OBJECTS = $(ENGINE_SOURCES:.cpp=.o)
 PHYSICS_OBJECTS = $(PHYSICS_SOURCES:.cpp=.o)
 ANIMATION_OBJECTS = $(ANIMATION_SOURCES:.cpp=.o)
+NETWORK_OBJECTS = $(NETWORK_SOURCES:.cpp=.o)
 SUPER_SIMPLE_OBJECTS = $(SUPER_SIMPLE_SOURCES:.cpp=.o)
 LINUX_PHYSICS_DEMO_OBJECTS = $(LINUX_PHYSICS_DEMO_SOURCES:.cpp=.o)
 GUI_OBJECTS = $(GUI_SOURCES:.cpp=.o)
 EDITOR_OBJECTS = $(EDITOR_SOURCES:.cpp=.o)
 ANIMATION_TEST_OBJECTS = $(ANIMATION_TEST_SOURCES:.cpp=.o)
 MAIN_ENGINE_OBJECTS = $(MAIN_ENGINE_SOURCES:.cpp=.o) $(GUI_OBJECTS)
+NETWORK_DEMO_OBJECTS = $(NETWORK_DEMO_SOURCES:.cpp=.o)
 
 # Executables
 SUPER_SIMPLE_TARGET = bin/linux/SuperSimplePhysicsDemo
@@ -93,9 +114,10 @@ LINUX_PHYSICS_DEMO_TARGET = bin/linux/LinuxPhysicsDemo
 MAIN_ENGINE_TARGET = bin/linux/MainEngine
 EDITOR_TARGET = bin/linux/Editor
 ANIMATION_TEST_TARGET = bin/linux/AnimationTest
+NETWORK_DEMO_TARGET = bin/linux/NetworkDemo
 
 # Default target
-all: directories $(SUPER_SIMPLE_TARGET) $(LINUX_PHYSICS_DEMO_TARGET) $(EDITOR_TARGET) $(ANIMATION_TEST_TARGET)
+all: directories $(SUPER_SIMPLE_TARGET) $(LINUX_PHYSICS_DEMO_TARGET) $(EDITOR_TARGET) $(ANIMATION_TEST_TARGET) $(NETWORK_DEMO_TARGET)
 
 # Create necessary directories
 directories:
@@ -119,6 +141,10 @@ $(EDITOR_TARGET): $(EDITOR_OBJECTS) $(ENGINE_OBJECTS) $(PHYSICS_OBJECTS) $(GUI_O
 
 # Build the animation test
 $(ANIMATION_TEST_TARGET): $(ANIMATION_TEST_OBJECTS)
+	$(CXX) $(CXXFLAGS) -o $@ $^ $(SIMPLE_LDFLAGS)
+	
+# Build the network demo
+$(NETWORK_DEMO_TARGET): $(NETWORK_DEMO_OBJECTS)
 	$(CXX) $(CXXFLAGS) -o $@ $^ $(SIMPLE_LDFLAGS)
 
 # Build the engine library
