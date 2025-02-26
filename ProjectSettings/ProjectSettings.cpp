@@ -39,6 +39,15 @@ ProjectSettings::ProjectSettings()
     engineSettings.rendering.msaa = 4;
     engineSettings.rendering.shadows = true;
     
+    // Default network settings
+    engineSettings.network.enableNetworking = false;
+    engineSettings.network.defaultServerAddress = "127.0.0.1";
+    engineSettings.network.defaultServerPort = 7777;
+    engineSettings.network.enablePacketLogging = false;
+    engineSettings.network.simulatedLatency = 0.0f;
+    engineSettings.network.simulatedPacketLoss = 0.0f;
+    engineSettings.network.preferP2P = false;
+    
     // Default asset paths
     assetPaths["models"] = "Assets/Models";
     assetPaths["textures"] = "Assets/Textures";
@@ -77,6 +86,17 @@ bool ProjectSettings::LoadFromFile(const std::string& filePath) {
         engineSettings.rendering.vsync = j["engineSettings"]["rendering"]["vsync"];
         engineSettings.rendering.msaa = j["engineSettings"]["rendering"]["msaa"];
         engineSettings.rendering.shadows = j["engineSettings"]["rendering"]["shadows"];
+        
+        // Load network settings if they exist
+        if (j["engineSettings"].contains("network")) {
+            engineSettings.network.enableNetworking = j["engineSettings"]["network"]["enableNetworking"];
+            engineSettings.network.defaultServerAddress = j["engineSettings"]["network"]["defaultServerAddress"];
+            engineSettings.network.defaultServerPort = j["engineSettings"]["network"]["defaultServerPort"];
+            engineSettings.network.enablePacketLogging = j["engineSettings"]["network"]["enablePacketLogging"];
+            engineSettings.network.simulatedLatency = j["engineSettings"]["network"]["simulatedLatency"];
+            engineSettings.network.simulatedPacketLoss = j["engineSettings"]["network"]["simulatedPacketLoss"];
+            engineSettings.network.preferP2P = j["engineSettings"]["network"]["preferP2P"];
+        }
         
         // Load asset paths
         auto assetPathsJson = j["assetPaths"];
@@ -118,6 +138,15 @@ bool ProjectSettings::SaveToFile(const std::string& filePath) {
         j["engineSettings"]["rendering"]["vsync"] = engineSettings.rendering.vsync;
         j["engineSettings"]["rendering"]["msaa"] = engineSettings.rendering.msaa;
         j["engineSettings"]["rendering"]["shadows"] = engineSettings.rendering.shadows;
+        
+        // Network settings
+        j["engineSettings"]["network"]["enableNetworking"] = engineSettings.network.enableNetworking;
+        j["engineSettings"]["network"]["defaultServerAddress"] = engineSettings.network.defaultServerAddress;
+        j["engineSettings"]["network"]["defaultServerPort"] = engineSettings.network.defaultServerPort;
+        j["engineSettings"]["network"]["enablePacketLogging"] = engineSettings.network.enablePacketLogging;
+        j["engineSettings"]["network"]["simulatedLatency"] = engineSettings.network.simulatedLatency;
+        j["engineSettings"]["network"]["simulatedPacketLoss"] = engineSettings.network.simulatedPacketLoss;
+        j["engineSettings"]["network"]["preferP2P"] = engineSettings.network.preferP2P;
         
         // Asset paths
         for (auto it = assetPaths.begin(); it != assetPaths.end(); ++it) {
