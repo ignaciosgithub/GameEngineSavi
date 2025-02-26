@@ -1,4 +1,5 @@
 #include "NetworkSystem.h"
+#include "NetworkDebugger.h"
 #include "../EngineCondition.h"
 #include <iostream>
 
@@ -10,7 +11,7 @@ namespace Network {
     }
 
     NetworkSystem::~NetworkSystem() {
-        Shutdown();
+        Cleanup();
     }
 
     void NetworkSystem::Initialize(bool asServer, bool asPeerToPeer) {
@@ -27,6 +28,15 @@ namespace Network {
                   << " in " 
                   << (isPeerToPeer ? "peer-to-peer" : "client-server") 
                   << " mode" << std::endl;
+                  
+        // Initialize platform-specific networking
+#ifdef PLATFORM_WINDOWS
+        WSADATA wsaData;
+        if (WSAStartup(MAKEWORD(2, 2), &wsaData) != 0) {
+            std::cerr << "Failed to initialize Winsock" << std::endl;
+            return;
+        }
+#endif
     }
 
     void NetworkSystem::Update() {
@@ -35,10 +45,16 @@ namespace Network {
         // Handle timeouts
     }
 
-    void NetworkSystem::Shutdown() {
+    void NetworkSystem::Cleanup() {
         // Close all connections
         connections.clear();
-        std::cout << "NetworkSystem shutdown" << std::endl;
+        
+        // Cleanup platform-specific networking
+#ifdef PLATFORM_WINDOWS
+        WSACleanup();
+#endif
+        
+        std::cout << "NetworkSystem cleaned up" << std::endl;
     }
 
     void NetworkSystem::Connect(const std::string& address, int port) {
@@ -103,6 +119,16 @@ namespace Network {
     void NetworkSystem::SimulatePacketLoss(float percentage) {
         simulatedPacketLoss = percentage;
         std::cout << "Simulating " << percentage << "% packet loss" << std::endl;
+    }
+    
+    void NetworkSystem::DisplayDebugStats() const {
+        std::cout << "===== Network System Status =====" << std::endl;
+        std::cout << "Mode: " << (isServer ? "Server" : (isPeerToPeer ? "Peer-to-Peer" : "Client")) << std::endl;
+        std::cout << "Active connections: " << connections.size() << std::endl;
+        std::cout << "Packet logging: " << (packetLoggingEnabled ? "Enabled" : "Disabled") << std::endl;
+        std::cout << "Simulated latency: " << simulatedLatency << " ms" << std::endl;
+        std::cout << "Simulated packet loss: " << simulatedPacketLoss << "%" << std::endl;
+        std::cout << "===============================" << std::endl;
     }
 
 } // namespace Network

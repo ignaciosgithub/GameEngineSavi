@@ -24,10 +24,10 @@ namespace Network {
         NetworkSystem();
         ~NetworkSystem();
         
-        // Initialization and shutdown
+        // Initialization and cleanup
         void Initialize(bool asServer, bool asPeerToPeer);
         void Update();
-        void Shutdown();
+        void Cleanup();
         
         // Connection management
         void Connect(const std::string& address, int port);
@@ -42,6 +42,7 @@ namespace Network {
         void EnablePacketLogging(bool enable);
         void SimulateLatency(float milliseconds);
         void SimulatePacketLoss(float percentage);
+        void DisplayDebugStats() const;
         
         // Getters
         bool IsServer() const { return isServer; }
