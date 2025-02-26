@@ -1,4 +1,4 @@
-#include "NetworkSystem.h"
+#include "NetworkSystem_impl.h" // Include the implementation header instead
 #include "NetworkDebugger.h"
 #include "../EngineCondition.h"
 #include <iostream>
@@ -60,7 +60,8 @@ namespace Network {
     void NetworkSystem::Connect(const std::string& address, int port) {
         std::cout << "Connecting to " << address << ":" << port << std::endl;
         // Create a new connection
-        // Add it to the connections vector
+        connections.push_back(std::make_unique<Connection>(address, port));
+        connections.back()->Connect();
     }
 
     void NetworkSystem::Disconnect() {

@@ -2,13 +2,13 @@
 #define NETWORK_SYSTEM_H
 
 #include "../platform.h"
+#include "Connection_fwd.h" // Use forward declaration header
 #include <vector>
 #include <memory>
 #include <string>
 
 namespace Network {
     // Forward declarations
-    class Connection;
     class Packet;
     
     class NetworkSystem {

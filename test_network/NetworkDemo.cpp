@@ -71,9 +71,9 @@ int main(int argc, char* argv[]) {
     
     // Set the engine condition to SERVER_BUILD if running as server
     if (isServer) {
-        EngineCondition::SetState(EngineCondition::SERVER_BUILD);
+        EngineCondition::SetState(EngineCondition::State::SERVER_BUILD_STATE);
     } else {
-        EngineCondition::SetState(EngineCondition::DEBUG_BUILD);
+        EngineCondition::SetState(EngineCondition::State::DEBUG_BUILD_STATE);
     }
     
     // Initialize networking system
@@ -137,7 +137,7 @@ int main(int argc, char* argv[]) {
     
     // Shutdown networking
     std::cout << "Shutting down network system..." << std::endl;
-    netSystem.Shutdown();
+    netSystem.Cleanup();
     
     return 0;
 }

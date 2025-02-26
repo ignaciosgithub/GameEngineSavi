@@ -16,7 +16,12 @@ namespace Network {
         int port;
         bool isConnected;
         
-        // Platform-specific socket handle will be added after platform.h update
+        // Platform-specific socket handle
+#ifdef PLATFORM_WINDOWS
+        SOCKET socketHandle;
+#else
+        int socketHandle;
+#endif
         
     public:
         Connection(const std::string& address, int port);

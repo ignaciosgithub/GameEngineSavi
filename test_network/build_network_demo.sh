@@ -1,33 +1,28 @@
 #!/bin/bash
+
 echo "Building Network Demo..."
 
-# Create bin/linux directory if it doesn't exist
+# Create bin directory if it doesn't exist
 mkdir -p ../bin/linux
 
-# Set compiler flags
-CXXFLAGS="-std=c++14 -I.. -I../ThirdParty -DPLATFORM_LINUX"
-
-# Build the network demo
-g++ $CXXFLAGS \
+# Compile the network demo
+g++ -std=c++14 -Wall -Wextra -I.. -I../ThirdParty -DPLATFORM_LINUX \
     NetworkDemo.cpp \
     ../Network/NetworkSystem.cpp \
     ../Network/Connection.cpp \
     ../Network/Packet.cpp \
-    ../Network/NetworkComponent.cpp \
     ../Network/NetworkDebugger.cpp \
-    ../Vector3.cpp \
-    ../Scene.cpp \
     ../EngineCondition.cpp \
     ../ProjectSettings/ProjectSettings.cpp \
     -o ../bin/linux/NetworkDemo
 
-# Check if build was successful
-if [ $? -ne 0 ]; then
-    echo
+if [ $? -eq 0 ]; then
+    echo "Build successful!"
+    echo "Run the demo with:"
+    echo "  ../bin/linux/NetworkDemo --server     # Server mode"
+    echo "  ../bin/linux/NetworkDemo --client     # Client mode"
+    echo "  ../bin/linux/NetworkDemo --p2p        # Peer-to-peer mode"
+    echo "  ../bin/linux/NetworkDemo --debug      # Enable debugging"
+else
     echo "Build failed!"
-    exit 1
 fi
-
-echo
-echo "Build successful! Network demo is available at ../bin/linux/NetworkDemo"
-echo "Run with: ../bin/linux/NetworkDemo [--server|--p2p]"

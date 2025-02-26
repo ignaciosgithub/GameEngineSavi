@@ -24,14 +24,20 @@ private:
 public:
     Scene() : isRunning(false) {}
 
+    void Initialize();
     void Load();
     void Run();
     void Stop();
+    void Update(float deltaTime);
+    void Render();
     void RenderScene();
+    void SetMainCamera(Camera* camera);
 
     // Add GameObjects and Cameras to the scene
     void AddGameObject(std::unique_ptr<GameObject> gameObject);
+    void AddGameObject(GameObject* gameObject);
     void AddCamera(std::unique_ptr<Camera> camera);
+    void AddCamera(Camera* camera);
     
     // Frame rate configuration
     void SetTargetFPS(float fps) { targetFPS = fps > 0.0f ? fps : 60.0f; }
