@@ -299,3 +299,103 @@ This project is available for use under open-source terms.
 ## Contributing
 
 Contributions to GameEngineSavi are welcome! Feel free to submit pull requests or open issues to improve the engine.
+
+## Networking System
+
+The GameEngineSavi engine includes a comprehensive networking system that supports both peer-to-peer and client-server architectures. The networking system is designed to be flexible and easy to use, allowing developers to create multiplayer games with minimal effort.
+
+### Features
+
+- Support for both peer-to-peer and client-server networking models
+- Cross-platform socket handling for Windows and Linux
+- Network component that can be attached to game objects
+- Packet system for reliable and unreliable data transmission
+- Network debugging tools with packet logging and connection quality metrics
+
+### Usage
+
+To use the networking system, you need to include the appropriate headers:
+
+```cpp
+#include "Network/NetworkSystem.h"
+#include "Network/NetworkComponent.h"
+#include "Network/Packet.h"
+```
+
+#### Server Example
+
+```cpp
+// Initialize the network system as a server
+Network::NetworkSystem netSystem;
+netSystem.Initialize(true, false);  // true = server, false = not peer-to-peer
+netSystem.StartServer(7777);        // Start server on port 7777
+
+// Main loop
+while (running) {
+    netSystem.Update();
+    // Handle network events
+}
+
+// Cleanup
+netSystem.Cleanup();
+```
+
+#### Client Example
+
+```cpp
+// Initialize the network system as a client
+Network::NetworkSystem netSystem;
+netSystem.Initialize(false, false);  // false = client, false = not peer-to-peer
+netSystem.Connect("127.0.0.1", 7777); // Connect to server at 127.0.0.1:7777
+
+// Main loop
+while (running) {
+    netSystem.Update();
+    // Handle network events
+}
+
+// Cleanup
+netSystem.Cleanup();
+```
+
+#### Peer-to-Peer Example
+
+```cpp
+// Initialize the network system in peer-to-peer mode
+Network::NetworkSystem netSystem;
+netSystem.Initialize(false, true);  // false = not server, true = peer-to-peer
+netSystem.StartPeer();
+
+// Main loop
+while (running) {
+    netSystem.Update();
+    // Handle network events
+}
+
+// Cleanup
+netSystem.Cleanup();
+```
+
+### Network Demo
+
+The engine includes a network demo application that demonstrates the networking system in action. You can build and run the demo using the provided build scripts:
+
+#### Linux
+```bash
+cd test_network
+./build_network_demo.sh
+../bin/linux/NetworkDemo --server     # Run in server mode
+../bin/linux/NetworkDemo --client     # Run in client mode
+../bin/linux/NetworkDemo --p2p        # Run in peer-to-peer mode
+../bin/linux/NetworkDemo --debug      # Enable debugging
+```
+
+#### Windows
+```batch
+cd test_network
+build_network_demo.bat
+..\bin\windows\NetworkDemo.exe --server     # Run in server mode
+..\bin\windows\NetworkDemo.exe --client     # Run in client mode
+..\bin\windows\NetworkDemo.exe --p2p        # Run in peer-to-peer mode
+..\bin\windows\NetworkDemo.exe --debug      # Enable debugging
+```
