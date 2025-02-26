@@ -28,6 +28,8 @@ bool IsDebugBuild() {
 
 bool IsReleaseBuild() { return currentState == State::RELEASE_BUILD_STATE; }
 
+bool IsServerBuild() { return currentState == State::SERVER_BUILD_STATE; }
+
 bool IsStandaloneRunning() { return currentState == State::STANDALONE_RUNNING; }
 
 // Function to set the current state
@@ -50,6 +52,9 @@ void SetState(State newState) {
     break;
   case State::RELEASE_BUILD_STATE:
     std::cout << "RELEASE_BUILD_STATE";
+    break;
+  case State::SERVER_BUILD_STATE:
+    std::cout << "SERVER_BUILD_STATE";
     break;
   case State::STANDALONE_RUNNING:
     std::cout << "STANDALONE_RUNNING";
@@ -76,6 +81,9 @@ void SetState(State newState) {
     break;
   case State::RELEASE_BUILD_STATE:
     std::cout << "RELEASE_BUILD_STATE";
+    break;
+  case State::SERVER_BUILD_STATE:
+    std::cout << "SERVER_BUILD_STATE";
     break;
   case State::STANDALONE_RUNNING:
     std::cout << "STANDALONE_RUNNING";

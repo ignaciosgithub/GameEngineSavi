@@ -41,6 +41,17 @@ private:
             int msaa;
             bool shadows;
         } rendering;
+        
+        // Network settings
+        struct NetworkSettings {
+            bool enableNetworking;
+            std::string defaultServerAddress;
+            int defaultServerPort;
+            bool enablePacketLogging;
+            float simulatedLatency;
+            float simulatedPacketLoss;
+            bool preferP2P;
+        } network;
     } engineSettings;
     
     // Asset paths

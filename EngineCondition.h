@@ -28,6 +28,7 @@ namespace EngineCondition {
         // Build states
         DEBUG_BUILD_STATE,      // Debug build with additional checks and logging
         RELEASE_BUILD_STATE,    // Release build optimized for performance
+        SERVER_BUILD_STATE,     // New state for dedicated server mode
         
         // Standalone states
         STANDALONE_RUNNING      // Game is running as a standalone application
@@ -43,6 +44,7 @@ namespace EngineCondition {
     bool IsInEditorCompiling();
     bool IsDebugBuild();
     bool IsReleaseBuild();
+    bool IsServerBuild();
     bool IsStandaloneRunning();
     
     // Functions to set the current state
