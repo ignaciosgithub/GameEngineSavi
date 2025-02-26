@@ -55,6 +55,154 @@ The engine is structured around these core components:
 - **ProjectSettings**: Project configuration management
 - **Debugger**: Error handling and reporting system
 
+## Installation
+
+### Linux
+1. Clone the repository:
+   ```bash
+   git clone https://github.com/ignaciosgithub/GameEngineSavi.git
+   cd GameEngineSavi
+   ```
+
+2. Build the engine:
+   ```bash
+   make
+   ```
+
+### Windows
+1. Clone the repository:
+   ```batch
+   git clone https://github.com/ignaciosgithub/GameEngineSavi.git
+   cd GameEngineSavi
+   ```
+
+2. Using Visual Studio:
+   - Open the solution file
+   - Build using Visual Studio
+
+3. Using MinGW:
+   ```batch
+   mingw32-make -f Makefile.mingw
+   ```
+
+## Creating a New Project
+
+1. Create project structure:
+   ```cpp
+   #include "ProjectSettings/ProjectSettings.h"
+
+   auto& settings = ProjectSettings::GetInstance();
+   settings.CreateNewProject("MyGame", "path/to/project");
+   ```
+
+2. Project Structure:
+   ```
+   MyGame/
+   ├── Assets/
+   │   ├── Models/
+   │   ├── Textures/
+   │   ├── Sounds/
+   │   └── Scripts/
+   ├── Build/
+   └── project.json
+   ```
+
+3. Configure project settings in project.json:
+   ```json
+   {
+       "projectName": "MyGame",
+       "engineVersion": "1.0.0",
+       "buildSettings": {
+           "debugSymbols": true,
+           "optimization": false,
+           "targetPlatforms": ["Windows", "Linux"]
+       },
+       "engineSettings": {
+           "physics": {
+               "fixedTimeStep": 0.01666667,
+               "gravity": 9.81,
+               "enableCollisions": true
+           },
+           "rendering": {
+               "targetFPS": 60,
+               "vsync": true
+           }
+       }
+   }
+   ```
+
+## Time Management
+
+The engine uses a high-resolution clock for precise timing:
+
+```cpp
+// Get delta time between frames
+float dt = Time::GetInstance().DeltaTime();
+
+// Physics uses fixed timestep
+float fixedDt = ProjectSettings::GetInstance().GetFixedTimeStep();
+```
+
+Time is managed through two systems:
+1. EngineTime: Frame-based timing for rendering
+2. Fixed timestep: Physics simulation at 60Hz
+
+## Engine States
+
+The engine operates in different states:
+1. IN_EDITOR_PLAYING: Game running in editor window
+2. DEBUG_BUILD: Debug build with detailed error reporting
+3. IN_EDITOR_EDITING: Editor mode state
+4. RELEASE: Release build state
+5. IN_EDITOR_COMPILING: Game compilation state
+
+Switch states using:
+```cpp
+EngineCondition::SetState(EngineCondition::State::DEBUG_BUILD_STATE);
+```
+
+## Default Scene Configuration
+
+New scenes include:
+1. One point light
+2. Default cube object
+3. Free camera system
+
+Example scene setup:
+```cpp
+auto scene = std::make_unique<Scene>();
+scene->Load();
+
+// Default point light
+auto light = std::make_unique<PointLight>();
+scene->AddLight(std::move(light));
+
+// Default cube
+auto cube = std::make_unique<GameObject>("Cube");
+scene->AddGameObject(std::move(cube));
+
+// Free camera
+auto camera = std::make_unique<Camera>();
+scene->AddCamera(std::move(camera));
+```
+
+## Error Handling
+
+The engine uses a robust error handling system:
+1. Script errors are caught and reported
+2. Warning messages instead of crashes
+3. Debugger class for error management
+
+Example error handling:
+```cpp
+try {
+    // Your game code
+} catch (const std::exception& e) {
+    Debugger::LogError(e.what());
+    // Engine continues running
+}
+```
+
 ## Getting Started
 
 To use GameEngineSavi in your project:
@@ -127,9 +275,22 @@ Each test outputs detailed information to the console, allowing verification of 
 
 ## Requirements
 
-- Windows or Linux operating system
-- OpenGL support
-- C++ compiler with C++11 support
+### Build Requirements
+- C++ compiler with C++14 support
+- OpenGL development libraries
+  - Linux: `sudo apt-get install libgl1-mesa-dev libglu1-mesa-dev`
+  - Windows: Included with Visual Studio or MinGW
+- X11 development libraries (Linux only)
+  - `sudo apt-get install libx11-dev`
+
+### Build Tools
+- Linux: GCC/G++ and Make
+- Windows: Visual Studio or MinGW-w64 with GCC
+
+### IDE Support
+- Visual Studio Code (recommended)
+- Visual Studio
+- Any C++ IDE with CMake support
 
 ## License
 
