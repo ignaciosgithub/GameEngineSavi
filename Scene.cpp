@@ -114,6 +114,52 @@ void Scene::AddCamera(Camera* camera) {
     cameras.push_back(std::unique_ptr<Camera>(camera));
 }
 
+void Scene::SetGlobalShaderUniforms(Shaders::ShaderProgram* program) {
+    if (!program || !mainCamera) return;
+    
+    // Set camera position for lighting calculations
+    program->SetUniform("viewPos", mainCamera->GetPosition());
+    
+    // Set view and projection matrices
+    program->SetUniform("view", mainCamera->GetViewMatrix());
+    program->SetUniform("projection", mainCamera->GetProjectionMatrix());
+    
+    // Set time-based uniforms
+    if (time) {
+        program->SetUniform("time", time->GetTime());
+        program->SetUniform("deltaTime", time->GetDeltaTime());
+    }
+}
+
+void Scene::UpdateLightUniforms(Shaders::ShaderProgram* program) {
+    if (!program) return;
+    
+    // Set number of point lights
+    program->SetUniform("numPointLights", static_cast<int>(pointLights.size()));
+    
+    // Set point light uniforms
+    for (size_t i = 0; i < pointLights.size() && i < 8; ++i) {
+        const PointLight& light = pointLights[i];
+        std::string prefix = "pointLights[" + std::to_string(i) + "].";
+        
+        program->SetUniform(prefix + "position", light.position);
+        program->SetUniform(prefix + "color", light.color);
+        program->SetUniform(prefix + "intensity", light.intensity);
+        program->SetUniform(prefix + "range", light.range);
+    }
+}
+
+void Scene::AddPointLight(const PointLight& light) {
+    pointLights.push_back(light);
+}
+
+void Scene::RemovePointLight(size_t index) {
+    if (index < pointLights.size()) {
+        pointLights.erase(pointLights.begin() + index);
+    }
+}
+
+
 void Scene::SetPhysicsSystem(std::unique_ptr<PhysicsSystem> system) {
     // Set the physics system
     physicsSystem = std::move(system);

@@ -8,11 +8,14 @@
 #include "Camera.h"
 #include "Time.h"
 #include "PhysicsSystem.h"
+#include "PointLight.h"
+#include "Shaders/Core/ShaderProgram.h"
 
 class Scene {
 private:
     std::vector<std::unique_ptr<GameObject>> gameObjects;
     std::vector<std::unique_ptr<Camera>> cameras;
+    std::vector<PointLight> pointLights;
     std::unique_ptr<Time> time;
     std::unique_ptr<PhysicsSystem> physicsSystem;
     std::atomic<bool> isRunning;
@@ -20,6 +23,7 @@ private:
     float targetFPS = 60.0f;           // Target frames per second
     float physicsTimeStep = 1.0f/60.0f; // Fixed physics timestep (60Hz)
     float physicsAccumulator = 0.0f;    // Accumulator for physics updates
+    Camera* mainCamera = nullptr;       // Main camera for rendering
 
 public:
     Scene() : isRunning(false) {}
@@ -39,6 +43,15 @@ public:
     void AddCamera(std::unique_ptr<Camera> camera);
     void AddCamera(Camera* camera);
     
+    // Light management
+    void AddPointLight(const PointLight& light);
+    void RemovePointLight(size_t index);
+    const std::vector<PointLight>& GetPointLights() const { return pointLights; }
+    
+    // Shader management
+    void SetGlobalShaderUniforms(Shaders::ShaderProgram* program);
+    void UpdateLightUniforms(Shaders::ShaderProgram* program);
+    
     // Frame rate configuration
     void SetTargetFPS(float fps) { targetFPS = fps > 0.0f ? fps : 60.0f; }
     float GetTargetFPS() const { return targetFPS; }
@@ -46,6 +59,9 @@ public:
     // Physics system management
     void SetPhysicsSystem(std::unique_ptr<PhysicsSystem> system);
     PhysicsSystem* GetPhysicsSystem() const;
+    
+    // Camera access
+    Camera* GetMainCamera() const { return mainCamera; }
 };
 
 #endif // SCENE_H
