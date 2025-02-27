@@ -43,27 +43,6 @@
     #define APIENTRY WINAPI
     #endif
     
-    // Forward declarations for Windows-specific functions
-    #ifdef __cplusplus
-    extern "C" {
-    #endif
-    
-    LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
-    int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow);
-    
-    #ifdef __cplusplus
-    }
-    #endif
-    
-    // Windows-specific message handling
-    #ifndef GET_X_LPARAM
-    #define GET_X_LPARAM(lp) ((int)(short)LOWORD(lp))
-    #endif
-    
-    #ifndef GET_Y_LPARAM
-    #define GET_Y_LPARAM(lp) ((int)(short)HIWORD(lp))
-    #endif
-    
 #elif defined(__linux__) || defined(__unix__)
     #ifndef PLATFORM_LINUX
     #define PLATFORM_LINUX
@@ -92,5 +71,28 @@
 #include <memory>
 #include <chrono>
 #include <thread>
+
+// Forward declarations for Windows-specific functions
+#ifdef PLATFORM_WINDOWS
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
+int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow);
+
+#ifdef __cplusplus
+}
+#endif
+
+// Windows-specific message handling
+#ifndef GET_X_LPARAM
+#define GET_X_LPARAM(lp) ((int)(short)LOWORD(lp))
+#endif
+
+#ifndef GET_Y_LPARAM
+#define GET_Y_LPARAM(lp) ((int)(short)HIWORD(lp))
+#endif
+#endif // PLATFORM_WINDOWS
 
 #endif // PLATFORM_H
