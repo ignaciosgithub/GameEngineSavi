@@ -3,13 +3,15 @@
 #include <iostream>
 #include <cmath> // For fmod
 
+namespace Animation {
+
 Animation::Animation(const std::string& name, float duration, bool loop)
     : name(name), duration(duration), isLooping(loop) {
     // Initialize the interpolated vertices vector
     interpolatedVertices.clear();
 }
 
-void Animation::AddKeyFrame(float time, const std::vector<GLfloat>& vertices) {
+void Animation::AddKeyFrame(float time, const std::vector<float>& vertices) {
     // Create a new keyframe
     KeyFrame keyframe(time, vertices);
     
@@ -85,7 +87,7 @@ void Animation::FindKeyFramesForTime(float time, KeyFrame** outPrevFrame, KeyFra
     }
 }
 
-void Animation::InterpolateVertices(const std::vector<GLfloat>& start, const std::vector<GLfloat>& end, float t) {
+void Animation::InterpolateVertices(const std::vector<float>& start, const std::vector<float>& end, float t) {
     // Ensure both vectors have the same size
     if (start.size() != end.size()) {
         std::cerr << "Cannot interpolate between vertex arrays of different sizes" << std::endl;
@@ -101,7 +103,7 @@ void Animation::InterpolateVertices(const std::vector<GLfloat>& start, const std
     }
 }
 
-const std::vector<GLfloat>& Animation::GetInterpolatedVertices(float time) const {
+const std::vector<float>& Animation::GetInterpolatedVertices(float time) const {
     // Find the keyframes to interpolate between
     KeyFrame* prevFrame = nullptr;
     KeyFrame* nextFrame = nullptr;
@@ -130,3 +132,5 @@ const std::vector<GLfloat>& Animation::GetInterpolatedVertices(float time) const
     
     return interpolatedVertices;
 }
+
+} // namespace Animation

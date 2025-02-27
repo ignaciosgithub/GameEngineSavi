@@ -5,7 +5,10 @@
 #include <vector>
 #include <memory>
 #include <unordered_map>
+#include "../platform.h"
 #include "KeyFrame.h"
+
+namespace Animation {
 
 class Animation {
 private:
@@ -15,26 +18,26 @@ private:
     bool isLooping;
     
     // Cache for interpolated vertices
-    mutable std::vector<GLfloat> interpolatedVertices;
+    mutable std::vector<float> interpolatedVertices;
     
     // Find the two keyframes to interpolate between
     void FindKeyFramesForTime(float time, KeyFrame** outPrevFrame, KeyFrame** outNextFrame) const;
     
     // Linear interpolation between two vectors of vertices
-    void InterpolateVertices(const std::vector<GLfloat>& start, const std::vector<GLfloat>& end, float t);
+    void InterpolateVertices(const std::vector<float>& start, const std::vector<float>& end, float t);
     
 public:
     // Constructor
     Animation(const std::string& name, float duration = 1.0f, bool loop = true);
     
     // Add a keyframe to the animation
-    void AddKeyFrame(float time, const std::vector<GLfloat>& vertices);
+    void AddKeyFrame(float time, const std::vector<float>& vertices);
     
     // Add a keyframe from an OBJ file
     void AddKeyFrameFromOBJ(float time, const std::string& objFilePath);
     
     // Get interpolated vertices at a specific time
-    const std::vector<GLfloat>& GetInterpolatedVertices(float time) const;
+    const std::vector<float>& GetInterpolatedVertices(float time) const;
     
     // Getters and setters
     std::string GetName() const { return name; }
@@ -49,5 +52,7 @@ public:
     // Get all keyframes
     const std::vector<KeyFrame>& GetKeyFrames() const { return keyframes; }
 };
+
+} // namespace Animation
 
 #endif // ANIMATION_H

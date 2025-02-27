@@ -8,14 +8,16 @@
 // Forward declarations
 class Model;
 
+namespace Animation {
+
 class KeyFrame {
 public:
     float timestamp;
     std::string objFilePath;
-    std::vector<GLfloat> vertexPositions;
+    std::vector<float> vertexPositions;
     
     // Constructor with timestamp and vertex positions
-    KeyFrame(float time, const std::vector<GLfloat>& vertices)
+    KeyFrame(float time, const std::vector<float>& vertices)
         : timestamp(time), vertexPositions(vertices) {}
     
     // Constructor with timestamp and OBJ file path
@@ -25,5 +27,7 @@ public:
     // Load vertex positions from OBJ file
     bool LoadFromOBJ();
 };
+
+} // namespace Animation
 
 #endif // KEYFRAME_H

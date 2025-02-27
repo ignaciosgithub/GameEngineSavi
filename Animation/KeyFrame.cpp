@@ -1,15 +1,12 @@
 #include "KeyFrame.h"
-#include "../Model.h"
 #include <fstream>
 #include <sstream>
 #include <iostream>
+#include <string>
+
+namespace Animation {
 
 bool KeyFrame::LoadFromOBJ() {
-    // If no OBJ file path is specified, return false
-    if (objFilePath.empty()) {
-        return false;
-    }
-    
     // Open the OBJ file
     std::ifstream file(objFilePath);
     if (!file.is_open()) {
@@ -20,24 +17,33 @@ bool KeyFrame::LoadFromOBJ() {
     // Clear existing vertex positions
     vertexPositions.clear();
     
+    // Parse the OBJ file
     std::string line;
     while (std::getline(file, line)) {
-        std::istringstream iss(line);
-        std::string prefix;
-        iss >> prefix;
+        // Skip empty lines and comments
+        if (line.empty() || line[0] == '#') {
+            continue;
+        }
         
-        // Only process vertex positions (lines starting with 'v')
-        if (prefix == "v") {
+        // Parse vertex positions (lines starting with 'v')
+        if (line[0] == 'v' && line[1] == ' ') {
+            std::istringstream iss(line.substr(2));
             float x, y, z;
-            iss >> x >> y >> z;
-            
-            // Add vertex position to the vector
-            vertexPositions.push_back(x);
-            vertexPositions.push_back(y);
-            vertexPositions.push_back(z);
+            if (iss >> x >> y >> z) {
+                vertexPositions.push_back(x);
+                vertexPositions.push_back(y);
+                vertexPositions.push_back(z);
+            }
         }
     }
     
-    file.close();
-    return !vertexPositions.empty();
+    // Check if we loaded any vertices
+    if (vertexPositions.empty()) {
+        std::cerr << "No vertices found in OBJ file: " << objFilePath << std::endl;
+        return false;
+    }
+    
+    return true;
 }
+
+} // namespace Animation
