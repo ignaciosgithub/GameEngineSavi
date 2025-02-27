@@ -43,6 +43,15 @@
     #define APIENTRY WINAPI
     #endif
     
+    // Windows-specific message handling
+    #ifndef GET_X_LPARAM
+    #define GET_X_LPARAM(lp) ((int)(short)LOWORD(lp))
+    #endif
+    
+    #ifndef GET_Y_LPARAM
+    #define GET_Y_LPARAM(lp) ((int)(short)HIWORD(lp))
+    #endif
+    
 #elif defined(__linux__) || defined(__unix__)
     #ifndef PLATFORM_LINUX
     #define PLATFORM_LINUX
@@ -83,15 +92,6 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 
 #ifdef __cplusplus
 }
-#endif
-
-// Windows-specific message handling
-#ifndef GET_X_LPARAM
-#define GET_X_LPARAM(lp) ((int)(short)LOWORD(lp))
-#endif
-
-#ifndef GET_Y_LPARAM
-#define GET_Y_LPARAM(lp) ((int)(short)HIWORD(lp))
 #endif
 #endif // PLATFORM_WINDOWS
 
