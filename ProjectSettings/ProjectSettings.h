@@ -52,6 +52,14 @@ private:
             float simulatedPacketLoss;
             bool preferP2P;
         } network;
+        
+        // Audio settings
+        struct AudioSettings {
+            float masterVolume;
+            int sampleRate;
+            int channels;
+            bool enableAudio;
+        } audio;
     } engineSettings;
     
     // Asset paths
@@ -115,6 +123,19 @@ public:
     
     bool GetShadows() const;
     void SetShadows(bool enabled);
+    
+    // Audio settings getters and setters
+    float GetMasterVolume() const;
+    void SetMasterVolume(float volume);
+    
+    int GetSampleRate() const;
+    void SetSampleRate(int sampleRate);
+    
+    int GetAudioChannels() const;
+    void SetAudioChannels(int channels);
+    
+    bool GetEnableAudio() const;
+    void SetEnableAudio(bool enabled);
     
     std::string GetAssetPath(const std::string& type) const;
     void SetAssetPath(const std::string& type, const std::string& path);
