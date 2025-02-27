@@ -1,3 +1,6 @@
+#ifndef MATRIX4X4_H
+#define MATRIX4X4_H
+
 class Matrix4x4
 {
 public:
@@ -11,3 +14,5 @@ public:
    
     friend Matrix4x4 operator*(const Matrix4x4 &m1, const Matrix4x4 &m2);
 };
+
+#endif // MATRIX4X4_H
