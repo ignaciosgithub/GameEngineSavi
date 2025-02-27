@@ -8,7 +8,7 @@
 // For JSON parsing, we'll use a simple approach since we don't have a JSON library
 // In a real implementation, you would use a proper JSON library like nlohmann/json
 
-std::shared_ptr<Animation> AnimationLoader::LoadFromFile(const std::string& path) {
+std::shared_ptr<Animation::Animation> AnimationLoader::LoadFromFile(const std::string& path) {
     // Open the file
     std::ifstream file(path);
     if (!file.is_open()) {
@@ -28,7 +28,7 @@ std::shared_ptr<Animation> AnimationLoader::LoadFromFile(const std::string& path
     std::string animationName;
     float duration = 1.0f;
     bool isLooping = true;
-    std::vector<KeyFrame> keyframes;
+    std::vector<Animation::KeyFrame> keyframes;
     
     // Extract animation name
     size_t namePos = content.find("\"animationName\":");
@@ -109,7 +109,7 @@ std::shared_ptr<Animation> AnimationLoader::LoadFromFile(const std::string& path
                 objFilePath = keyframeStr.substr(objFilePathStart, objFilePathEnd - objFilePathStart);
                 
                 // Create a keyframe with the OBJ file path
-                KeyFrame keyframe(timestamp, objFilePath);
+                Animation::KeyFrame keyframe(timestamp, objFilePath);
                 keyframes.push_back(keyframe);
             }
             
@@ -119,7 +119,7 @@ std::shared_ptr<Animation> AnimationLoader::LoadFromFile(const std::string& path
     }
     
     // Create the animation
-    std::shared_ptr<Animation> animation = std::make_shared<Animation>(animationName, duration, isLooping);
+    std::shared_ptr<Animation::Animation> animation = std::make_shared<Animation::Animation>(animationName, duration, isLooping);
     
     // Add the keyframes to the animation
     for (const auto& keyframe : keyframes) {
@@ -129,7 +129,7 @@ std::shared_ptr<Animation> AnimationLoader::LoadFromFile(const std::string& path
     return animation;
 }
 
-void AnimationLoader::SaveToFile(const Animation& anim, const std::string& path) {
+void AnimationLoader::SaveToFile(const Animation::Animation& anim, const std::string& path) {
     // Open the file
     std::ofstream file(path);
     if (!file.is_open()) {
@@ -172,7 +172,7 @@ void AnimationLoader::SaveToFile(const Animation& anim, const std::string& path)
     file.close();
 }
 
-std::shared_ptr<Animation> AnimationLoader::LoadFromOBJSequence(
+std::shared_ptr<Animation::Animation> AnimationLoader::LoadFromOBJSequence(
     const std::string& name,
     const std::vector<std::string>& objFilePaths,
     const std::vector<float>& timestamps,
@@ -185,7 +185,7 @@ std::shared_ptr<Animation> AnimationLoader::LoadFromOBJSequence(
     }
     
     // Create a new animation
-    std::shared_ptr<Animation> animation = std::make_shared<Animation>(name, duration, loop);
+    std::shared_ptr<Animation::Animation> animation = std::make_shared<Animation::Animation>(name, duration, loop);
     
     // Add keyframes from OBJ files
     for (size_t i = 0; i < objFilePaths.size(); ++i) {
