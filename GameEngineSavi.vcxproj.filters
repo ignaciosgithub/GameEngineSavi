@@ -1,0 +1,489 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Source Files">
+      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
+      <Extensions>cpp;c;cc;cxx;c++;cppm;ixx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
+    </Filter>
+    <Filter Include="Header Files">
+      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
+      <Extensions>h;hh;hpp;hxx;h++;hm;inl;inc;ipp;xsd</Extensions>
+    </Filter>
+    <Filter Include="Resource Files">
+      <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
+      <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
+    </Filter>
+    <Filter Include="Source Files\Core">
+      <UniqueIdentifier>{a1c7d5d8-e8a1-4e0a-9f1b-9c5c2f0d4e5f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\Core">
+      <UniqueIdentifier>{b2c7d5d8-e8a1-4e0a-9f1b-9c5c2f0d4e5f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Animation">
+      <UniqueIdentifier>{c3c7d5d8-e8a1-4e0a-9f1b-9c5c2f0d4e5f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\Animation">
+      <UniqueIdentifier>{d4c7d5d8-e8a1-4e0a-9f1b-9c5c2f0d4e5f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Audio">
+      <UniqueIdentifier>{e5c7d5d8-e8a1-4e0a-9f1b-9c5c2f0d4e5f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\Audio">
+      <UniqueIdentifier>{f6c7d5d8-e8a1-4e0a-9f1b-9c5c2f0d4e5f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Editor">
+      <UniqueIdentifier>{07c7d5d8-e8a1-4e0a-9f1b-9c5c2f0d4e5f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\Editor">
+      <UniqueIdentifier>{18c7d5d8-e8a1-4e0a-9f1b-9c5c2f0d4e5f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\GUI">
+      <UniqueIdentifier>{29c7d5d8-e8a1-4e0a-9f1b-9c5c2f0d4e5f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\GUI">
+      <UniqueIdentifier>{3ac7d5d8-e8a1-4e0a-9f1b-9c5c2f0d4e5f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Network">
+      <UniqueIdentifier>{4bc7d5d8-e8a1-4e0a-9f1b-9c5c2f0d4e5f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\Network">
+      <UniqueIdentifier>{5cc7d5d8-e8a1-4e0a-9f1b-9c5c2f0d4e5f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\ProjectSettings">
+      <UniqueIdentifier>{6dc7d5d8-e8a1-4e0a-9f1b-9c5c2f0d4e5f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\ProjectSettings">
+      <UniqueIdentifier>{7ec7d5d8-e8a1-4e0a-9f1b-9c5c2f0d4e5f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Shaders">
+      <UniqueIdentifier>{8fc7d5d8-e8a1-4e0a-9f1b-9c5c2f0d4e5f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\Shaders">
+      <UniqueIdentifier>{90c7d5d8-e8a1-4e0a-9f1b-9c5c2f0d4e5f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Shader Files">
+      <UniqueIdentifier>{a1c7d5d8-e8a1-4e0a-9f1b-9c5c2f0d4e6f}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <!-- Core Engine Files -->
+  <ItemGroup>
+    <ClCompile Include="Camera.cpp">
+      <Filter>Source Files\Core</Filter>
+    </ClCompile>
+    <ClCompile Include="CollisionSystem.cpp">
+      <Filter>Source Files\Core</Filter>
+    </ClCompile>
+    <ClCompile Include="Debugger.cpp">
+      <Filter>Source Files\Core</Filter>
+    </ClCompile>
+    <ClCompile Include="EngineCondition.cpp">
+      <Filter>Source Files\Core</Filter>
+    </ClCompile>
+    <ClCompile Include="EngineTime.cpp">
+      <Filter>Source Files\Core</Filter>
+    </ClCompile>
+    <ClCompile Include="Face.cpp">
+      <Filter>Source Files\Core</Filter>
+    </ClCompile>
+    <ClCompile Include="GameObject.cpp">
+      <Filter>Source Files\Core</Filter>
+    </ClCompile>
+    <ClCompile Include="main35engine.cpp">
+      <Filter>Source Files\Core</Filter>
+    </ClCompile>
+    <ClCompile Include="Matrix4x4.cpp">
+      <Filter>Source Files\Core</Filter>
+    </ClCompile>
+    <ClCompile Include="Model.cpp">
+      <Filter>Source Files\Core</Filter>
+    </ClCompile>
+    <ClCompile Include="MonoBehaviourLike.cpp">
+      <Filter>Source Files\Core</Filter>
+    </ClCompile>
+    <ClCompile Include="PhysicsSystem.cpp">
+      <Filter>Source Files\Core</Filter>
+    </ClCompile>
+    <ClCompile Include="PointLight.cpp">
+      <Filter>Source Files\Core</Filter>
+    </ClCompile>
+    <ClCompile Include="Prefab.cpp">
+      <Filter>Source Files\Core</Filter>
+    </ClCompile>
+    <ClCompile Include="Pyramid.cpp">
+      <Filter>Source Files\Core</Filter>
+    </ClCompile>
+    <ClCompile Include="Raycast.cpp">
+      <Filter>Source Files\Core</Filter>
+    </ClCompile>
+    <ClCompile Include="RigidBody.cpp">
+      <Filter>Source Files\Core</Filter>
+    </ClCompile>
+    <ClCompile Include="Scene.cpp">
+      <Filter>Source Files\Core</Filter>
+    </ClCompile>
+    <ClCompile Include="Texture.cpp">
+      <Filter>Source Files\Core</Filter>
+    </ClCompile>
+    <ClCompile Include="Time.cpp">
+      <Filter>Source Files\Core</Filter>
+    </ClCompile>
+    <ClCompile Include="Triangle.cpp">
+      <Filter>Source Files\Core</Filter>
+    </ClCompile>
+    <ClCompile Include="TriggerVolume.cpp">
+      <Filter>Source Files\Core</Filter>
+    </ClCompile>
+    <ClCompile Include="InvisibleWall.cpp">
+      <Filter>Source Files\Core</Filter>
+    </ClCompile>
+    <ClCompile Include="Vector3.cpp">
+      <Filter>Source Files\Core</Filter>
+    </ClCompile>
+    
+    <!-- Animation System -->
+    <ClCompile Include="Animation\Animation.cpp">
+      <Filter>Source Files\Animation</Filter>
+    </ClCompile>
+    <ClCompile Include="Animation\AnimationComponent.cpp">
+      <Filter>Source Files\Animation</Filter>
+    </ClCompile>
+    <ClCompile Include="Animation\AnimationLoader.cpp">
+      <Filter>Source Files\Animation</Filter>
+    </ClCompile>
+    <ClCompile Include="Animation\KeyFrame.cpp">
+      <Filter>Source Files\Animation</Filter>
+    </ClCompile>
+    
+    <!-- Audio System -->
+    <ClCompile Include="Audio\AudioClip.cpp">
+      <Filter>Source Files\Audio</Filter>
+    </ClCompile>
+    <ClCompile Include="Audio\AudioListener.cpp">
+      <Filter>Source Files\Audio</Filter>
+    </ClCompile>
+    <ClCompile Include="Audio\AudioSource.cpp">
+      <Filter>Source Files\Audio</Filter>
+    </ClCompile>
+    <ClCompile Include="Audio\AudioSystem.cpp">
+      <Filter>Source Files\Audio</Filter>
+    </ClCompile>
+    
+    <!-- Editor -->
+    <ClCompile Include="Editor\AnimationPanel.cpp">
+      <Filter>Source Files\Editor</Filter>
+    </ClCompile>
+    <ClCompile Include="Editor\Editor.cpp">
+      <Filter>Source Files\Editor</Filter>
+    </ClCompile>
+    <ClCompile Include="Editor\EditorMain.cpp">
+      <Filter>Source Files\Editor</Filter>
+    </ClCompile>
+    <ClCompile Include="Editor\HierarchyPanel.cpp">
+      <Filter>Source Files\Editor</Filter>
+    </ClCompile>
+    <ClCompile Include="Editor\InspectorPanel.cpp">
+      <Filter>Source Files\Editor</Filter>
+    </ClCompile>
+    <ClCompile Include="Editor\ProjectPanel.cpp">
+      <Filter>Source Files\Editor</Filter>
+    </ClCompile>
+    <ClCompile Include="Editor\SceneViewPanel.cpp">
+      <Filter>Source Files\Editor</Filter>
+    </ClCompile>
+    <ClCompile Include="Editor\Vector3Field.cpp">
+      <Filter>Source Files\Editor</Filter>
+    </ClCompile>
+    
+    <!-- GUI -->
+    <ClCompile Include="GUI\GUI.cpp">
+      <Filter>Source Files\GUI</Filter>
+    </ClCompile>
+    <ClCompile Include="GUI\SettingsPanel.cpp">
+      <Filter>Source Files\GUI</Filter>
+    </ClCompile>
+    <ClCompile Include="GUI\TextField.cpp">
+      <Filter>Source Files\GUI</Filter>
+    </ClCompile>
+    
+    <!-- Network -->
+    <ClCompile Include="Network\Connection.cpp">
+      <Filter>Source Files\Network</Filter>
+    </ClCompile>
+    <ClCompile Include="Network\NetworkComponent.cpp">
+      <Filter>Source Files\Network</Filter>
+    </ClCompile>
+    <ClCompile Include="Network\NetworkDebugger.cpp">
+      <Filter>Source Files\Network</Filter>
+    </ClCompile>
+    <ClCompile Include="Network\NetworkSystem.cpp">
+      <Filter>Source Files\Network</Filter>
+    </ClCompile>
+    <ClCompile Include="Network\Packet.cpp">
+      <Filter>Source Files\Network</Filter>
+    </ClCompile>
+    
+    <!-- Project Settings -->
+    <ClCompile Include="ProjectSettings\ProjectManager.cpp">
+      <Filter>Source Files\ProjectSettings</Filter>
+    </ClCompile>
+    <ClCompile Include="ProjectSettings\ProjectSettings.cpp">
+      <Filter>Source Files\ProjectSettings</Filter>
+    </ClCompile>
+    
+    <!-- Shader System -->
+    <ClCompile Include="Shaders\Assets\ShaderAsset.cpp">
+      <Filter>Source Files\Shaders</Filter>
+    </ClCompile>
+    <ClCompile Include="Shaders\Core\Shader.cpp">
+      <Filter>Source Files\Shaders</Filter>
+    </ClCompile>
+    <ClCompile Include="Shaders\Core\ShaderError.cpp">
+      <Filter>Source Files\Shaders</Filter>
+    </ClCompile>
+    <ClCompile Include="Shaders\Core\ShaderProgram.cpp">
+      <Filter>Source Files\Shaders</Filter>
+    </ClCompile>
+  </ItemGroup>
+  
+  <!-- Header Files -->
+  <ItemGroup>
+    <!-- Core Engine Headers -->
+    <ClInclude Include="Camera.h">
+      <Filter>Header Files\Core</Filter>
+    </ClInclude>
+    <ClInclude Include="CollisionInfo.h">
+      <Filter>Header Files\Core</Filter>
+    </ClInclude>
+    <ClInclude Include="CollisionSystem.h">
+      <Filter>Header Files\Core</Filter>
+    </ClInclude>
+    <ClInclude Include="Debugger.h">
+      <Filter>Header Files\Core</Filter>
+    </ClInclude>
+    <ClInclude Include="EngineCondition.h">
+      <Filter>Header Files\Core</Filter>
+    </ClInclude>
+    <ClInclude Include="EngineTime.h">
+      <Filter>Header Files\Core</Filter>
+    </ClInclude>
+    <ClInclude Include="Face.h">
+      <Filter>Header Files\Core</Filter>
+    </ClInclude>
+    <ClInclude Include="GameObject.h">
+      <Filter>Header Files\Core</Filter>
+    </ClInclude>
+    <ClInclude Include="Matrix4x4.h">
+      <Filter>Header Files\Core</Filter>
+    </ClInclude>
+    <ClInclude Include="Model.h">
+      <Filter>Header Files\Core</Filter>
+    </ClInclude>
+    <ClInclude Include="MonoBehaviourLike.h">
+      <Filter>Header Files\Core</Filter>
+    </ClInclude>
+    <ClInclude Include="PhysicsSystem.h">
+      <Filter>Header Files\Core</Filter>
+    </ClInclude>
+    <ClInclude Include="platform.h">
+      <Filter>Header Files\Core</Filter>
+    </ClInclude>
+    <ClInclude Include="PointLight.h">
+      <Filter>Header Files\Core</Filter>
+    </ClInclude>
+    <ClInclude Include="Prefab.h">
+      <Filter>Header Files\Core</Filter>
+    </ClInclude>
+    <ClInclude Include="Pyramid.h">
+      <Filter>Header Files\Core</Filter>
+    </ClInclude>
+    <ClInclude Include="Raycast.h">
+      <Filter>Header Files\Core</Filter>
+    </ClInclude>
+    <ClInclude Include="RigidBody.h">
+      <Filter>Header Files\Core</Filter>
+    </ClInclude>
+    <ClInclude Include="Scene.h">
+      <Filter>Header Files\Core</Filter>
+    </ClInclude>
+    <ClInclude Include="SimplifiedModel.h">
+      <Filter>Header Files\Core</Filter>
+    </ClInclude>
+    <ClInclude Include="stb_image.h">
+      <Filter>Header Files\Core</Filter>
+    </ClInclude>
+    <ClInclude Include="Texture.h">
+      <Filter>Header Files\Core</Filter>
+    </ClInclude>
+    <ClInclude Include="Time.h">
+      <Filter>Header Files\Core</Filter>
+    </ClInclude>
+    <ClInclude Include="Triangle.h">
+      <Filter>Header Files\Core</Filter>
+    </ClInclude>
+    <ClInclude Include="TriggerVolume.h">
+      <Filter>Header Files\Core</Filter>
+    </ClInclude>
+    <ClInclude Include="InvisibleWall.h">
+      <Filter>Header Files\Core</Filter>
+    </ClInclude>
+    <ClInclude Include="Vector3.h">
+      <Filter>Header Files\Core</Filter>
+    </ClInclude>
+    <ClInclude Include="windows_fix.h">
+      <Filter>Header Files\Core</Filter>
+    </ClInclude>
+    
+    <!-- Animation System -->
+    <ClInclude Include="Animation\Animation.h">
+      <Filter>Header Files\Animation</Filter>
+    </ClInclude>
+    <ClInclude Include="Animation\AnimationComponent.h">
+      <Filter>Header Files\Animation</Filter>
+    </ClInclude>
+    <ClInclude Include="Animation\AnimationLoader.h">
+      <Filter>Header Files\Animation</Filter>
+    </ClInclude>
+    <ClInclude Include="Animation\KeyFrame.h">
+      <Filter>Header Files\Animation</Filter>
+    </ClInclude>
+    
+    <!-- Audio System -->
+    <ClInclude Include="Audio\AudioClip.h">
+      <Filter>Header Files\Audio</Filter>
+    </ClInclude>
+    <ClInclude Include="Audio\AudioListener.h">
+      <Filter>Header Files\Audio</Filter>
+    </ClInclude>
+    <ClInclude Include="Audio\AudioPlatform.h">
+      <Filter>Header Files\Audio</Filter>
+    </ClInclude>
+    <ClInclude Include="Audio\AudioSource.h">
+      <Filter>Header Files\Audio</Filter>
+    </ClInclude>
+    <ClInclude Include="Audio\AudioSystem.h">
+      <Filter>Header Files\Audio</Filter>
+    </ClInclude>
+    
+    <!-- Editor -->
+    <ClInclude Include="Editor\AnimationPanel.h">
+      <Filter>Header Files\Editor</Filter>
+    </ClInclude>
+    <ClInclude Include="Editor\Editor.h">
+      <Filter>Header Files\Editor</Filter>
+    </ClInclude>
+    <ClInclude Include="Editor\HierarchyPanel.h">
+      <Filter>Header Files\Editor</Filter>
+    </ClInclude>
+    <ClInclude Include="Editor\InspectorPanel.h">
+      <Filter>Header Files\Editor</Filter>
+    </ClInclude>
+    <ClInclude Include="Editor\ProjectPanel.h">
+      <Filter>Header Files\Editor</Filter>
+    </ClInclude>
+    <ClInclude Include="Editor\SceneViewPanel.h">
+      <Filter>Header Files\Editor</Filter>
+    </ClInclude>
+    <ClInclude Include="Editor\Vector3Field.h">
+      <Filter>Header Files\Editor</Filter>
+    </ClInclude>
+    
+    <!-- GUI -->
+    <ClInclude Include="GUI\GUI.h">
+      <Filter>Header Files\GUI</Filter>
+    </ClInclude>
+    <ClInclude Include="GUI\GUIElement.h">
+      <Filter>Header Files\GUI</Filter>
+    </ClInclude>
+    <ClInclude Include="GUI\SettingsPanel.h">
+      <Filter>Header Files\GUI</Filter>
+    </ClInclude>
+    <ClInclude Include="GUI\TextField.h">
+      <Filter>Header Files\GUI</Filter>
+    </ClInclude>
+    
+    <!-- Network -->
+    <ClInclude Include="Network\Connection.h">
+      <Filter>Header Files\Network</Filter>
+    </ClInclude>
+    <ClInclude Include="Network\Connection_fwd.h">
+      <Filter>Header Files\Network</Filter>
+    </ClInclude>
+    <ClInclude Include="Network\NetworkComponent.h">
+      <Filter>Header Files\Network</Filter>
+    </ClInclude>
+    <ClInclude Include="Network\NetworkDebugger.h">
+      <Filter>Header Files\Network</Filter>
+    </ClInclude>
+    <ClInclude Include="Network\NetworkIdentity.h">
+      <Filter>Header Files\Network</Filter>
+    </ClInclude>
+    <ClInclude Include="Network\NetworkReader.h">
+      <Filter>Header Files\Network</Filter>
+    </ClInclude>
+    <ClInclude Include="Network\NetworkSystem.h">
+      <Filter>Header Files\Network</Filter>
+    </ClInclude>
+    <ClInclude Include="Network\NetworkSystem_impl.h">
+      <Filter>Header Files\Network</Filter>
+    </ClInclude>
+    <ClInclude Include="Network\NetworkWriter.h">
+      <Filter>Header Files\Network</Filter>
+    </ClInclude>
+    <ClInclude Include="Network\Packet.h">
+      <Filter>Header Files\Network</Filter>
+    </ClInclude>
+    
+    <!-- Project Settings -->
+    <ClInclude Include="ProjectSettings\ProjectManager.h">
+      <Filter>Header Files\ProjectSettings</Filter>
+    </ClInclude>
+    <ClInclude Include="ProjectSettings\ProjectSettings.h">
+      <Filter>Header Files\ProjectSettings</Filter>
+    </ClInclude>
+    
+    <!-- Shader System -->
+    <ClInclude Include="Shaders\Assets\ShaderAsset.h">
+      <Filter>Header Files\Shaders</Filter>
+    </ClInclude>
+    <ClInclude Include="Shaders\Core\Shader.h">
+      <Filter>Header Files\Shaders</Filter>
+    </ClInclude>
+    <ClInclude Include="Shaders\Core\ShaderError.h">
+      <Filter>Header Files\Shaders</Filter>
+    </ClInclude>
+    <ClInclude Include="Shaders\Core\ShaderProgram.h">
+      <Filter>Header Files\Shaders</Filter>
+    </ClInclude>
+  </ItemGroup>
+  
+  <!-- Shader Files -->
+  <ItemGroup>
+    <None Include="Shaders\Defaults\postprocess.frag">
+      <Filter>Shader Files</Filter>
+    </None>
+    <None Include="Shaders\Defaults\postprocess.vert">
+      <Filter>Shader Files</Filter>
+    </None>
+    <None Include="Shaders\Defaults\skybox.frag">
+      <Filter>Shader Files</Filter>
+    </None>
+    <None Include="Shaders\Defaults\skybox.vert">
+      <Filter>Shader Files</Filter>
+    </None>
+    <None Include="Shaders\Defaults\standard.frag">
+      <Filter>Shader Files</Filter>
+    </None>
+    <None Include="Shaders\Defaults\standard.geom">
+      <Filter>Shader Files</Filter>
+    </None>
+    <None Include="Shaders\Defaults\standard.vert">
+      <Filter>Shader Files</Filter>
+    </None>
+    <None Include="Shaders\Defaults\unlit.frag">
+      <Filter>Shader Files</Filter>
+    </None>
+    <None Include="Shaders\Defaults\unlit.vert">
+      <Filter>Shader Files</Filter>
+    </None>
+  </ItemGroup>
+</Project>
