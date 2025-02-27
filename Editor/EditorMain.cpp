@@ -4,10 +4,11 @@
 #include "../EngineTime.h"
 #include <iostream>
 #include <memory>
+#include <thread>
+#include <chrono>
 
 #ifdef PLATFORM_WINDOWS
-#include <windows.h>
-#include <gl/gl.h>
+// Windows-specific includes are handled in platform.h
 #else
 #include <GL/gl.h>
 #include <GL/glx.h>
@@ -24,10 +25,11 @@ const int WINDOW_HEIGHT = 768;
 std::unique_ptr<Editor> editor;
 
 #ifdef PLATFORM_WINDOWS
-// Forward declaration for Windows procedure
+// Forward declarations for Windows
 LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
 
-// Windows entry point
+// Windows entry point implementation
+extern "C" {
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow) {
     // Create editor
     editor = std::unique_ptr<Editor>(new Editor(WINDOW_WIDTH, WINDOW_HEIGHT));
@@ -127,7 +129,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
     return static_cast<int>(msg.wParam);
 }
 
-// Windows procedure
+// Windows procedure implementation
 LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam) {
     switch (message) {
     case WM_CLOSE:
@@ -159,6 +161,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam) 
         return DefWindowProc(hWnd, message, wParam, lParam);
     }
 }
+} // extern "C"
 #else
 // Linux entry point
 int main(int argc, char** argv) {
