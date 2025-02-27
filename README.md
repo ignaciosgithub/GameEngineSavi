@@ -296,6 +296,611 @@ Each test outputs detailed information to the console, allowing verification of 
 
 This project is available for use under open-source terms.
 
+## Animation System
+
+GameEngineSavi includes a powerful animation system that allows you to create and play animations for your game objects. The animation system is based on keyframes using separate OBJ files of the same object in different poses, with linear interpolation between keyframes.
+
+### Features
+
+- **Keyframe-Based Animation**: Create animations using separate OBJ files for each keyframe
+- **Linear Interpolation**: Smooth transitions between keyframes
+- **Animation Components**: Attach animations to game objects
+- **Animation Playback Control**: Play, pause, stop, and loop animations
+- **Animation Events**: Trigger events at specific points in animations
+- **Animation Blending**: Blend between multiple animations
+- **Animation Speed Control**: Adjust animation playback speed
+
+### Creating Animations
+
+To create an animation, you need to:
+
+1. Create OBJ files for each keyframe of your animation
+2. Define an animation file (.savanim) that references these keyframes
+3. Load the animation in your game
+
+#### Animation File Format
+
+Animation files use a simple JSON format:
+
+```json
+{
+  "name": "walk",
+  "keyframes": [
+    {
+      "time": 0.0,
+      "mesh": "walk/cube_pose1.obj"
+    },
+    {
+      "time": 0.33,
+      "mesh": "walk/cube_pose2.obj"
+    },
+    {
+      "time": 0.66,
+      "mesh": "walk/cube_pose3.obj"
+    },
+    {
+      "time": 1.0,
+      "mesh": "walk/cube_pose4.obj"
+    }
+  ],
+  "loop": true,
+  "duration": 1.0
+}
+```
+
+### Using Animations
+
+Here's how to load and play an animation:
+
+```cpp
+#include "Animation/Animation.h"
+#include "Animation/AnimationComponent.h"
+#include "Animation/AnimationLoader.h"
+
+// Load animation from file
+Animation* walkAnimation = AnimationLoader::LoadAnimation("test_animations/walk/cube_walk.savanim");
+
+// Create a game object
+auto character = std::make_unique<GameObject>("Character");
+
+// Add animation component
+auto animComponent = character->AddComponent(new AnimationComponent());
+
+// Add animation to component
+animComponent->AddAnimation("walk", walkAnimation);
+
+// Play animation
+animComponent->PlayAnimation("walk");
+
+// Add to scene
+scene->AddGameObject(std::move(character));
+```
+
+### Animation Playback Control
+
+You can control animation playback with these methods:
+
+```cpp
+// Get animation component
+auto animComponent = gameObject->GetComponents<AnimationComponent>()[0];
+
+// Play animation
+animComponent->PlayAnimation("walk");
+
+// Pause animation
+animComponent->PauseAnimation();
+
+// Resume animation
+animComponent->ResumeAnimation();
+
+// Stop animation
+animComponent->StopAnimation();
+
+// Set animation speed
+animComponent->SetSpeed(2.0f); // Play at 2x speed
+
+// Set looping
+animComponent->SetLooping(true);
+
+// Check if animation is playing
+bool isPlaying = animComponent->IsPlaying();
+```
+
+### Animation Events
+
+You can register callbacks to be triggered at specific points in an animation:
+
+```cpp
+// Register animation event
+animComponent->RegisterEvent("walk", 0.5f, []() {
+    // This will be called halfway through the walk animation
+    std::cout << "Footstep sound!" << std::endl;
+});
+```
+
+### Animation Blending
+
+You can blend between multiple animations for smooth transitions:
+
+```cpp
+// Blend from walk to run over 0.5 seconds
+animComponent->BlendTo("run", 0.5f);
+```
+
+### Animation with Physics
+
+The animation system integrates with the physics system, allowing animated objects to interact with the physics world:
+
+```cpp
+// Create a game object with physics and animation
+auto character = std::make_unique<GameObject>("Character");
+
+// Add rigid body component
+auto rigidBody = character->AddComponent(new RigidBody());
+rigidBody->SetMass(10.0f);
+
+// Add animation component
+auto animComponent = character->AddComponent(new AnimationComponent());
+animComponent->AddAnimation("walk", walkAnimation);
+animComponent->PlayAnimation("walk");
+
+// Animation will update the mesh, and physics will respond to the new shape
+```
+
+## Networking System
+
+GameEngineSavi includes a comprehensive networking system that supports both peer-to-peer and client-server architectures. The networking system is designed to be flexible and easy to use, allowing developers to create multiplayer games with minimal effort.
+
+### Features
+
+- **Multiple Network Architectures**: Support for both peer-to-peer and client-server networking models
+- **Cross-Platform Socket Handling**: Works on both Windows and Linux
+- **Network Components**: Attach network behavior to game objects
+- **Packet System**: Reliable and unreliable data transmission
+- **Network Identity**: Unique identification for networked objects
+- **Network Debugging**: Comprehensive logging and debugging tools
+- **Connection Management**: Handle connections, disconnections, and timeouts
+
+### Network Architecture
+
+The networking system supports two main architectures:
+
+1. **Client-Server**: Traditional architecture where a server hosts the game and clients connect to it
+2. **Peer-to-Peer**: Direct connections between players without a central server
+
+### Basic Setup
+
+#### Server Setup
+
+```cpp
+#include "Network/NetworkSystem.h"
+
+// Initialize network system as server
+Network::NetworkSystem netSystem;
+netSystem.Initialize(true, false);  // true = server, false = not peer-to-peer
+
+// Start server on port 7777
+netSystem.StartServer(7777);
+
+// Enable debugging (optional)
+netSystem.SetDebugLogging(true);
+
+// Main loop
+while (running) {
+    // Update network system
+    netSystem.Update();
+    
+    // Process incoming messages
+    Network::Packet packet;
+    while (netSystem.ReceivePacket(packet)) {
+        // Handle packet based on type
+        switch (packet.GetType()) {
+            case Network::PacketType::CONNECT:
+                std::cout << "Client connected: " << packet.GetSenderID() << std::endl;
+                break;
+            case Network::PacketType::DISCONNECT:
+                std::cout << "Client disconnected: " << packet.GetSenderID() << std::endl;
+                break;
+            case Network::PacketType::DATA:
+                std::cout << "Received data from client: " << packet.GetSenderID() << std::endl;
+                // Process data
+                break;
+        }
+    }
+}
+
+// Cleanup
+netSystem.Cleanup();
+```
+
+#### Client Setup
+
+```cpp
+#include "Network/NetworkSystem.h"
+
+// Initialize network system as client
+Network::NetworkSystem netSystem;
+netSystem.Initialize(false, false);  // false = client, false = not peer-to-peer
+
+// Connect to server
+netSystem.Connect("127.0.0.1", 7777);
+
+// Enable debugging (optional)
+netSystem.SetDebugLogging(true);
+
+// Main loop
+while (running) {
+    // Update network system
+    netSystem.Update();
+    
+    // Process incoming messages
+    Network::Packet packet;
+    while (netSystem.ReceivePacket(packet)) {
+        // Handle packet based on type
+        switch (packet.GetType()) {
+            case Network::PacketType::CONNECT:
+                std::cout << "Connected to server!" << std::endl;
+                break;
+            case Network::PacketType::DISCONNECT:
+                std::cout << "Disconnected from server!" << std::endl;
+                break;
+            case Network::PacketType::DATA:
+                std::cout << "Received data from server" << std::endl;
+                // Process data
+                break;
+        }
+    }
+    
+    // Send data to server
+    if (shouldSendData) {
+        Network::Packet dataPacket(Network::PacketType::DATA);
+        dataPacket.Write("Hello Server!");
+        netSystem.SendPacket(dataPacket);
+    }
+}
+
+// Cleanup
+netSystem.Cleanup();
+```
+
+#### Peer-to-Peer Setup
+
+```cpp
+#include "Network/NetworkSystem.h"
+
+// Initialize network system in peer-to-peer mode
+Network::NetworkSystem netSystem;
+netSystem.Initialize(false, true);  // false = not server, true = peer-to-peer
+
+// Start peer on port 7777
+netSystem.StartPeer(7777);
+
+// Connect to another peer
+netSystem.ConnectToPeer("192.168.1.100", 7777);
+
+// Main loop
+while (running) {
+    // Update network system
+    netSystem.Update();
+    
+    // Process incoming messages
+    Network::Packet packet;
+    while (netSystem.ReceivePacket(packet)) {
+        // Handle packet
+    }
+}
+
+// Cleanup
+netSystem.Cleanup();
+```
+
+### Network Components
+
+You can attach network components to game objects to synchronize them across the network:
+
+```cpp
+#include "Network/NetworkComponent.h"
+#include "Network/NetworkIdentity.h"
+
+// Create a game object
+auto player = std::make_unique<GameObject>("Player");
+
+// Add network identity component
+auto netIdentity = player->AddComponent(new Network::NetworkIdentity());
+netIdentity->SetNetworkID(1);  // Set unique network ID
+
+// Add network component
+auto netComponent = player->AddComponent(new Network::NetworkComponent());
+
+// Register properties to synchronize
+netComponent->RegisterProperty("position", &player->position);
+netComponent->RegisterProperty("rotation", &player->rotation);
+
+// Add to scene
+scene->AddGameObject(std::move(player));
+```
+
+### Network Debugging
+
+The networking system includes comprehensive debugging tools:
+
+```cpp
+// Enable network debugging
+netSystem.SetDebugLogging(true);
+
+// Log all packets
+netSystem.SetPacketLogging(true);
+
+// Get connection statistics
+Network::ConnectionStats stats = netSystem.GetConnectionStats();
+std::cout << "Ping: " << stats.ping << "ms" << std::endl;
+std::cout << "Packets sent: " << stats.packetsSent << std::endl;
+std::cout << "Packets received: " << stats.packetsReceived << std::endl;
+std::cout << "Bytes sent: " << stats.bytesSent << std::endl;
+std::cout << "Bytes received: " << stats.bytesReceived << std::endl;
+```
+
+### Network Demo
+
+The engine includes a network demo application that demonstrates the networking system in action. You can build and run the demo using the provided build scripts:
+
+#### Linux
+```bash
+cd test_network
+./build_network_demo.sh
+../bin/linux/NetworkDemo --server     # Run in server mode
+../bin/linux/NetworkDemo --client     # Run in client mode
+../bin/linux/NetworkDemo --p2p        # Run in peer-to-peer mode
+../bin/linux/NetworkDemo --debug      # Enable debugging
+```
+
+#### Windows
+```batch
+cd test_network
+build_network_demo.bat
+..\bin\windows\NetworkDemo.exe --server     # Run in server mode
+..\bin\windows\NetworkDemo.exe --client     # Run in client mode
+..\bin\windows\NetworkDemo.exe --p2p        # Run in peer-to-peer mode
+..\bin\windows\NetworkDemo.exe --debug      # Enable debugging
+```
+
+## Shader System
+
+GameEngineSavi includes a powerful shader system that allows you to create and use custom shaders for your game objects. The shader system supports vertex, fragment, and geometry shaders, and integrates seamlessly with the existing rendering pipeline.
+
+### Features
+
+- **Custom Shader Support**: Create and use your own shaders
+- **Multiple Shader Types**: Support for vertex, fragment, and geometry shaders
+- **Shader Asset Management**: Load and manage shader programs
+- **Uniform Management**: Set shader uniforms easily
+- **Cross-Platform Compatibility**: Works on both Windows and Linux
+- **Error Handling**: Comprehensive error reporting for shader compilation and linking
+- **Default Shaders**: Built-in shaders for common rendering tasks
+
+### Shader Types
+
+The shader system supports three types of shaders:
+
+1. **Vertex Shaders**: Process vertices and transform them into clip space
+2. **Fragment Shaders**: Calculate the color of each pixel
+3. **Geometry Shaders**: Generate or modify geometry between vertex and fragment shaders
+
+### Creating Shaders
+
+Shaders are written in GLSL (OpenGL Shading Language). Here's an example of a simple vertex shader:
+
+```glsl
+// standard.vert
+#version 330 core
+
+layout(location = 0) in vec3 aPosition;
+layout(location = 1) in vec2 aTexCoord;
+layout(location = 2) in vec3 aNormal;
+
+uniform mat4 model;
+uniform mat4 view;
+uniform mat4 projection;
+
+out vec2 TexCoord;
+out vec3 Normal;
+out vec3 FragPos;
+
+void main() {
+    gl_Position = projection * view * model * vec4(aPosition, 1.0);
+    TexCoord = aTexCoord;
+    Normal = mat3(transpose(inverse(model))) * aNormal;
+    FragPos = vec3(model * vec4(aPosition, 1.0));
+}
+```
+
+And a corresponding fragment shader:
+
+```glsl
+// standard.frag
+#version 330 core
+
+in vec2 TexCoord;
+in vec3 Normal;
+in vec3 FragPos;
+
+uniform sampler2D albedoTexture;
+uniform bool hasAlbedoTexture;
+uniform sampler2D normalTexture;
+uniform bool hasNormalTexture;
+uniform sampler2D opacityTexture;
+uniform bool hasOpacityTexture;
+
+uniform vec3 lightPos;
+uniform vec3 lightColor;
+uniform vec3 viewPos;
+
+out vec4 FragColor;
+
+void main() {
+    // Base color
+    vec4 color = hasAlbedoTexture ? texture(albedoTexture, TexCoord) : vec4(1.0, 1.0, 1.0, 1.0);
+    
+    // Normal mapping
+    vec3 normal = normalize(Normal);
+    if (hasNormalTexture) {
+        vec3 normalMap = texture(normalTexture, TexCoord).rgb * 2.0 - 1.0;
+        normal = normalize(normal + normalMap);
+    }
+    
+    // Lighting calculation
+    vec3 lightDir = normalize(lightPos - FragPos);
+    float diff = max(dot(normal, lightDir), 0.0);
+    vec3 diffuse = diff * lightColor;
+    
+    // Ambient light
+    vec3 ambient = 0.1 * lightColor;
+    
+    // Specular light
+    vec3 viewDir = normalize(viewPos - FragPos);
+    vec3 reflectDir = reflect(-lightDir, normal);
+    float spec = pow(max(dot(viewDir, reflectDir), 0.0), 32);
+    vec3 specular = 0.5 * spec * lightColor;
+    
+    // Final color
+    vec3 result = (ambient + diffuse + specular) * color.rgb;
+    
+    // Opacity
+    float alpha = color.a;
+    if (hasOpacityTexture) {
+        alpha *= texture(opacityTexture, TexCoord).r;
+    }
+    
+    FragColor = vec4(result, alpha);
+}
+```
+
+### Loading and Using Shaders
+
+To load and use shaders in your game:
+
+```cpp
+#include "Shaders/Assets/ShaderAsset.h"
+#include "Shaders/Core/ShaderProgram.h"
+
+// Load shader program
+Shaders::ShaderProgram* standardShader = Shaders::ShaderAsset::LoadProgram(
+    "Shaders/Defaults/standard.vert",
+    "Shaders/Defaults/standard.frag"
+);
+
+// Create a game object with a model
+auto cube = std::make_unique<GameObject>("Cube");
+Model* cubeModel = new Model("cube.obj");
+
+// Set shader program for the model
+cubeModel->SetShaderProgram(standardShader);
+
+// Add model to game object
+cube->AddMesh(cubeModel);
+
+// Add to scene
+scene->AddGameObject(std::move(cube));
+```
+
+### Setting Shader Uniforms
+
+You can set shader uniforms to control the appearance of your objects:
+
+```cpp
+// Get shader program
+Shaders::ShaderProgram* shader = model->GetShaderProgram();
+
+// Set uniforms
+shader->SetUniform("lightPos", Vector3(0.0f, 10.0f, 0.0f));
+shader->SetUniform("lightColor", Vector3(1.0f, 1.0f, 1.0f));
+shader->SetUniform("viewPos", camera->GetPosition());
+
+// Set texture uniforms
+shader->SetUniform("albedoTexture", 0, albedoTexture->GetTextureID());
+shader->SetUniform("hasAlbedoTexture", true);
+```
+
+### Default Shaders
+
+The engine includes several default shaders:
+
+1. **Standard Shader**: PBR (Physically Based Rendering) shader with lighting
+2. **Unlit Shader**: Simple shader without lighting calculations
+3. **Skybox Shader**: Shader for rendering skyboxes
+4. **Post-Processing Shader**: Shader for post-processing effects
+
+### Creating Custom Shaders
+
+You can create your own custom shaders by:
+
+1. Creating GLSL shader files
+2. Loading them with ShaderAsset::LoadProgram
+3. Assigning them to models
+
+```cpp
+// Load custom shader
+Shaders::ShaderProgram* customShader = Shaders::ShaderAsset::LoadProgram(
+    "MyShaders/custom.vert",
+    "MyShaders/custom.frag",
+    "MyShaders/custom.geom"  // Optional geometry shader
+);
+
+// Check for errors
+if (!customShader) {
+    std::cerr << "Failed to load custom shader!" << std::endl;
+    return;
+}
+
+// Set shader for model
+model->SetShaderProgram(customShader);
+```
+
+### Shader Error Handling
+
+The shader system includes comprehensive error handling:
+
+```cpp
+// Load shader with error handling
+Shaders::ShaderProgram* shader = Shaders::ShaderAsset::LoadProgram(
+    "Shaders/custom.vert",
+    "Shaders/custom.frag"
+);
+
+if (!shader) {
+    // Get last error
+    std::string error = Shaders::ShaderError::GetLastError();
+    std::cerr << "Shader error: " << error << std::endl;
+}
+```
+
+### Shader Preview in Editor
+
+The engine's editor includes a shader preview feature that allows you to see your shaders in action before using them in your game. You can:
+
+1. Load and compile shaders in the editor
+2. Preview them on different models
+3. Adjust shader parameters in real-time
+4. See compilation errors and warnings
+
+### Shader Demo
+
+The engine includes a shader demo application that demonstrates the shader system in action. You can build and run the demo using the provided build scripts:
+
+#### Linux
+```bash
+cd test_shaders
+./build_shader_test.sh
+../bin/linux/ShaderTest
+```
+
+#### Windows
+```batch
+cd test_shaders
+build_shader_test.bat
+..\bin\windows\ShaderTest.exe
+```
+
 ## Contributing
 
 Contributions to GameEngineSavi are welcome! Feel free to submit pull requests or open issues to improve the engine.
