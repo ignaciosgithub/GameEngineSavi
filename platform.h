@@ -81,8 +81,8 @@
 #include <chrono>
 #include <thread>
 
-#ifdef PLATFORM_WINDOWS
 // Forward declarations for Windows-specific functions
+#ifdef PLATFORM_WINDOWS
 #ifdef __cplusplus
 extern "C" {
 #endif
