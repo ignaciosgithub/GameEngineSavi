@@ -11,6 +11,9 @@ void Scene::Initialize() {
         physicsSystem = std::make_unique<PhysicsSystem>();
     }
     
+    // Initialize camera manager
+    cameraManager = std::make_unique<CameraManager>();
+    
     // Set running flag
     isRunning = true;
     
@@ -177,6 +180,44 @@ void Scene::RenderScene() {
 
 void Scene::SetMainCamera(Camera* camera) {
     mainCamera = camera;
+    
+    // Update camera manager if it exists
+    if (cameraManager) {
+        cameraManager->SetMainCamera(camera);
+    }
+}
+
+void Scene::SetMinimapCamera(Camera* camera) {
+    minimapCamera = camera;
+    
+    // Update camera manager if it exists
+    if (cameraManager) {
+        cameraManager->SetMinimapCamera(camera);
+    }
+}
+
+void Scene::EnableCamera(Camera* camera) {
+    if (camera) {
+        camera->SetEnabled(true);
+    }
+}
+
+void Scene::DisableCamera(Camera* camera) {
+    if (camera) {
+        camera->SetEnabled(false);
+    }
+}
+
+void Scene::SetResolutionChangeAllowed(bool allowed) {
+    if (cameraManager) {
+        cameraManager->SetResolutionChangeAllowed(allowed);
+    }
+}
+
+void Scene::UpdateResolution(int width, int height) {
+    if (cameraManager) {
+        cameraManager->UpdateViewports(width, height);
+    }
 }
 
 void Scene::AddGameObject(std::unique_ptr<GameObject> gameObject) {
