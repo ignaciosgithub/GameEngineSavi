@@ -28,8 +28,13 @@ int main() {
         90.0f                // Field of view
     );
     
+    // Configure viewport for main camera (full screen)
+    mainCamera->SetViewport(0.0f, 0.0f, 1.0f, 1.0f);
+    mainCamera->SetEnabled(true);
+    
     // Configure minimap camera viewport (bottom-left corner, 25% of screen)
-    minimapCamera->SetViewport(0.0f, 0.0f, 0.25f, 0.25f);
+    minimapCamera->SetViewport(0.0f, 0.75f, 0.25f, 0.25f);
+    minimapCamera->SetEnabled(true);
     
     // Set cameras in scene
     scene.SetMainCamera(mainCamera.get());
