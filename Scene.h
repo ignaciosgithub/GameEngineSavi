@@ -6,7 +6,7 @@
 #include <atomic>
 #include "GameObject.h"
 #include "Camera.h"
-#include "Time.h"
+#include "EngineTime.h"
 #include "PhysicsSystem.h"
 #include "PointLight.h"
 #include "Shaders/Core/ShaderProgram.h"
@@ -16,7 +16,7 @@ private:
     std::vector<std::unique_ptr<GameObject>> gameObjects;
     std::vector<std::unique_ptr<Camera>> cameras;
     std::vector<PointLight> pointLights;
-    std::unique_ptr<Time> time;
+    std::unique_ptr<EngineTime> time;
     std::unique_ptr<PhysicsSystem> physicsSystem;
     std::atomic<bool> isRunning;
     unsigned int frameCount = 0; // For debug information

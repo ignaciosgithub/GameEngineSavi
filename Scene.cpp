@@ -1,7 +1,21 @@
 #include "Scene.h"
-#include "EngineCondition.h"
-#include "MonoBehaviourLike.h"
 #include <iostream>
+#include <algorithm>
+
+void Scene::Initialize() {
+    // Initialize time
+    time = std::make_unique<EngineTime>();
+    
+    // Initialize physics system if not already set
+    if (!physicsSystem) {
+        physicsSystem = std::make_unique<PhysicsSystem>();
+    }
+    
+    // Set running flag
+    isRunning = true;
+    
+    std::cout << "Scene initialized" << std::endl;
+}
 
 void Scene::Load() {
     // Load scene resources
@@ -9,44 +23,68 @@ void Scene::Load() {
 }
 
 void Scene::Run() {
-    // Start running the scene
-    isRunning = true;
-    std::cout << "Scene running" << std::endl;
+    if (!isRunning) {
+        Initialize();
+    }
+    
+    float lastFrameTime = 0.0f;
+    float deltaTime = 0.0f;
+    
+    // Main loop
+    while (isRunning) {
+        // Calculate delta time
+        float currentTime = time->DeltaTime();
+        deltaTime = currentTime - lastFrameTime;
+        lastFrameTime = currentTime;
+        
+        // Cap delta time to avoid spiral of death
+        if (deltaTime > 0.25f) {
+            deltaTime = 0.25f;
+        }
+        
+        // Update scene
+        Update(deltaTime);
+        
+        // Render scene
+        Render();
+        
+        // Frame rate limiting
+        if (targetFPS > 0.0f) {
+            float targetFrameTime = 1.0f / targetFPS;
+            float sleepTime = targetFrameTime - deltaTime;
+            if (sleepTime > 0.0f) {
+                // Sleep to maintain target frame rate
+                std::this_thread::sleep_for(std::chrono::milliseconds(static_cast<int>(sleepTime * 1000)));
+            }
+        }
+    }
 }
 
 void Scene::Stop() {
-    // Stop running the scene
     isRunning = false;
     std::cout << "Scene stopped" << std::endl;
 }
 
-void Scene::RenderScene() {
-    // Render the scene
-    for (auto& gameObject : gameObjects) {
-        // Render the game object
-        gameObject->Render(std::vector<PointLight>());
-    }
-}
-
-void Scene::Initialize() {
-    // Initialize the scene
-    time = std::unique_ptr<EngineTime>(new EngineTime());
-    physicsSystem = std::unique_ptr<PhysicsSystem>(new PhysicsSystem());
-    physicsSystem->Initialize();
-    
-    std::cout << "Scene initialized" << std::endl;
-}
-
 void Scene::Update(float deltaTime) {
-    // Update the scene
+    // Update time
+    time->Update(deltaTime);
     
-    // Update physics with fixed timestep
+    // Accumulate time for physics updates
     physicsAccumulator += deltaTime;
     
+    // Fixed timestep physics updates
     while (physicsAccumulator >= physicsTimeStep) {
         // Update physics
-        if (physicsSystem && !EngineCondition::IsInEditorEditing() && !EngineCondition::IsInEditorCompiling()) {
+        if (physicsSystem) {
             physicsSystem->Update(physicsTimeStep);
+        }
+        
+        // Update game objects with fixed timestep
+        for (auto& gameObject : gameObjects) {
+            // Update components
+            for (auto& component : gameObject->components) {
+                component->FixedUpdate();
+            }
         }
         
         physicsAccumulator -= physicsTimeStep;
@@ -54,99 +92,82 @@ void Scene::Update(float deltaTime) {
     
     // Update game objects
     for (auto& gameObject : gameObjects) {
-        // Update the game object components
-        for (auto& component : gameObject->GetComponents<MonoBehaviourLike>()) {
-            // Pass deltaTime to Update method
+        // Update components
+        for (auto& component : gameObject->components) {
             component->Update(deltaTime);
         }
     }
     
-    // Update frame count
+    // Update cameras
+    for (auto& camera : cameras) {
+        // Update camera logic if needed
+    }
+    
+    // Increment frame counter
     frameCount++;
 }
 
 void Scene::Render() {
-    // Render the scene
+    // Clear screen
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    
+    // Render scene
     RenderScene();
+    
+    // Swap buffers
+    // Note: This would be handled by the window system
+}
+
+void Scene::RenderScene() {
+    // Skip rendering if no main camera
+    if (!mainCamera) {
+        return;
+    }
+    
+    // Get view and projection matrices from main camera
+    Matrix4x4 viewMatrix = mainCamera->GetViewMatrix();
+    Matrix4x4 projectionMatrix = mainCamera->GetProjectionMatrix();
+    
+    // Render game objects
+    for (auto& gameObject : gameObjects) {
+        // Render meshes
+        for (auto& mesh : gameObject->meshes) {
+            // Set shader program if available
+            Shaders::ShaderProgram* program = mesh->GetShaderProgram();
+            if (program) {
+                program->Use();
+                
+                // Set global uniforms
+                SetGlobalShaderUniforms(program);
+                
+                // Set model-specific uniforms
+                mesh->UpdateUniforms(viewMatrix, projectionMatrix);
+            }
+            
+            // Render mesh
+            mesh->Render(pointLights);
+        }
+    }
 }
 
 void Scene::SetMainCamera(Camera* camera) {
-    // Set the main camera for rendering
-    // For now, just store the camera pointer
-    // In a real implementation, this would set up the camera for rendering
+    mainCamera = camera;
 }
 
 void Scene::AddGameObject(std::unique_ptr<GameObject> gameObject) {
-    // Add a game object to the scene
     gameObjects.push_back(std::move(gameObject));
 }
 
 void Scene::AddGameObject(GameObject* gameObject) {
-    // Add a game object to the scene (raw pointer version)
-    // Create a custom deleter struct
-    struct NoDelete {
-        void operator()(GameObject* ptr) const {}
-    };
-    
-    // Create a unique_ptr with the custom deleter
-    std::unique_ptr<GameObject, NoDelete> ptr(gameObject, NoDelete());
-    
-    // We need to create a new standard unique_ptr
     gameObjects.push_back(std::unique_ptr<GameObject>(gameObject));
 }
 
 void Scene::AddCamera(std::unique_ptr<Camera> camera) {
-    // Add a camera to the scene
     cameras.push_back(std::move(camera));
 }
 
 void Scene::AddCamera(Camera* camera) {
-    // Add a camera to the scene (raw pointer version)
-    // Create a custom deleter struct
-    struct NoDelete {
-        void operator()(Camera* ptr) const {}
-    };
-    
-    // Create a unique_ptr with the custom deleter
-    std::unique_ptr<Camera, NoDelete> ptr(camera, NoDelete());
-    
-    // We need to create a new standard unique_ptr
     cameras.push_back(std::unique_ptr<Camera>(camera));
-}
-
-void Scene::SetGlobalShaderUniforms(Shaders::ShaderProgram* program) {
-    if (!program || !mainCamera) return;
-    
-    // Set camera position for lighting calculations
-    program->SetUniform("viewPos", mainCamera->GetPosition());
-    
-    // Set view and projection matrices
-    program->SetUniform("view", mainCamera->GetViewMatrix());
-    program->SetUniform("projection", mainCamera->GetProjectionMatrix());
-    
-    // Set time-based uniforms
-    if (time) {
-        program->SetUniform("time", time->GetTime());
-        program->SetUniform("deltaTime", time->GetDeltaTime());
-    }
-}
-
-void Scene::UpdateLightUniforms(Shaders::ShaderProgram* program) {
-    if (!program) return;
-    
-    // Set number of point lights
-    program->SetUniform("numPointLights", static_cast<int>(pointLights.size()));
-    
-    // Set point light uniforms
-    for (size_t i = 0; i < pointLights.size() && i < 8; ++i) {
-        const PointLight& light = pointLights[i];
-        std::string prefix = "pointLights[" + std::to_string(i) + "].";
-        
-        program->SetUniform(prefix + "position", light.position);
-        program->SetUniform(prefix + "color", light.color);
-        program->SetUniform(prefix + "intensity", light.intensity);
-        program->SetUniform(prefix + "range", light.range);
-    }
 }
 
 void Scene::AddPointLight(const PointLight& light) {
@@ -159,13 +180,46 @@ void Scene::RemovePointLight(size_t index) {
     }
 }
 
+void Scene::SetGlobalShaderUniforms(Shaders::ShaderProgram* program) {
+    if (!program) {
+        return;
+    }
+    
+    // Set time uniforms
+    program->SetUniform("time", time->DeltaTime());
+    program->SetUniform("deltaTime", time->DeltaTime());
+    
+    // Set camera uniforms
+    if (mainCamera) {
+        program->SetUniform("viewPos", mainCamera->GetPosition());
+    }
+    
+    // Set light uniforms
+    UpdateLightUniforms(program);
+}
+
+void Scene::UpdateLightUniforms(Shaders::ShaderProgram* program) {
+    if (!program) {
+        return;
+    }
+    
+    // Set light count
+    program->SetUniform("lightCount", static_cast<int>(pointLights.size()));
+    
+    // Set light properties
+    for (size_t i = 0; i < pointLights.size(); i++) {
+        std::string prefix = "lights[" + std::to_string(i) + "].";
+        program->SetUniform(prefix + "position", pointLights[i].position);
+        program->SetUniform(prefix + "color", pointLights[i].color);
+        program->SetUniform(prefix + "intensity", pointLights[i].intensity);
+        program->SetUniform(prefix + "range", pointLights[i].range);
+    }
+}
 
 void Scene::SetPhysicsSystem(std::unique_ptr<PhysicsSystem> system) {
-    // Set the physics system
     physicsSystem = std::move(system);
 }
 
 PhysicsSystem* Scene::GetPhysicsSystem() const {
-    // Get the physics system
     return physicsSystem.get();
 }
