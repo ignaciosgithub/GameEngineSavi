@@ -24,146 +24,144 @@ const int WINDOW_HEIGHT = 768;
 // Global editor instance
 std::unique_ptr<Editor> editor;
 
+#ifdef PLATFORM_WINDOWS
 // Forward declarations for Windows
-#ifdef PLATFORM_WINDOWS
 LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
-#endif
 
-#ifdef PLATFORM_WINDOWS
 // Windows entry point implementation
 extern "C" {
-    int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow) {
-        // Create editor
-        editor = std::unique_ptr<Editor>(new Editor(WINDOW_WIDTH, WINDOW_HEIGHT));
-        
-        // Initialize editor
-        editor->Initialize();
-        
-        // Register window class
-        WNDCLASSEX wc;
-        ZeroMemory(&wc, sizeof(WNDCLASSEX));
-        wc.cbSize = sizeof(WNDCLASSEX);
-        wc.style = CS_HREDRAW | CS_VREDRAW | CS_OWNDC;
-        wc.lpfnWndProc = WndProc;
-        wc.cbClsExtra = 0;
-        wc.cbWndExtra = 0;
-        wc.hInstance = hInstance;
-        wc.hIcon = LoadIcon(NULL, IDI_APPLICATION);
-        wc.hCursor = LoadCursor(NULL, IDC_ARROW);
-        wc.hbrBackground = (HBRUSH)GetStockObject(BLACK_BRUSH);
-        wc.lpszMenuName = NULL;
-        wc.lpszClassName = "EditorWindowClass";
-        RegisterClassEx(&wc);
-        
-        // Create window
-        HWND hWnd = CreateWindow(
-            "EditorWindowClass",
-            "GameEngineSavi Editor",
-            WS_OVERLAPPEDWINDOW,
-            CW_USEDEFAULT, CW_USEDEFAULT,
-            WINDOW_WIDTH, WINDOW_HEIGHT,
-            NULL,
-            NULL,
-            hInstance,
-            NULL
-        );
-        
-        // Show window
-        ShowWindow(hWnd, nCmdShow);
-        UpdateWindow(hWnd);
-        
-        // Set up OpenGL
-        HDC hDC = GetDC(hWnd);
-        
-        PIXELFORMATDESCRIPTOR pfd;
-        ZeroMemory(&pfd, sizeof(pfd));
-        pfd.nSize = sizeof(pfd);
-        pfd.nVersion = 1;
-        pfd.dwFlags = PFD_DRAW_TO_WINDOW | PFD_SUPPORT_OPENGL | PFD_DOUBLEBUFFER;
-        pfd.iPixelType = PFD_TYPE_RGBA;
-        pfd.cColorBits = 24;
-        pfd.cDepthBits = 16;
-        pfd.iLayerType = PFD_MAIN_PLANE;
-        
-        int format = ChoosePixelFormat(hDC, &pfd);
-        SetPixelFormat(hDC, format, &pfd);
-        
-        HGLRC hRC = wglCreateContext(hDC);
-        wglMakeCurrent(hDC, hRC);
-        
-        // Set up OpenGL viewport
-        glViewport(0, 0, WINDOW_WIDTH, WINDOW_HEIGHT);
-        glMatrixMode(GL_PROJECTION);
-        glLoadIdentity();
-        glOrtho(0, WINDOW_WIDTH, WINDOW_HEIGHT, 0, -1, 1);
-        glMatrixMode(GL_MODELVIEW);
-        glLoadIdentity();
-        
-        // Main loop
-        MSG msg;
-        bool running = true;
-        
-        while (running) {
-            // Process messages
-            if (PeekMessage(&msg, NULL, 0, 0, PM_REMOVE)) {
-                if (msg.message == WM_QUIT) {
-                    running = false;
-                } else {
-                    TranslateMessage(&msg);
-                    DispatchMessage(&msg);
-                }
+int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow) {
+    // Create editor
+    editor = std::unique_ptr<Editor>(new Editor(WINDOW_WIDTH, WINDOW_HEIGHT));
+    
+    // Initialize editor
+    editor->Initialize();
+    
+    // Register window class
+    WNDCLASSEX wc;
+    ZeroMemory(&wc, sizeof(WNDCLASSEX));
+    wc.cbSize = sizeof(WNDCLASSEX);
+    wc.style = CS_HREDRAW | CS_VREDRAW | CS_OWNDC;
+    wc.lpfnWndProc = WndProc;
+    wc.cbClsExtra = 0;
+    wc.cbWndExtra = 0;
+    wc.hInstance = hInstance;
+    wc.hIcon = LoadIcon(NULL, IDI_APPLICATION);
+    wc.hCursor = LoadCursor(NULL, IDC_ARROW);
+    wc.hbrBackground = (HBRUSH)GetStockObject(BLACK_BRUSH);
+    wc.lpszMenuName = NULL;
+    wc.lpszClassName = "EditorWindowClass";
+    RegisterClassEx(&wc);
+    
+    // Create window
+    HWND hWnd = CreateWindow(
+        "EditorWindowClass",
+        "GameEngineSavi Editor",
+        WS_OVERLAPPEDWINDOW,
+        CW_USEDEFAULT, CW_USEDEFAULT,
+        WINDOW_WIDTH, WINDOW_HEIGHT,
+        NULL,
+        NULL,
+        hInstance,
+        NULL
+    );
+    
+    // Show window
+    ShowWindow(hWnd, nCmdShow);
+    UpdateWindow(hWnd);
+    
+    // Set up OpenGL
+    HDC hDC = GetDC(hWnd);
+    
+    PIXELFORMATDESCRIPTOR pfd;
+    ZeroMemory(&pfd, sizeof(pfd));
+    pfd.nSize = sizeof(pfd);
+    pfd.nVersion = 1;
+    pfd.dwFlags = PFD_DRAW_TO_WINDOW | PFD_SUPPORT_OPENGL | PFD_DOUBLEBUFFER;
+    pfd.iPixelType = PFD_TYPE_RGBA;
+    pfd.cColorBits = 24;
+    pfd.cDepthBits = 16;
+    pfd.iLayerType = PFD_MAIN_PLANE;
+    
+    int format = ChoosePixelFormat(hDC, &pfd);
+    SetPixelFormat(hDC, format, &pfd);
+    
+    HGLRC hRC = wglCreateContext(hDC);
+    wglMakeCurrent(hDC, hRC);
+    
+    // Set up OpenGL viewport
+    glViewport(0, 0, WINDOW_WIDTH, WINDOW_HEIGHT);
+    glMatrixMode(GL_PROJECTION);
+    glLoadIdentity();
+    glOrtho(0, WINDOW_WIDTH, WINDOW_HEIGHT, 0, -1, 1);
+    glMatrixMode(GL_MODELVIEW);
+    glLoadIdentity();
+    
+    // Main loop
+    MSG msg;
+    bool running = true;
+    
+    while (running) {
+        // Process messages
+        if (PeekMessage(&msg, NULL, 0, 0, PM_REMOVE)) {
+            if (msg.message == WM_QUIT) {
+                running = false;
             } else {
-                // Update editor
-                editor->Update(1.0f / 60.0f);
-                
-                // Render editor
-                glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-                editor->Render();
-                SwapBuffers(hDC);
+                TranslateMessage(&msg);
+                DispatchMessage(&msg);
             }
+        } else {
+            // Update editor
+            editor->Update(1.0f / 60.0f);
+            
+            // Render editor
+            glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+            editor->Render();
+            SwapBuffers(hDC);
         }
-        
-        // Clean up OpenGL
-        wglMakeCurrent(NULL, NULL);
-        wglDeleteContext(hRC);
-        ReleaseDC(hWnd, hDC);
-        
-        return static_cast<int>(msg.wParam);
     }
+    
+    // Clean up OpenGL
+    wglMakeCurrent(NULL, NULL);
+    wglDeleteContext(hRC);
+    ReleaseDC(hWnd, hDC);
+    
+    return static_cast<int>(msg.wParam);
+}
 
-    // Windows procedure implementation
-    LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam) {
-        switch (message) {
-        case WM_CLOSE:
-            PostQuitMessage(0);
-            return 0;
-            
-        case WM_DESTROY:
-            return 0;
-            
-        case WM_LBUTTONDOWN:
-            if (editor) {
-                editor->HandleInput(LOWORD(lParam), HIWORD(lParam), true);
-            }
-            return 0;
-            
-        case WM_LBUTTONUP:
-            if (editor) {
-                editor->HandleInput(LOWORD(lParam), HIWORD(lParam), false);
-            }
-            return 0;
-            
-        case WM_MOUSEMOVE:
-            if (editor) {
-                editor->HandleInput(LOWORD(lParam), HIWORD(lParam), false);
-            }
-            return 0;
-            
-        default:
-            return DefWindowProc(hWnd, message, wParam, lParam);
+// Windows procedure implementation
+LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam) {
+    switch (message) {
+    case WM_CLOSE:
+        PostQuitMessage(0);
+        return 0;
+        
+    case WM_DESTROY:
+        return 0;
+        
+    case WM_LBUTTONDOWN:
+        if (editor) {
+            editor->HandleInput(LOWORD(lParam), HIWORD(lParam), true);
         }
+        return 0;
+        
+    case WM_LBUTTONUP:
+        if (editor) {
+            editor->HandleInput(LOWORD(lParam), HIWORD(lParam), false);
+        }
+        return 0;
+        
+    case WM_MOUSEMOVE:
+        if (editor) {
+            editor->HandleInput(LOWORD(lParam), HIWORD(lParam), false);
+        }
+        return 0;
+        
+    default:
+        return DefWindowProc(hWnd, message, wParam, lParam);
     }
 }
+} // extern "C"
 #else
 // Linux entry point
 int main(int argc, char** argv) {

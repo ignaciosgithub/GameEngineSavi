@@ -43,7 +43,7 @@
     #define APIENTRY WINAPI
     #endif
     
-    // Windows-specific window procedure declarations
+    // Forward declarations for Windows-specific functions
     #ifdef __cplusplus
     extern "C" {
     #endif
