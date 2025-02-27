@@ -11,20 +11,20 @@ class Model;
 
 class AnimationComponent : public MonoBehaviourLike {
 private:
-    std::shared_ptr<Animation> currentAnimation;
+    std::shared_ptr<Animation::Animation> currentAnimation;
     float currentTime;
     bool isPlaying;
     Model* targetModel;
     
     // Map of animation names to Animation objects
-    std::unordered_map<std::string, std::shared_ptr<Animation>> animations;
+    std::unordered_map<std::string, std::shared_ptr<Animation::Animation>> animations;
     
 public:
     // Constructor
     AnimationComponent();
     
     // Add an animation to the component
-    void AddAnimation(const std::string& name, std::shared_ptr<Animation> animation);
+    void AddAnimation(const std::string& name, std::shared_ptr<Animation::Animation> animation);
     
     // Add an animation from a set of OBJ files
     void AddAnimationFromOBJs(const std::string& name, const std::vector<std::string>& objFilePaths, 
@@ -53,10 +53,10 @@ public:
     void Update(float deltaTime) override;
     
     // Get the current animation
-    std::shared_ptr<Animation> GetCurrentAnimation() const;
+    std::shared_ptr<Animation::Animation> GetCurrentAnimation() const;
     
     // Get all animations
-    const std::unordered_map<std::string, std::shared_ptr<Animation>>& GetAnimations() const;
+    const std::unordered_map<std::string, std::shared_ptr<Animation::Animation>>& GetAnimations() const;
     
     // Check if an animation is playing
     bool IsPlaying() const;

@@ -13,10 +13,10 @@ int main() {
     
     // Create a simple animation
     std::cout << "Creating animation..." << std::endl;
-    auto animation = std::make_shared<Animation>("TestAnimation", 1.0f, true);
+    auto animation = std::make_shared<Animation::Animation>("TestAnimation", 1.0f, true);
     
     // Create keyframes with vertex data
-    std::vector<GLfloat> keyframe1Vertices = {
+    std::vector<float> keyframe1Vertices = {
         // Cube in pose 1 (default position)
         -1.0f, -1.0f, -1.0f,
         -1.0f, -1.0f,  1.0f,
@@ -28,7 +28,7 @@ int main() {
          1.0f,  1.0f,  1.0f
     };
     
-    std::vector<GLfloat> keyframe2Vertices = {
+    std::vector<float> keyframe2Vertices = {
         // Cube in pose 2 (slightly moved)
         -1.0f, -1.0f, -0.8f,
         -1.0f, -1.0f,  1.2f,
@@ -54,7 +54,7 @@ int main() {
         std::cout << "Time: " << time << std::endl;
         
         // Get interpolated vertices
-        const std::vector<GLfloat>& interpolatedVertices = animation->GetInterpolatedVertices(time);
+        const std::vector<float>& interpolatedVertices = animation->GetInterpolatedVertices(time);
         
         // Print first vertex as sample
         if (!interpolatedVertices.empty()) {

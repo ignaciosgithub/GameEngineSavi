@@ -6,7 +6,7 @@ AnimationComponent::AnimationComponent()
     : currentTime(0.0f), isPlaying(false), targetModel(nullptr) {
 }
 
-void AnimationComponent::AddAnimation(const std::string& name, std::shared_ptr<Animation> animation) {
+void AnimationComponent::AddAnimation(const std::string& name, std::shared_ptr<Animation::Animation> animation) {
     animations[name] = animation;
 }
 
@@ -22,7 +22,7 @@ void AnimationComponent::AddAnimationFromOBJs(const std::string& name,
     }
     
     // Create a new animation
-    std::shared_ptr<Animation> animation = std::make_shared<Animation>(name, duration, loop);
+    std::shared_ptr<Animation::Animation> animation = std::make_shared<Animation::Animation>(name, duration, loop);
     
     // Add keyframes from OBJ files
     for (size_t i = 0; i < objFilePaths.size(); ++i) {
@@ -87,7 +87,7 @@ void AnimationComponent::Update(float deltaTime) {
     currentTime += deltaTime;
     
     // Get the interpolated vertices for the current time
-    const std::vector<GLfloat>& vertices = currentAnimation->GetInterpolatedVertices(currentTime);
+    const std::vector<float>& vertices = currentAnimation->GetInterpolatedVertices(currentTime);
     
     // Update the model's vertices
     if (!vertices.empty()) {
@@ -100,11 +100,11 @@ void AnimationComponent::Update(float deltaTime) {
     }
 }
 
-std::shared_ptr<Animation> AnimationComponent::GetCurrentAnimation() const {
+std::shared_ptr<Animation::Animation> AnimationComponent::GetCurrentAnimation() const {
     return currentAnimation;
 }
 
-const std::unordered_map<std::string, std::shared_ptr<Animation>>& AnimationComponent::GetAnimations() const {
+const std::unordered_map<std::string, std::shared_ptr<Animation::Animation>>& AnimationComponent::GetAnimations() const {
     return animations;
 }
 
