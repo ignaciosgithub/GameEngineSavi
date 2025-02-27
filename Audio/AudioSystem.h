@@ -2,6 +2,7 @@
 #define AUDIO_SYSTEM_H
 
 #include "AudioPlatform.h"
+#include "../Vector3.h"
 #include <unordered_map>
 #include <memory>
 #include <string>
@@ -17,6 +18,8 @@ private:
     std::vector<AudioSource*> activeSources;
     float masterVolume;
     bool initialized;
+    Vector3 listenerPosition;
+    Vector3 listenerVelocity;
     
     AudioSystem();
     ~AudioSystem();
@@ -40,6 +43,12 @@ public:
     
     // Get the number of active sources
     size_t GetActiveSourceCount() const { return activeSources.size(); }
+    
+    // Spatial audio support
+    void SetListenerPosition(const Vector3& position);
+    void SetListenerVelocity(const Vector3& velocity);
+    Vector3 GetListenerPosition() const;
+    Vector3 GetListenerVelocity() const;
     
     // Adjust volume for multiple sources to prevent volume increase
     void AdjustVolumeForMultipleSources();
