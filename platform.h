@@ -83,16 +83,9 @@
 
 // Forward declarations for Windows-specific functions
 #ifdef PLATFORM_WINDOWS
-#ifdef __cplusplus
-extern "C" {
-#endif
-
+// These are forward declarations only - actual implementations are in platform-specific files
 LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow);
-
-#ifdef __cplusplus
-}
-#endif
 #endif // PLATFORM_WINDOWS
 
 #endif // PLATFORM_H
