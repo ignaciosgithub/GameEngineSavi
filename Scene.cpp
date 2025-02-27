@@ -119,33 +119,58 @@ void Scene::Render() {
 }
 
 void Scene::RenderScene() {
-    // Skip rendering if no main camera
-    if (!mainCamera) {
+    // Initialize camera manager if not already created
+    if (!cameraManager) {
+        cameraManager = std::make_unique<CameraManager>();
+        
+        // Set main camera if available
+        if (mainCamera) {
+            cameraManager->SetMainCamera(mainCamera);
+        }
+        
+        // Set minimap camera if available
+        if (minimapCamera) {
+            cameraManager->SetMinimapCamera(minimapCamera);
+        }
+    }
+    
+    // Skip rendering if no cameras are available
+    if (!mainCamera && cameraManager->GetActiveCameras().empty()) {
         return;
     }
     
-    // Get view and projection matrices from main camera
-    Matrix4x4 viewMatrix = mainCamera->GetViewMatrix();
-    Matrix4x4 projectionMatrix = mainCamera->GetProjectionMatrix();
+    // Use camera manager to render from all active cameras
+    cameraManager->RenderFromAllCameras();
     
-    // Render game objects
-    for (auto& gameObject : gameObjects) {
-        // Render meshes
-        for (auto& mesh : gameObject->meshes) {
-            // Set shader program if available
-            Shaders::ShaderProgram* program = mesh->GetShaderProgram();
-            if (program) {
-                program->Use();
+    // For each active camera, render the scene
+    for (auto camera : cameraManager->GetActiveCameras()) {
+        if (!camera || !camera->IsEnabled()) {
+            continue;
+        }
+        
+        // Get view and projection matrices from camera
+        Matrix4x4 viewMatrix = camera->GetViewMatrix();
+        Matrix4x4 projectionMatrix = camera->GetProjectionMatrix();
+        
+        // Render game objects
+        for (auto& gameObject : gameObjects) {
+            // Render meshes
+            for (auto& mesh : gameObject->meshes) {
+                // Set shader program if available
+                Shaders::ShaderProgram* program = mesh->GetShaderProgram();
+                if (program) {
+                    program->Use();
+                    
+                    // Set global uniforms
+                    SetGlobalShaderUniforms(program);
+                    
+                    // Set model-specific uniforms
+                    mesh->UpdateUniforms(viewMatrix, projectionMatrix);
+                }
                 
-                // Set global uniforms
-                SetGlobalShaderUniforms(program);
-                
-                // Set model-specific uniforms
-                mesh->UpdateUniforms(viewMatrix, projectionMatrix);
+                // Render mesh
+                mesh->Render(pointLights);
             }
-            
-            // Render mesh
-            mesh->Render(pointLights);
         }
     }
 }
