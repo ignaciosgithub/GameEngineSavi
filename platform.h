@@ -81,11 +81,4 @@
 #include <chrono>
 #include <thread>
 
-// Forward declarations for Windows-specific functions
-#ifdef PLATFORM_WINDOWS
-// These are forward declarations only - actual implementations are in platform-specific files
-LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
-int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow);
-#endif // PLATFORM_WINDOWS
-
 #endif // PLATFORM_H
