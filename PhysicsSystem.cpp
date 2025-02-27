@@ -8,7 +8,7 @@
 
 PhysicsSystem::PhysicsSystem()
     : gravity(-9.81f), fixedTimeStep(1.0f / 60.0f), enableCollisions(true),
-      collisionSystem(nullptr) {
+      globalRestitution(0.2f), collisionSystem(nullptr) {
   // Initialize with default values
   // These will be overridden by Initialize() if called
 }
@@ -175,6 +175,19 @@ void PhysicsSystem::SetEnableCollisions(bool enable) {
 }
 
 bool PhysicsSystem::GetEnableCollisions() const { return enableCollisions; }
+
+void PhysicsSystem::SetGlobalRestitution(float value) {
+  globalRestitution = value;
+
+// Additional debug information in debug builds
+#ifdef DEBUG_BUILD
+  if (EngineCondition::IsDebugBuild()) {
+    std::cout << "Global restitution set to: " << globalRestitution << std::endl;
+  }
+#endif
+}
+
+float PhysicsSystem::GetGlobalRestitution() const { return globalRestitution; }
 
 void PhysicsSystem::SetCollisionSystem(CollisionSystem *system) {
   collisionSystem = system;

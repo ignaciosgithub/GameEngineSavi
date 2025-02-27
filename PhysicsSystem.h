@@ -13,6 +13,7 @@ private:
   float gravity;
   float fixedTimeStep;
   bool enableCollisions;
+  float globalRestitution;
   std::vector<RigidBody *> bodies;
   CollisionSystem *collisionSystem;
 
@@ -38,6 +39,10 @@ public:
   // Collision control
   void SetEnableCollisions(bool enable);
   bool GetEnableCollisions() const;
+
+  // Collision elasticity control
+  void SetGlobalRestitution(float value);
+  float GetGlobalRestitution() const;
 
   // Collision system access
   void SetCollisionSystem(CollisionSystem *system);

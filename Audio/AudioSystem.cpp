@@ -7,7 +7,9 @@
 // Initialize static instance pointer
 AudioSystem* AudioSystem::instance = nullptr;
 
-AudioSystem::AudioSystem() : masterVolume(1.0f), initialized(false) {
+AudioSystem::AudioSystem() : masterVolume(1.0f), initialized(false), 
+    listenerPosition(Vector3(0.0f, 0.0f, 0.0f)), listenerVelocity(Vector3(0.0f, 0.0f, 0.0f)) {
+    // Initialize listener position and velocity to origin
 }
 
 AudioSystem::~AudioSystem() {
@@ -207,4 +209,33 @@ void AudioSystem::AdjustVolumeForMultipleSources() {
         }
     }
 #endif
+}
+
+// Spatial audio support
+void AudioSystem::SetListenerPosition(const Vector3& position) {
+    listenerPosition = position;
+    
+#if AUDIO_ENABLED
+    // SDL_mixer doesn't have direct spatial audio support
+    // In a more advanced implementation, we would use this position
+    // to calculate distance attenuation for each audio source
+#endif
+}
+
+void AudioSystem::SetListenerVelocity(const Vector3& velocity) {
+    listenerVelocity = velocity;
+    
+#if AUDIO_ENABLED
+    // SDL_mixer doesn't have direct spatial audio support
+    // In a more advanced implementation, we would use this velocity
+    // to calculate doppler effect for each audio source
+#endif
+}
+
+Vector3 AudioSystem::GetListenerPosition() const {
+    return listenerPosition;
+}
+
+Vector3 AudioSystem::GetListenerVelocity() const {
+    return listenerVelocity;
 }
