@@ -1,131 +1,49 @@
+# Makefile for GameEngineSavi (Windows with MinGW)
+
+# Define compiler and flags
 CXX = g++
-CXXFLAGS = -std=c++14 -Wall -Wextra -I. -IThirdParty
-LDFLAGS = -lopengl32 -lglu32
+CXXFLAGS = -std=c++14 -Wall -Wextra -g
 
-# Source files for the engine
-ENGINE_SOURCES = Camera.cpp \
-                Face.cpp \
-                GameObject.cpp \
-                Matrix4x4.cpp \
-                Model.cpp \
-                MonoBehaviourLike.cpp \
-                PointLight.cpp \
-                Prefab.cpp \
-                Pyramid.cpp \
-                Raycast.cpp \
-                Scene.cpp \
-                Time.cpp \
-                Triangle.cpp \
-                Vector3.cpp
+# Define different LDFLAGS for different targets
+OPENGL_LDFLAGS = -lopengl32 -lglu32 -lgdi32
+AUDIO_LDFLAGS = -lSDL2 -lSDL2_mixer
+SIMPLE_LDFLAGS =
 
-# Source files for the physics system
-PHYSICS_SOURCES = CollisionSystem.cpp \
-                 PhysicsSystem.cpp \
-                 RigidBody.cpp
+# Define include paths
+INCLUDES = -I.
 
-# Source files for the super simple Windows demo
-SUPER_SIMPLE_SOURCES = SuperSimplePhysicsDemo_Windows.cpp \
-                       Vector3.cpp
+# Define source files
+SOURCES = $(wildcard *.cpp)
+OBJECTS = $(SOURCES:.cpp=.o)
 
-# Source files for the Windows physics demo
-WINDOWS_PHYSICS_DEMO_SOURCES = PhysicsDemo.cpp \
-                              Vector3.cpp \
-                              CollisionSystem.cpp \
-                              PhysicsSystem.cpp \
-                              RigidBody.cpp
-
-# Source files for the GUI system
-GUI_SOURCES = GUI/GUI.cpp \
-             GUI/SettingsPanel.cpp
-
-# Source files for the editor
-EDITOR_SOURCES = Editor/Editor.cpp \
-                Editor/HierarchyPanel.cpp \
-                Editor/SceneViewPanel.cpp \
-                Editor/InspectorPanel.cpp \
-                Editor/ProjectPanel.cpp \
-                Editor/EditorMain.cpp
-
-# Source files for the project management system
-PROJECT_SOURCES = ProjectSettings/ProjectSettings.cpp \
-                 ProjectSettings/ProjectManager.cpp
-
-# Source files for the debugger system
-DEBUGGER_SOURCES = Debugger.cpp
-
-# Source files for the main engine demo
-MAIN_ENGINE_SOURCES = main35engine.cpp \
-                     $(ENGINE_SOURCES)
-
-# Object files
-ENGINE_OBJECTS = $(ENGINE_SOURCES:.cpp=.o)
-PHYSICS_OBJECTS = $(PHYSICS_SOURCES:.cpp=.o)
-SUPER_SIMPLE_OBJECTS = $(SUPER_SIMPLE_SOURCES:.cpp=.o)
-WINDOWS_PHYSICS_DEMO_OBJECTS = $(WINDOWS_PHYSICS_DEMO_SOURCES:.cpp=.o)
-GUI_OBJECTS = $(GUI_SOURCES:.cpp=.o)
-PROJECT_OBJECTS = $(PROJECT_SOURCES:.cpp=.o)
-DEBUGGER_OBJECTS = $(DEBUGGER_SOURCES:.cpp=.o)
-EDITOR_OBJECTS = $(EDITOR_SOURCES:.cpp=.o)
-MAIN_ENGINE_OBJECTS = $(MAIN_ENGINE_SOURCES:.cpp=.o) $(GUI_OBJECTS) $(PROJECT_OBJECTS) $(DEBUGGER_OBJECTS)
-
-# Executables
-SUPER_SIMPLE_TARGET = bin/windows/SuperSimplePhysicsDemo.exe
-WINDOWS_PHYSICS_DEMO_TARGET = bin/windows/PhysicsDemo.exe
-MAIN_ENGINE_TARGET = bin/windows/MainEngine.exe
-PROJECT_DEMO_TARGET = bin/windows/ProjectDemo.exe
-EDITOR_TARGET = bin/windows/Editor.exe
+# Define targets
+TARGETS = SuperSimplePhysicsDemo_Windows PhysicsDemo
 
 # Default target
-all: directories $(SUPER_SIMPLE_TARGET) $(WINDOWS_PHYSICS_DEMO_TARGET) $(EDITOR_TARGET)
+all: $(TARGETS)
 
-# Create necessary directories
-directories:
-	mkdir -p bin/windows
-
-# Build the super simple physics demo
-$(SUPER_SIMPLE_TARGET): $(SUPER_SIMPLE_OBJECTS)
-	$(CXX) $(CXXFLAGS) -o $@ $^ $(LDFLAGS)
-
-# Build the Windows physics demo
-$(WINDOWS_PHYSICS_DEMO_TARGET): $(WINDOWS_PHYSICS_DEMO_OBJECTS)
-	$(CXX) $(CXXFLAGS) -o $@ $^ $(LDFLAGS)
-
-# Build the main engine demo
-$(MAIN_ENGINE_TARGET): $(MAIN_ENGINE_OBJECTS)
-	$(CXX) $(CXXFLAGS) -o $@ $^ $(LDFLAGS)
-
-# Build the project demo
-$(PROJECT_DEMO_TARGET): ProjectSettings/ProjectDemo.cpp $(PROJECT_OBJECTS)
-	$(CXX) $(CXXFLAGS) -o $@ $^ $(LDFLAGS)
-	
-# Build the editor
-$(EDITOR_TARGET): $(EDITOR_OBJECTS) $(ENGINE_OBJECTS) $(PHYSICS_OBJECTS) $(GUI_OBJECTS) ProjectSettings/ProjectSettings.o ProjectSettings/ProjectManager.o EngineCondition.o
-	$(CXX) $(CXXFLAGS) -o $@ $^ $(LDFLAGS)
-
-# Build the engine library
-libengine.a: $(ENGINE_OBJECTS) $(PHYSICS_OBJECTS) $(GUI_OBJECTS) $(PROJECT_OBJECTS)
-	ar rcs $@ $^
-
-# Generic rule for object files
-%.o: %.cpp
-	$(CXX) $(CXXFLAGS) -c $< -o $@
-
-# Clean up
+# Clean target
 clean:
-	rm -f $(ENGINE_OBJECTS) $(PHYSICS_OBJECTS) $(SUPER_SIMPLE_OBJECTS) $(WINDOWS_PHYSICS_DEMO_OBJECTS) $(GUI_OBJECTS) $(PROJECT_OBJECTS) $(MAIN_ENGINE_OBJECTS) $(EDITOR_OBJECTS)
-	rm -f $(SUPER_SIMPLE_TARGET) $(WINDOWS_PHYSICS_DEMO_TARGET) $(MAIN_ENGINE_TARGET) $(PROJECT_DEMO_TARGET) $(EDITOR_TARGET) libengine.a
+	del /Q $(OBJECTS) $(TARGETS)
 
-# Help target
-help:
-	@echo "Available targets:"
-	@echo "  all                  - Build the super simple physics demo, Windows physics demo, and editor"
-	@echo "  $(SUPER_SIMPLE_TARGET)   - Build the super simple physics demo"
-	@echo "  $(WINDOWS_PHYSICS_DEMO_TARGET)   - Build the Windows physics demo"
-	@echo "  $(MAIN_ENGINE_TARGET)   - Build the main engine demo"
-	@echo "  $(PROJECT_DEMO_TARGET)   - Build the project management demo"
-	@echo "  $(EDITOR_TARGET)   - Build the editor"
-	@echo "  libengine.a         - Build the engine as a static library"
-	@echo "  clean               - Remove all built files"
-	@echo "  help                - Show this help message"
+# Rule for object files
+%.o: %.cpp
+	$(CXX) $(CXXFLAGS) $(INCLUDES) -c $< -o $@
 
-.PHONY: all directories clean help
+# Rules for targets
+SuperSimplePhysicsDemo_Windows: SuperSimplePhysicsDemo_Windows.o Model.o Texture.o Scene.o Camera.o Vector3.o Matrix4x4.o PointLight.o GameObject.o MonoBehaviourLike.o PhysicsSystem.o CollisionSystem.o Time.o EngineTime.o EngineCondition.o
+	$(CXX) $(CXXFLAGS) -o $@ $^ $(OPENGL_LDFLAGS)
+
+PhysicsDemo: PhysicsDemo.o Model.o Texture.o Scene.o Camera.o Vector3.o Matrix4x4.o PointLight.o GameObject.o MonoBehaviourLike.o PhysicsSystem.o CollisionSystem.o Time.o EngineTime.o EngineCondition.o
+	$(CXX) $(CXXFLAGS) -o $@ $^ $(OPENGL_LDFLAGS)
+
+# Audio test target
+AudioTest: Audio/AudioTest.o Audio/AudioSystem.o Audio/AudioSource.o Audio/AudioClip.o
+	$(CXX) $(CXXFLAGS) -o $@ $^ $(OPENGL_LDFLAGS) $(AUDIO_LDFLAGS)
+
+# Add SDL2 and SDL2_mixer flags for audio-related targets
+Audio/%.o: Audio/%.cpp
+	$(CXX) $(CXXFLAGS) $(INCLUDES) -I/usr/include/SDL2 -c $< -o $@
+
+# Phony targets
+.PHONY: all clean

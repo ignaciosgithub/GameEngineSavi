@@ -48,6 +48,12 @@ ProjectSettings::ProjectSettings()
     engineSettings.network.simulatedPacketLoss = 0.0f;
     engineSettings.network.preferP2P = false;
     
+    // Default audio settings
+    engineSettings.audio.masterVolume = 1.0f;
+    engineSettings.audio.sampleRate = 44100;
+    engineSettings.audio.channels = 2;
+    engineSettings.audio.enableAudio = true;
+    
     // Default asset paths
     assetPaths["models"] = "Assets/Models";
     assetPaths["textures"] = "Assets/Textures";
@@ -96,6 +102,14 @@ bool ProjectSettings::LoadFromFile(const std::string& filePath) {
             engineSettings.network.simulatedLatency = j["engineSettings"]["network"]["simulatedLatency"];
             engineSettings.network.simulatedPacketLoss = j["engineSettings"]["network"]["simulatedPacketLoss"];
             engineSettings.network.preferP2P = j["engineSettings"]["network"]["preferP2P"];
+        }
+        
+        // Load audio settings if they exist
+        if (j["engineSettings"].contains("audio")) {
+            engineSettings.audio.masterVolume = j["engineSettings"]["audio"]["masterVolume"];
+            engineSettings.audio.sampleRate = j["engineSettings"]["audio"]["sampleRate"];
+            engineSettings.audio.channels = j["engineSettings"]["audio"]["channels"];
+            engineSettings.audio.enableAudio = j["engineSettings"]["audio"]["enableAudio"];
         }
         
         // Load asset paths
@@ -147,6 +161,12 @@ bool ProjectSettings::SaveToFile(const std::string& filePath) {
         j["engineSettings"]["network"]["simulatedLatency"] = engineSettings.network.simulatedLatency;
         j["engineSettings"]["network"]["simulatedPacketLoss"] = engineSettings.network.simulatedPacketLoss;
         j["engineSettings"]["network"]["preferP2P"] = engineSettings.network.preferP2P;
+        
+        // Audio settings
+        j["engineSettings"]["audio"]["masterVolume"] = engineSettings.audio.masterVolume;
+        j["engineSettings"]["audio"]["sampleRate"] = engineSettings.audio.sampleRate;
+        j["engineSettings"]["audio"]["channels"] = engineSettings.audio.channels;
+        j["engineSettings"]["audio"]["enableAudio"] = engineSettings.audio.enableAudio;
         
         // Asset paths
         for (auto it = assetPaths.begin(); it != assetPaths.end(); ++it) {
@@ -338,6 +358,40 @@ bool ProjectSettings::GetShadows() const {
 
 void ProjectSettings::SetShadows(bool enabled) {
     engineSettings.rendering.shadows = enabled;
+}
+
+// Audio settings getters and setters
+float ProjectSettings::GetMasterVolume() const {
+    return engineSettings.audio.masterVolume;
+}
+
+void ProjectSettings::SetMasterVolume(float volume) {
+    // Clamp volume between 0 and 1
+    engineSettings.audio.masterVolume = (volume < 0.0f) ? 0.0f : ((volume > 1.0f) ? 1.0f : volume);
+}
+
+int ProjectSettings::GetSampleRate() const {
+    return engineSettings.audio.sampleRate;
+}
+
+void ProjectSettings::SetSampleRate(int sampleRate) {
+    engineSettings.audio.sampleRate = sampleRate;
+}
+
+int ProjectSettings::GetAudioChannels() const {
+    return engineSettings.audio.channels;
+}
+
+void ProjectSettings::SetAudioChannels(int channels) {
+    engineSettings.audio.channels = channels;
+}
+
+bool ProjectSettings::GetEnableAudio() const {
+    return engineSettings.audio.enableAudio;
+}
+
+void ProjectSettings::SetEnableAudio(bool enabled) {
+    engineSettings.audio.enableAudio = enabled;
 }
 
 std::string ProjectSettings::GetAssetPath(const std::string& type) const {
