@@ -23,8 +23,9 @@ Editor::Editor(int width, int height)
     
     // Create editor camera
     editorCamera = std::unique_ptr<Camera>(new Camera());
-    editorCamera->SetPosition(Vector3(0, 5, 10));
+    editorCamera->SetPosition(Vector3(0, 2, 5));
     editorCamera->LookAt(Vector3(0, 0, 0));
+    editorCamera->fieldOfView = 45.0f;
 }
 
 Editor::~Editor() {
