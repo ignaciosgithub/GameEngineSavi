@@ -1,0 +1,22 @@
+Creating 100 physical objects...
+Performance test initialized with 100 objects
+Running test for 10 seconds...
+Target framerate: 60+ FPS
+Time: 1.0s, FPS: 806.4 (Min: 806.4, Max: 806.4)
+Time: 2.0s, FPS: 804.9 (Min: 804.9, Max: 806.4)
+Time: 3.0s, FPS: 804.9 (Min: 804.9, Max: 806.4)
+Time: 4.0s, FPS: 804.6 (Min: 804.6, Max: 806.4)
+Time: 5.0s, FPS: 804.6 (Min: 804.6, Max: 806.4)
+Time: 6.0s, FPS: 806.0 (Min: 804.6, Max: 806.4)
+Time: 7.0s, FPS: 805.2 (Min: 804.6, Max: 806.4)
+Time: 8.0s, FPS: 806.6 (Min: 804.6, Max: 806.6)
+Time: 9.0s, FPS: 804.4 (Min: 804.4, Max: 806.6)
+
+===== Performance Test Results =====
+Objects: 100
+Test duration: 10 seconds
+Average FPS: 805.3
+Minimum FPS: 804.4
+Maximum FPS: 806.6
+Performance assessment: PASSED
+===================================

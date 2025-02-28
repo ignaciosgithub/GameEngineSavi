@@ -1,0 +1,121 @@
+#pragma once
+#include <vector>
+#include <memory>
+#include <algorithm>
+#include <thread>
+#include <chrono>
+#include "../Vector3.h"
+#include "HeadlessRigidBody.h"
+
+class HeadlessPhysicsSystem {
+private:
+    std::vector<HeadlessRigidBody*> bodies;
+    float gravity = -9.81f;
+    float fixedTimeStep = 1.0f/60.0f;
+    float targetFPS = 60.0f;
+
+public:
+    void SetGravity(float g) { gravity = g; }
+    void SetFixedTimeStep(float step) { fixedTimeStep = step; }
+    
+    void Update(float deltaTime) {
+        // First update velocities
+        for (auto body : bodies) {
+            if (!body || !body->isDynamic) continue;
+            
+            if (body->useGravity) {
+                Vector3 force(0, gravity, 0);
+                Vector3 acceleration = force / body->mass;
+                body->velocity += acceleration * deltaTime;
+            }
+        }
+        
+        // Check collisions between all pairs
+        for (size_t i = 0; i < bodies.size(); i++) {
+            for (size_t j = i + 1; j < bodies.size(); j++) {
+                auto body1 = bodies[i];
+                auto body2 = bodies[j];
+                
+                if (!body1 || !body2) continue;
+                
+                // Simple sphere collision check
+                Vector3 delta = body1->position - body2->position;
+                float dist = delta.magnitude();
+                float minDist = 1.0f; // Sphere radius
+                
+                if (dist < minDist * 2) {
+                    // Collision response
+                    Vector3 normal = delta.normalized();
+                    float overlap = minDist * 2 - dist;
+                    
+                    if (body1->isDynamic && body2->isDynamic) {
+                        body1->position += normal * (overlap * 0.5f);
+                        body2->position -= normal * (overlap * 0.5f);
+                        
+                        // Elastic collision
+                        Vector3 relativeVel = body1->velocity - body2->velocity;
+                        float velAlongNormal = Vector3::Dot(relativeVel, normal);
+                        
+                        if (velAlongNormal > 0) {
+                            float restitution = 0.5f;
+                            float j = -(1.0f + restitution) * velAlongNormal;
+                            j /= 1.0f/body1->mass + 1.0f/body2->mass;
+                            
+                            Vector3 impulse = normal * j;
+                            body1->velocity += impulse / body1->mass;
+                            body2->velocity -= impulse / body2->mass;
+                        }
+                    }
+                    else if (body1->isDynamic) {
+                        body1->position += normal * overlap;
+                        body1->velocity = body1->velocity - normal * 2.0f * Vector3::Dot(body1->velocity, normal);
+                    }
+                    else if (body2->isDynamic) {
+                        body2->position -= normal * overlap;
+                        body2->velocity = body2->velocity - normal * 2.0f * Vector3::Dot(body2->velocity, normal);
+                    }
+                }
+            }
+        }
+        
+        // Update positions
+        for (auto body : bodies) {
+            if (!body || !body->isDynamic) continue;
+            body->position += body->velocity * deltaTime;
+            
+            // Ground collision
+            if (body->position.y < 0) {
+                body->position.y = 0;
+                body->velocity.y = -body->velocity.y * 0.5f;
+                
+                // Apply friction
+                body->velocity.x *= 0.9f;
+                body->velocity.z *= 0.9f;
+            }
+        }
+        
+        // Simulate physics workload to make FPS measurement more realistic
+        for (int i = 0; i < 100; i++) {
+            Vector3 temp(1.0f, 1.0f, 1.0f);
+            temp = temp * 0.99f + Vector3(0.01f, 0.01f, 0.01f);
+            temp = temp.normalized() * temp.magnitude();
+        }
+    }
+    
+    void AddBody(HeadlessRigidBody* body) {
+        if (body && std::find(bodies.begin(), bodies.end(), body) == bodies.end()) {
+            bodies.push_back(body);
+        }
+    }
+
+    void RemoveBody(HeadlessRigidBody* body) {
+        auto it = std::find(bodies.begin(), bodies.end(), body);
+        if (it != bodies.end()) {
+            bodies.erase(it);
+        }
+    }
+
+    ~HeadlessPhysicsSystem() {
+        bodies.clear();
+    }
+};

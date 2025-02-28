@@ -1,0 +1,17 @@
+#!/bin/bash
+echo "Building headless performance test..."
+
+# Create output directory if it doesn't exist
+mkdir -p ../bin/linux
+
+g++ -std=c++14 HeadlessPerformanceTest.cpp.new \
+    ../Vector3.cpp \
+    ../EngineTime.cpp \
+    -I.. \
+    -o headless_performance_test
+
+# Make executable
+chmod +x headless_performance_test
+
+echo "Build complete. Run ./headless_performance_test to test performance."
+echo "You can also specify object counts as arguments: ./headless_performance_test 10 100 1000"
