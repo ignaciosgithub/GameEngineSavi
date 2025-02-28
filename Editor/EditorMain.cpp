@@ -17,6 +17,8 @@
 #include <GL/glx.h>
 #include <X11/keysym.h>
 #include <X11/Xlib.h>
+#include <X11/Xutil.h>
+#include <X11/XKBlib.h>
 #endif
 
 // Window dimensions
@@ -304,6 +306,21 @@ int main(int argc, char** argv) {
     
     // Set window title
     XStoreName(display, window, "GameEngineSavi Editor");
+    
+    // Set window properties
+    XSizeHints* hints = XAllocSizeHints();
+    hints->flags = PMinSize | PMaxSize;
+    hints->min_width = hints->max_width = WINDOW_WIDTH;
+    hints->min_height = hints->max_height = WINDOW_HEIGHT;
+    XSetWMNormalHints(display, window, hints);
+    XFree(hints);
+    
+    // Set window class
+    XClassHint* classHint = XAllocClassHint();
+    classHint->res_name = (char*)"GameEngineSavi";
+    classHint->res_class = (char*)"Editor";
+    XSetClassHint(display, window, classHint);
+    XFree(classHint);
     
     // Map window
     XMapWindow(display, window);
