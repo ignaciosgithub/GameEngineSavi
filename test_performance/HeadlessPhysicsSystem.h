@@ -27,7 +27,7 @@ struct GridCoord {
 namespace std {
     template<>
     struct hash<GridCoord> {
-        size_t operator()(const GridCoord& coord) const {
+        std::size_t operator()(const GridCoord& coord) const {
             // Simple hash function for 3D coordinates
             return (coord.x * 73856093) ^ (coord.y * 19349663) ^ (coord.z * 83492791);
         }
