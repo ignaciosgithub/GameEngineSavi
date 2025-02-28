@@ -1108,4 +1108,5 @@ cd test_performance
 cd test_performance
 build_headless_test.bat
 ```
-
+## JSON Serialization
+The engine uses nlohmann/json 3.11.3 for object serialization. See [JSON Library Notes](docs/json_library.md) for implementation details and guidelines.
