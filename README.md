@@ -85,6 +85,39 @@ The engine is structured around these core components:
    mingw32-make -f Makefile.mingw
    ```
 
+## Visual Studio 2022 Setup
+
+GameEngineSavi includes full support for Visual Studio 2022, making it easy to develop games on Windows.
+
+### Quick Setup
+
+1. **Prerequisites**:
+   - Visual Studio 2022 (Community, Professional, or Enterprise)
+   - Desktop development with C++ workload installed
+   - Windows 10 or 11
+
+2. **Open the Solution**:
+   - Clone the repository
+   - Open `GameEngineSavi.sln` in Visual Studio 2022
+
+3. **Build and Run**:
+   - Select your desired configuration (Debug/Release) and platform (x64/Win32)
+   - Press F7 to build or F5 to build and run
+
+### Detailed Documentation
+
+For comprehensive Visual Studio 2022 setup instructions, debugging tips, performance optimization, and more, see our [detailed Visual Studio 2022 guide](VS2022_GUIDE.md).
+
+This guide covers:
+- Complete project setup
+- Building configurations
+- Debugging techniques
+- Project structure
+- Creating new games
+- Using advanced features
+- Troubleshooting common issues
+- Performance optimization
+
 ## Creating a New Project
 
 1. Create project structure:
