@@ -3,6 +3,7 @@
 
 #include "../GUI/GUI.h"
 #include "../Vector3.h"
+#include <iostream>
 
 // Forward declarations
 class Editor;
@@ -29,6 +30,9 @@ public:
     
     // Handle input
     bool HandleInput(int mouseX, int mouseY, bool clicked) override;
+    
+    // Debug rendering state
+    void DebugRenderState();
     
     // Handle camera movement
     void HandleCameraMovement(int mouseX, int mouseY);
