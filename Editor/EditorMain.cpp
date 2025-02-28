@@ -8,12 +8,14 @@
 #include <chrono>
 
 #ifdef PLATFORM_WINDOWS
-// Windows-specific includes are handled in platform.h
+#include <windows.h>
+#include <GL/gl.h>
+#include <GL/glu.h>
 #else
 #include <GL/gl.h>
+#include <GL/glu.h>
 #include <GL/glx.h>
 #include <X11/keysym.h>
-// Include X11/Xlib.h after our EngineTime class has been renamed to avoid conflicts
 #include <X11/Xlib.h>
 #endif
 
@@ -89,11 +91,16 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
     HGLRC hRC = wglCreateContext(hDC);
     wglMakeCurrent(hDC, hRC);
     
-    // Set up OpenGL viewport
+    // Set up OpenGL for 3D rendering
+    glEnable(GL_DEPTH_TEST);
+    glEnable(GL_CULL_FACE);
+    glClearColor(0.2f, 0.2f, 0.2f, 1.0f);
+    
+    // Set up viewport and perspective projection
     glViewport(0, 0, WINDOW_WIDTH, WINDOW_HEIGHT);
     glMatrixMode(GL_PROJECTION);
     glLoadIdentity();
-    glOrtho(0, WINDOW_WIDTH, WINDOW_HEIGHT, 0, -1, 1);
+    gluPerspective(45.0f, (float)WINDOW_WIDTH/WINDOW_HEIGHT, 0.1f, 1000.0f);
     glMatrixMode(GL_MODELVIEW);
     glLoadIdentity();
     
@@ -114,8 +121,18 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
             // Update editor
             editor->Update(1.0f / 60.0f);
             
-            // Render editor
+            // Clear buffers
             glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+            
+            // Reset matrices for 3D rendering
+            glMatrixMode(GL_PROJECTION);
+            glLoadIdentity();
+            gluPerspective(45.0f, (float)WINDOW_WIDTH/WINDOW_HEIGHT, 0.1f, 1000.0f);
+            
+            glMatrixMode(GL_MODELVIEW);
+            glLoadIdentity();
+            
+            // Render editor
             editor->Render();
             SwapBuffers(hDC);
         }
@@ -153,7 +170,84 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam) 
         
     case WM_MOUSEMOVE:
         if (editor) {
+            static int lastX = -1, lastY = -1;
+            if (lastX != -1 && lastY != -1) {
+                // Calculate mouse movement delta
+                int deltaX = LOWORD(lParam) - lastX;
+                int deltaY = HIWORD(lParam) - lastY;
+                
+                // Handle mouse look for camera rotation
+                Camera* camera = editor->GetEditorCamera();
+                if (camera && (deltaX != 0 || deltaY != 0)) {
+                    // Adjust rotation sensitivity
+                    float sensitivity = 0.005f;
+                    
+                    // Update camera look direction based on mouse movement
+                    Vector3 dir = camera->lookDirection;
+                    Vector3 up(0, 1, 0);
+                    Vector3 right = Vector3::Cross(up, dir);
+                    right.normalize();
+                    
+                    // Rotate around Y axis (left/right)
+                    float angleY = deltaX * sensitivity;
+                    float cosY = cos(angleY);
+                    float sinY = sin(angleY);
+                    dir = dir * cosY + right * sinY;
+                    
+                    // Rotate around X axis (up/down)
+                    float angleX = deltaY * sensitivity;
+                    Vector3 newUp = Vector3::Cross(dir, right);
+                    newUp.normalize();
+                    dir = dir * cos(angleX) + newUp * sin(angleX);
+                    
+                    dir.normalize();
+                    camera->lookDirection = dir;
+                    
+                    std::cout << "Camera direction: " << dir.x << ", " << dir.y << ", " << dir.z << std::endl;
+                }
+            }
+            
+            // Store current mouse position for next frame
+            lastX = LOWORD(lParam);
+            lastY = HIWORD(lParam);
+            
+            // Pass to regular input handling
             editor->HandleInput(LOWORD(lParam), HIWORD(lParam), false);
+        }
+        return 0;
+        
+    case WM_KEYDOWN:
+        if (editor) {
+            // Handle WASD keys for camera movement
+            Camera* camera = editor->GetEditorCamera();
+            if (camera) {
+                Vector3 pos = camera->GetPosition();
+                Vector3 dir = camera->lookDirection;
+                Vector3 right = Vector3::Cross(Vector3(0, 1, 0), dir);
+                right.normalize();
+                
+                float moveSpeed = 0.5f;
+                
+                // W - Move forward
+                if (wParam == 'W') {
+                    pos = pos + dir * moveSpeed;
+                }
+                // S - Move backward
+                else if (wParam == 'S') {
+                    pos = pos - dir * moveSpeed;
+                }
+                // A - Move left
+                else if (wParam == 'A') {
+                    pos = pos - right * moveSpeed;
+                }
+                // D - Move right
+                else if (wParam == 'D') {
+                    pos = pos + right * moveSpeed;
+                }
+                
+                camera->SetPosition(pos);
+                std::cout << "Camera position: " << pos.x << ", " << pos.y << ", " << pos.z << std::endl;
+            }
         }
         return 0;
         
@@ -218,11 +312,16 @@ int main(int argc, char** argv) {
     GLXContext context = glXCreateContext(display, vi, NULL, GL_TRUE);
     glXMakeCurrent(display, window, context);
     
-    // Set up OpenGL viewport
+    // Set up OpenGL for 3D rendering
+    glEnable(GL_DEPTH_TEST);
+    glEnable(GL_CULL_FACE);
+    glClearColor(0.2f, 0.2f, 0.2f, 1.0f);
+    
+    // Set up viewport and perspective projection
     glViewport(0, 0, WINDOW_WIDTH, WINDOW_HEIGHT);
     glMatrixMode(GL_PROJECTION);
     glLoadIdentity();
-    glOrtho(0, WINDOW_WIDTH, WINDOW_HEIGHT, 0, -1, 1);
+    gluPerspective(45.0f, (float)WINDOW_WIDTH/WINDOW_HEIGHT, 0.1f, 1000.0f);
     glMatrixMode(GL_MODELVIEW);
     glLoadIdentity();
     
@@ -245,6 +344,38 @@ int main(int argc, char** argv) {
                 if (XLookupKeysym(&event.xkey, 0) == XK_Escape) {
                     running = false;
                 }
+                // Handle WASD keys for camera movement
+                else if (editor) {
+                    Camera* camera = editor->GetEditorCamera();
+                    if (camera) {
+                        Vector3 pos = camera->GetPosition();
+                        Vector3 dir = camera->lookDirection;
+                        Vector3 right = Vector3::Cross(Vector3(0, 1, 0), dir);
+                        right.normalize();
+                        
+                        float moveSpeed = 0.5f;
+                        
+                        // W - Move forward
+                        if (XLookupKeysym(&event.xkey, 0) == XK_w || XLookupKeysym(&event.xkey, 0) == XK_W) {
+                            pos = pos + dir * moveSpeed;
+                        }
+                        // S - Move backward
+                        else if (XLookupKeysym(&event.xkey, 0) == XK_s || XLookupKeysym(&event.xkey, 0) == XK_S) {
+                            pos = pos - dir * moveSpeed;
+                        }
+                        // A - Move left
+                        else if (XLookupKeysym(&event.xkey, 0) == XK_a || XLookupKeysym(&event.xkey, 0) == XK_A) {
+                            pos = pos - right * moveSpeed;
+                        }
+                        // D - Move right
+                        else if (XLookupKeysym(&event.xkey, 0) == XK_d || XLookupKeysym(&event.xkey, 0) == XK_D) {
+                            pos = pos + right * moveSpeed;
+                        }
+                        
+                        camera->SetPosition(pos);
+                        std::cout << "Camera position: " << pos.x << ", " << pos.y << ", " << pos.z << std::endl;
+                    }
+                }
                 break;
                 
             case ButtonPress:
@@ -261,6 +392,48 @@ int main(int argc, char** argv) {
                 
             case MotionNotify:
                 if (editor) {
+                    static int lastX = -1, lastY = -1;
+                    if (lastX != -1 && lastY != -1) {
+                        // Calculate mouse movement delta
+                        int deltaX = event.xmotion.x - lastX;
+                        int deltaY = event.xmotion.y - lastY;
+                        
+                        // Handle mouse look for camera rotation
+                        Camera* camera = editor->GetEditorCamera();
+                        if (camera && (deltaX != 0 || deltaY != 0)) {
+                            // Adjust rotation sensitivity
+                            float sensitivity = 0.005f;
+                            
+                            // Update camera look direction based on mouse movement
+                            Vector3 dir = camera->lookDirection;
+                            Vector3 up(0, 1, 0);
+                            Vector3 right = Vector3::Cross(up, dir);
+                            right.normalize();
+                            
+                            // Rotate around Y axis (left/right)
+                            float angleY = deltaX * sensitivity;
+                            float cosY = cos(angleY);
+                            float sinY = sin(angleY);
+                            dir = dir * cosY + right * sinY;
+                            
+                            // Rotate around X axis (up/down)
+                            float angleX = deltaY * sensitivity;
+                            Vector3 newUp = Vector3::Cross(dir, right);
+                            newUp.normalize();
+                            dir = dir * cos(angleX) + newUp * sin(angleX);
+                            
+                            dir.normalize();
+                            camera->lookDirection = dir;
+                            
+                            std::cout << "Camera direction: " << dir.x << ", " << dir.y << ", " << dir.z << std::endl;
+                        }
+                    }
+                    
+                    // Store current mouse position for next frame
+                    lastX = event.xmotion.x;
+                    lastY = event.xmotion.y;
+                    
+                    // Pass to regular input handling
                     editor->HandleInput(event.xmotion.x, event.xmotion.y, false);
                 }
                 break;
@@ -270,8 +443,18 @@ int main(int argc, char** argv) {
         // Update editor
         editor->Update(1.0f / 60.0f);
         
-        // Render editor
+        // Clear buffers
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+        
+        // Reset matrices for 3D rendering
+        glMatrixMode(GL_PROJECTION);
+        glLoadIdentity();
+        gluPerspective(45.0f, (float)WINDOW_WIDTH/WINDOW_HEIGHT, 0.1f, 1000.0f);
+        
+        glMatrixMode(GL_MODELVIEW);
+        glLoadIdentity();
+        
+        // Render editor
         editor->Render();
         glXSwapBuffers(display, window);
     }

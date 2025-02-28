@@ -113,6 +113,12 @@ public:
             }
         }
     }
+    
+    // Update camera (called every frame)
+    void Update(float deltaTime) {
+        // This method is called by the editor to update the camera
+        // The actual movement is handled in EditorMain.cpp through input handling
+    }
 };
 
 #endif // CAMERA_H
