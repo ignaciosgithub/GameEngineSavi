@@ -2,6 +2,7 @@
 #include "../EngineCondition.h"
 #include "../platform.h"
 #include "../EngineTime.h"
+#include "../gl_types.h"
 #include <iostream>
 #include <memory>
 #include <thread>
@@ -31,7 +32,10 @@ std::unique_ptr<Editor> editor;
 LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
 
 // Windows entry point implementation
-extern "C" 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow) {
     // Create editor
     editor = std::unique_ptr<Editor>(new Editor(WINDOW_WIDTH, WINDOW_HEIGHT));
@@ -145,6 +149,10 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
     
     return static_cast<int>(msg.wParam);
 }
+
+#ifdef __cplusplus
+} // extern "C" closing brace
+#endif
 
 // Windows procedure implementation
 LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam) {
