@@ -289,3 +289,110 @@ void Scene::SetPhysicsSystem(std::unique_ptr<PhysicsSystem> system) {
 PhysicsSystem* Scene::GetPhysicsSystem() const {
     return physicsSystem.get();
 }
+#include "Scene.h"
+#include "SceneSerializer.h"
+#include <iostream>
+#include <fstream>
+#include <filesystem>
+#include <algorithm>
+
+// Scene transition methods implementation
+
+void Scene::UnloadScene() {
+    // Stop all systems
+    Stop();
+    
+    // Clear resources
+    CleanupResources();
+    
+    isRunning = false;
+    std::cout << "Scene unloaded: " << currentScenePath << std::endl;
+}
+
+void Scene::LoadScene(const std::string& scenePath) {
+    // Unload current scene if any
+    if (isRunning) {
+        UnloadScene();
+    }
+    
+    currentScenePath = scenePath;
+    
+    // Load base scene
+    Load();
+    
+    // Create temp directory if it doesn't exist
+    std::filesystem::create_directories("temp");
+    
+    // Load transferred objects if any
+    std::ifstream manifest("temp/transfer_manifest.json");
+    if (manifest.is_open()) {
+        std::string objectPath;
+        while (std::getline(manifest, objectPath)) {
+            auto obj = SceneSerializer::LoadObjectFromJson(objectPath);
+            if (obj) {
+                AddGameObject(std::move(obj));
+            }
+            // Remove temporary file
+            std::filesystem::remove(objectPath);
+        }
+        manifest.close();
+        
+        // Clear manifest
+        std::filesystem::remove("temp/transfer_manifest.json");
+    }
+    
+    Initialize();
+    std::cout << "Scene loaded: " << scenePath << std::endl;
+}
+
+void Scene::TransferObject(GameObject* obj, const std::string& targetScenePath) {
+    if (!obj) {
+        std::cerr << "Error: Cannot transfer null GameObject" << std::endl;
+        return;
+    }
+    
+    // Create temp directory if it doesn't exist
+    std::filesystem::create_directories("temp");
+    
+    // Save object to temporary file
+    std::string tempPath = "temp/" + obj->GetName() + "_" + std::to_string(rand()) + ".json";
+    SceneSerializer::SaveObjectToJson(obj, tempPath);
+    
+    // Add to transfer manifest
+    std::ofstream manifest("temp/transfer_manifest.json", std::ios::app);
+    if (!manifest.is_open()) {
+        std::cerr << "Error: Could not open transfer manifest for writing" << std::endl;
+        return;
+    }
+    
+    manifest << tempPath << std::endl;
+    manifest.close();
+    
+    std::cout << "Object '" << obj->GetName() << "' marked for transfer to scene: " << targetScenePath << std::endl;
+}
+
+void Scene::CleanupResources() {
+    // Clear all game objects
+    gameObjects.clear();
+    
+    // Clear all cameras
+    cameras.clear();
+    
+    // Clear all point lights
+    pointLights.clear();
+    
+    // Reset camera pointers
+    mainCamera = nullptr;
+    minimapCamera = nullptr;
+    
+    // Reset physics system
+    if (physicsSystem) {
+        physicsSystem->Reset();
+    }
+    
+    // Reset frame count
+    frameCount = 0;
+    
+    // Reset physics accumulator
+    physicsAccumulator = 0.0f;
+}
