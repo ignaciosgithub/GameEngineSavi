@@ -1,0 +1,30 @@
++----------------------------------------------------------------------------------------------------------+
+|                                       GameEngineSavi Editor                                              |
++------------------+-----------------------------------------------+-----------------------------------+
+|  Hierarchy       |                                               |  Inspector                        |
+|                  |                                               |                                   |
+|  > Default Light |                  Scene View                   |  Transform                        |
+|  > Default Cube  |                                               |  Position: X: 0  Y: 0  Z: 0       |
+|                  |                                               |  Rotation: X: 0  Y: 0  Z: 0       |
+|                  |            +---------------+                  |  Scale:    X: 1  Y: 1  Z: 1       |
+|                  |            |               |                  |                                   |
+|                  |            |               |                  |  Material                         |
+|                  |            |      []       |                  |  Albedo: [Default]                |
+|                  |            |               |                  |  Normal Map: [None]               |
+|                  |            |               |                  |  Opacity: 1.0                     |
+|                  |            +---------------+                  |                                   |
+|                  |                                               |  Physics                          |
+|                  |                                               |  [x] Use Gravity                  |
+|                  |                                               |  [ ] Is Kinematic                 |
+|                  |                                               |  Friction: 0.5                    |
++------------------+-----------------------------------------------+-----------------------------------+
+|                                                                                                      |
+|  Project                                                                                             |
+|  [Models] [Textures] [Scenes] [Scripts] [Prefabs] [Audio]                                            |
+|                                                                                                      |
++----------------------------------------------------------------------------------------------------------+
+
+Camera Position: (0, 2, 5)
+Camera Look Direction: (0, 0, -1)
+Default Cube Position: (0, 0, 0)
+Default Light Position: (0, 5, 0)

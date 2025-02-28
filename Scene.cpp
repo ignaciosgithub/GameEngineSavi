@@ -1,6 +1,7 @@
 #include "Scene.h"
 #include <iostream>
 #include <algorithm>
+#include "EngineCondition.h"
 
 void Scene::Initialize() {
     // Initialize time
@@ -22,6 +23,57 @@ void Scene::Initialize() {
 
 void Scene::Load() {
     // Load scene resources
+    
+    // Create a default point light if none exists
+    if (pointLights.empty()) {
+        PointLight defaultLight;
+        defaultLight.position = Vector3(0, 5, 0);
+        defaultLight.color = Vector3(1.0f, 1.0f, 1.0f);
+        defaultLight.intensity = 1.0f;
+        defaultLight.range = 20.0f;
+        AddPointLight(defaultLight);
+        
+        // Create a game object for the light
+        GameObject* lightObj = new GameObject("Default Light");
+        lightObj->SetPosition(Vector3(0, 5, 0));
+        AddGameObject(lightObj);
+        
+        std::cout << "Created default point light" << std::endl;
+    }
+    
+    // Create a default cube if no game objects exist
+    if (gameObjects.empty() || (gameObjects.size() == 1 && gameObjects[0]->GetName() == "Default Light")) {
+        GameObject* cubeObj = new GameObject("Default Cube");
+        
+        // Load cube model
+        Model* cubeModel = new Model();
+        if (cubeModel->LoadFromFile("test_assets/cube.obj")) {
+            cubeObj->AddMesh(cubeModel);
+            cubeObj->SetPosition(Vector3(0, 0, 0));
+            AddGameObject(cubeObj);
+            std::cout << "Created default cube" << std::endl;
+        } else {
+            std::cerr << "Failed to load default cube model" << std::endl;
+            delete cubeModel;
+            delete cubeObj;
+        }
+    }
+    
+    // Set up a default camera if none exists
+    if (!mainCamera) {
+        Camera* defaultCamera = new Camera();
+        defaultCamera->SetPosition(Vector3(0, 2, 5));
+        defaultCamera->LookAt(Vector3(0, 0, 0));
+        defaultCamera->fieldOfView = 45.0f;
+        defaultCamera->SetEnabled(true);
+        
+        // Add camera to scene
+        AddCamera(defaultCamera);
+        SetMainCamera(defaultCamera);
+        
+        std::cout << "Created default camera" << std::endl;
+    }
+    
     std::cout << "Scene loaded" << std::endl;
 }
 
@@ -104,6 +156,7 @@ void Scene::Update(float deltaTime) {
     // Update cameras
     for (auto& camera : cameras) {
         // Update camera logic if needed
+        camera->Update(deltaTime);
     }
     
     // Increment frame counter
@@ -111,8 +164,58 @@ void Scene::Update(float deltaTime) {
 }
 
 void Scene::Render() {
+    // Set up OpenGL state
+    glEnable(GL_DEPTH_TEST);
+    glDepthFunc(GL_LESS);
+    glEnable(GL_CULL_FACE);
+    glCullFace(GL_BACK);
+    glEnable(GL_LIGHTING);
+    glEnable(GL_LIGHT0);
+    glEnable(GL_COLOR_MATERIAL);
+    glEnable(GL_NORMALIZE);
+    
+    // Set up background color (light gray)
+    glClearColor(0.8f, 0.8f, 0.8f, 1.0f);
+    
     // Clear screen
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    
+    // Set up default light if we have one
+    if (!pointLights.empty()) {
+        const PointLight& defaultLight = pointLights[0];
+        
+        // Set light position
+        GLfloat lightPos[] = {
+            defaultLight.position.x,
+            defaultLight.position.y,
+            defaultLight.position.z,
+            1.0f  // Positional light
+        };
+        glLightfv(GL_LIGHT0, GL_POSITION, lightPos);
+        
+        // Set light color
+        GLfloat lightAmbient[] = {0.2f, 0.2f, 0.2f, 1.0f};
+        GLfloat lightDiffuse[] = {
+            defaultLight.color.x * defaultLight.intensity,
+            defaultLight.color.y * defaultLight.intensity,
+            defaultLight.color.z * defaultLight.intensity,
+            1.0f
+        };
+        GLfloat lightSpecular[] = {
+            defaultLight.color.x * defaultLight.intensity,
+            defaultLight.color.y * defaultLight.intensity,
+            defaultLight.color.z * defaultLight.intensity,
+            1.0f
+        };
+        
+        glLightfv(GL_LIGHT0, GL_AMBIENT, lightAmbient);
+        glLightfv(GL_LIGHT0, GL_DIFFUSE, lightDiffuse);
+        glLightfv(GL_LIGHT0, GL_SPECULAR, lightSpecular);
+        
+        // Set light attenuation based on range
+        float attenuation = 1.0f / (defaultLight.range * defaultLight.range);
+        glLightf(GL_LIGHT0, GL_QUADRATIC_ATTENUATION, attenuation);
+    }
     
     // Render scene
     RenderScene();
@@ -139,26 +242,101 @@ void Scene::RenderScene() {
     
     // Skip rendering if no cameras are available
     if (!mainCamera && cameraManager->GetActiveCameras().empty()) {
+        std::cerr << "Warning: No active cameras available for rendering" << std::endl;
         return;
     }
     
     // Use camera manager to render from all active cameras
-    cameraManager->RenderFromAllCameras();
+    if (cameraManager) {
+        cameraManager->RenderFromAllCameras();
+    }
     
     // For each active camera, render the scene
-    for (auto camera : cameraManager->GetActiveCameras()) {
+    std::vector<Camera*> activeCameras;
+    
+    // Add main camera if it exists and is enabled
+    if (mainCamera && mainCamera->IsEnabled()) {
+        activeCameras.push_back(mainCamera);
+    }
+    
+    // Add cameras from camera manager if available
+    if (cameraManager) {
+        auto managerCameras = cameraManager->GetActiveCameras();
+        activeCameras.insert(activeCameras.end(), managerCameras.begin(), managerCameras.end());
+    }
+    
+    // If no active cameras, use the first camera in the list
+    if (activeCameras.empty() && !cameras.empty()) {
+        activeCameras.push_back(cameras[0].get());
+    }
+    
+    // Render from each active camera
+    for (auto camera : activeCameras) {
         if (!camera || !camera->IsEnabled()) {
             continue;
         }
         
-        // Get view and projection matrices from camera
-        Matrix4x4 viewMatrix = camera->GetViewMatrix();
+        // Set viewport for this camera
+        int viewportX = static_cast<int>(camera->viewportX * 800); // Assuming 800x600 window
+        int viewportY = static_cast<int>(camera->viewportY * 600);
+        int viewportWidth = static_cast<int>(camera->viewportWidth * 800);
+        int viewportHeight = static_cast<int>(camera->viewportHeight * 600);
+        
+        glViewport(viewportX, viewportY, viewportWidth, viewportHeight);
+        
+        // Set projection matrix
+        glMatrixMode(GL_PROJECTION);
+        glLoadIdentity();
+        
+        // Get projection matrix from camera
         Matrix4x4 projectionMatrix = camera->GetProjectionMatrix();
+        glLoadMatrixf(&projectionMatrix.elements[0][0]);
+        
+        // Set modelview matrix
+        glMatrixMode(GL_MODELVIEW);
+        glLoadIdentity();
+        
+        // Get view matrix from camera
+        Matrix4x4 viewMatrix = camera->GetViewMatrix();
+        glLoadMatrixf(&viewMatrix.elements[0][0]);
+        
+        // Debug output
+        std::cout << "Rendering from camera at position: (" 
+                  << camera->position.x << ", " 
+                  << camera->position.y << ", " 
+                  << camera->position.z << ")" << std::endl;
         
         // Render game objects
         for (auto& gameObject : gameObjects) {
+            if (!gameObject) {
+                continue;
+            }
+            
+            // Save current matrix
+            glPushMatrix();
+            
+            // Apply object transformation
+            Vector3 position = gameObject->GetPosition();
+            Vector3 rotation = gameObject->GetRotation();
+            Vector3 scale = gameObject->GetScale();
+            
+            // Translate to object position
+            glTranslatef(position.x, position.y, position.z);
+            
+            // Apply rotation
+            glRotatef(rotation.x, 1.0f, 0.0f, 0.0f);
+            glRotatef(rotation.y, 0.0f, 1.0f, 0.0f);
+            glRotatef(rotation.z, 0.0f, 0.0f, 1.0f);
+            
+            // Apply scale
+            glScalef(scale.x, scale.y, scale.z);
+            
             // Render meshes
             for (auto& mesh : gameObject->meshes) {
+                if (!mesh) {
+                    continue;
+                }
+                
                 // Set shader program if available
                 Shaders::ShaderProgram* program = mesh->GetShaderProgram();
                 if (program) {
@@ -174,8 +352,45 @@ void Scene::RenderScene() {
                 // Render mesh
                 mesh->Render(pointLights);
             }
+            
+            // Restore matrix
+            glPopMatrix();
+        }
+        
+        // Draw coordinate axes for debugging (only in editor mode)
+        if (EngineCondition::IsInEditMode()) {
+            DrawDebugAxes();
         }
     }
+}
+
+void Scene::DrawDebugAxes() {
+    // Disable lighting for drawing axes
+    glDisable(GL_LIGHTING);
+    
+    // Draw X axis (red)
+    glBegin(GL_LINES);
+    glColor3f(1.0f, 0.0f, 0.0f);
+    glVertex3f(0.0f, 0.0f, 0.0f);
+    glVertex3f(1.0f, 0.0f, 0.0f);
+    glEnd();
+    
+    // Draw Y axis (green)
+    glBegin(GL_LINES);
+    glColor3f(0.0f, 1.0f, 0.0f);
+    glVertex3f(0.0f, 0.0f, 0.0f);
+    glVertex3f(0.0f, 1.0f, 0.0f);
+    glEnd();
+    
+    // Draw Z axis (blue)
+    glBegin(GL_LINES);
+    glColor3f(0.0f, 0.0f, 1.0f);
+    glVertex3f(0.0f, 0.0f, 0.0f);
+    glVertex3f(0.0f, 0.0f, 1.0f);
+    glEnd();
+    
+    // Re-enable lighting
+    glEnable(GL_LIGHTING);
 }
 
 void Scene::SetMainCamera(Camera* camera) {
@@ -289,86 +504,14 @@ void Scene::SetPhysicsSystem(std::unique_ptr<PhysicsSystem> system) {
 PhysicsSystem* Scene::GetPhysicsSystem() const {
     return physicsSystem.get();
 }
-#include "Scene.h"
-#include "SceneSerializer.h"
-#include <iostream>
-#include <fstream>
-#include <filesystem>
-#include <algorithm>
 
-// Scene transition methods implementation
-
-void Scene::UnloadScene() {
-    // Stop all systems
-    Stop();
-    
-    // Clear resources
-    CleanupResources();
-    
-    isRunning = false;
-    std::cout << "Scene unloaded: " << currentScenePath << std::endl;
-}
-
-void Scene::LoadScene(const std::string& scenePath) {
-    // Unload current scene if any
-    if (isRunning) {
-        UnloadScene();
-    }
-    
-    currentScenePath = scenePath;
-    
-    // Load base scene
-    Load();
-    
-    // Create temp directory if it doesn't exist
-    std::filesystem::create_directories("temp");
-    
-    // Load transferred objects if any
-    std::ifstream manifest("temp/transfer_manifest.json");
-    if (manifest.is_open()) {
-        std::string objectPath;
-        while (std::getline(manifest, objectPath)) {
-            auto obj = SceneSerializer::LoadObjectFromJson(objectPath);
-            if (obj) {
-                AddGameObject(std::move(obj));
-            }
-            // Remove temporary file
-            std::filesystem::remove(objectPath);
+GameObject* Scene::FindGameObject(const std::string& name) const {
+    for (const auto& gameObject : gameObjects) {
+        if (gameObject->GetName() == name) {
+            return gameObject.get();
         }
-        manifest.close();
-        
-        // Clear manifest
-        std::filesystem::remove("temp/transfer_manifest.json");
     }
-    
-    Initialize();
-    std::cout << "Scene loaded: " << scenePath << std::endl;
-}
-
-void Scene::TransferObject(GameObject* obj, const std::string& targetScenePath) {
-    if (!obj) {
-        std::cerr << "Error: Cannot transfer null GameObject" << std::endl;
-        return;
-    }
-    
-    // Create temp directory if it doesn't exist
-    std::filesystem::create_directories("temp");
-    
-    // Save object to temporary file
-    std::string tempPath = "temp/" + obj->GetName() + "_" + std::to_string(rand()) + ".json";
-    SceneSerializer::SaveObjectToJson(obj, tempPath);
-    
-    // Add to transfer manifest
-    std::ofstream manifest("temp/transfer_manifest.json", std::ios::app);
-    if (!manifest.is_open()) {
-        std::cerr << "Error: Could not open transfer manifest for writing" << std::endl;
-        return;
-    }
-    
-    manifest << tempPath << std::endl;
-    manifest.close();
-    
-    std::cout << "Object '" << obj->GetName() << "' marked for transfer to scene: " << targetScenePath << std::endl;
+    return nullptr;
 }
 
 void Scene::CleanupResources() {

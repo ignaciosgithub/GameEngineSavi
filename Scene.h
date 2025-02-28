@@ -88,6 +88,9 @@ public:
     
     // GameObject finding
     GameObject* FindGameObject(const std::string& name) const;
+    
+    // Debug rendering
+    void DrawDebugAxes();
 };
 
 #endif // SCENE_H

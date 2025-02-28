@@ -197,9 +197,9 @@ EngineCondition::SetState(EngineCondition::State::DEBUG_BUILD_STATE);
 ## Default Scene Configuration
 
 New scenes include:
-1. One point light
-2. Default cube object
-3. Free camera system
+1. One point light at position (0, 5, 0)
+2. Default cube object at position (0, 0, 0)
+3. Free camera system at position (0, 2, 5) looking at the origin
 
 Example scene setup:
 ```cpp
@@ -208,15 +208,145 @@ scene->Load();
 
 // Default point light
 auto light = std::make_unique<PointLight>();
+light->position = Vector3(0, 5, 0);
 scene->AddLight(std::move(light));
 
 // Default cube
-auto cube = std::make_unique<GameObject>("Cube");
+auto cube = std::make_unique<GameObject>("Default Cube");
+cube->SetPosition(Vector3(0, 0, 0));
 scene->AddGameObject(std::move(cube));
 
 // Free camera
 auto camera = std::make_unique<Camera>();
+camera->SetPosition(Vector3(0, 2, 5));
+camera->LookAt(Vector3(0, 0, 0));
 scene->AddCamera(std::move(camera));
+```
+
+## Editor Interface
+
+The GameEngineSavi editor provides a visual interface for creating and editing game scenes. The editor is designed to be intuitive and easy to use, with a layout similar to popular game engines.
+
+```
++----------------------------------------------------------------------------------------------------------+
+|                                       GameEngineSavi Editor                                              |
++------------------+-----------------------------------------------+-----------------------------------+
+|  Hierarchy       |                                               |  Inspector                        |
+|                  |                                               |                                   |
+|  > Default Light |                  Scene View                   |  Transform                        |
+|  > Default Cube  |                                               |  Position: X: 0  Y: 0  Z: 0       |
+|                  |                                               |  Rotation: X: 0  Y: 0  Z: 0       |
+|                  |                                               |  Scale:    X: 1  Y: 1  Z: 1       |
+|                  |                                               |                                   |
+|                  |                                               |  Material                         |
+|                  |                                               |  Albedo: [Default]                |
+|                  |                                               |  Normal Map: [None]               |
+|                  |                                               |  Opacity: 1.0                     |
+|                  |                                               |                                   |
+|                  |                                               |  Physics                          |
+|                  |                                               |  [x] Use Gravity                  |
+|                  |                                               |  [ ] Is Kinematic                 |
+|                  |                                               |  Friction: 0.5                    |
++------------------+-----------------------------------------------+-----------------------------------+
+|                                                                                                      |
+|  Project                                                                                             |
+|  [Models] [Textures] [Scenes] [Scripts] [Prefabs] [Audio]                                            |
+|                                                                                                      |
++----------------------------------------------------------------------------------------------------------+
+```
+
+### Editor Panels
+
+#### Hierarchy Panel
+The Hierarchy Panel lists all objects in the current scene. By default, a new scene includes:
+- Default Light: A point light positioned at (0, 5, 0)
+- Default Cube: A cube positioned at (0, 0, 0)
+
+You can:
+- Click on an object to select it
+- Right-click to create new objects
+- Drag objects to reorder them
+- Use the context menu to duplicate, delete, or rename objects
+
+#### Scene View
+The Scene View displays the 3D scene with the default cube and lighting. This is where you can:
+- View and manipulate objects in 3D space
+- Use the gizmos to move, rotate, and scale objects
+- Navigate the scene using camera controls
+
+#### Inspector Panel
+The Inspector Panel shows properties of the selected object, including:
+- Transform: Position, rotation, and scale
+- Material: Albedo texture, normal map, opacity
+- Physics: Gravity, kinematic state, friction
+- Components: Any attached components and their properties
+
+#### Project Panel
+The Project Panel displays project assets organized by type:
+- Models: 3D models (.obj files)
+- Textures: Image files for materials
+- Scenes: Saved scene files
+- Scripts: C++ script files
+- Prefabs: Reusable object templates
+- Audio: Sound files
+
+### Camera Controls
+
+The editor camera is positioned at (0, 2, 5) by default, looking at the origin (0, 0, 0) where the default cube is placed.
+
+- **WASD**: Move the camera
+  - W: Move forward
+  - A: Move left
+  - S: Move backward
+  - D: Move right
+- **Mouse**: Look around by clicking and dragging in the Scene View
+- **Shift**: Hold to move the camera faster
+- **Space**: Play/Pause the scene to test game logic
+
+### Editor Shortcuts
+
+| Shortcut | Action |
+|----------|--------|
+| Ctrl+N | New Scene |
+| Ctrl+O | Open Scene |
+| Ctrl+S | Save Scene |
+| Ctrl+Shift+S | Save Scene As |
+| F | Focus Selected |
+| W | Move Tool |
+| E | Rotate Tool |
+| R | Scale Tool |
+| Q | No Tool (Selection Only) |
+| Delete | Delete Selected |
+| Ctrl+D | Duplicate Selected |
+| Ctrl+Z | Undo |
+| Ctrl+Y | Redo |
+| Space | Play/Stop |
+| Ctrl+1 | Hierarchy Panel Focus |
+| Ctrl+2 | Scene View Focus |
+| Ctrl+3 | Inspector Panel Focus |
+| Ctrl+4 | Project Panel Focus |
+
+### Running the Editor
+
+#### Linux
+```bash
+# Build the editor
+./build_editor.sh
+
+# Run the editor
+./run_editor.sh
+```
+
+#### Windows
+```batch
+# Using Visual Studio
+# Open GameEngineSavi.sln and build the solution
+
+# Using MinGW
+mingw32-make -f Makefile.mingw editor
+
+# Run the editor
+run_editor.bat
 ```
 
 ## Error Handling

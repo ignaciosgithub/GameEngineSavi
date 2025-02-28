@@ -3,6 +3,7 @@
 
 #include "../GUI/GUI.h"
 #include "../Vector3.h"
+#include <iostream>
 
 // Forward declarations
 class Editor;
@@ -30,11 +31,17 @@ public:
     // Handle input
     bool HandleInput(int mouseX, int mouseY, bool clicked) override;
     
+    // Debug rendering state
+    void DebugRenderState();
+    
     // Handle camera movement
     void HandleCameraMovement(int mouseX, int mouseY);
     
     // Handle object manipulation
     void HandleObjectManipulation(int mouseX, int mouseY);
+    
+    // Helper function to calculate matrix determinant
+    float CalculateMatrixDeterminant(const Matrix4x4& matrix);
 };
 
 #endif // SCENE_VIEW_PANEL_H
