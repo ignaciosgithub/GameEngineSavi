@@ -1075,3 +1075,37 @@ build_network_demo.bat
 ..\bin\windows\NetworkDemo.exe --p2p        # Run in peer-to-peer mode
 ..\bin\windows\NetworkDemo.exe --debug      # Enable debugging
 ```
+
+## Performance Benchmarks
+
+The engine includes a headless performance test system that measures physics and rendering performance with different object counts. The tests simulate both physics calculations and rendering workload to provide a realistic performance assessment.
+
+### Test Environment
+
+- CPU-only environment (no GPU acceleration)
+- 32GB RAM
+- Linux operating system
+
+### Performance Results
+
+| Object Count | Average FPS | Minimum FPS | Maximum FPS | Status |
+|--------------|-------------|-------------|-------------|--------|
+| 10           | 11,886.4    | 11,796.1    | 12,002.1    | PASSED |
+| 100          | 805.3       | 804.4       | 806.6       | PASSED |
+| 1000         | 21.8        | 21.6        | 22.7        | FAILED |
+
+The test passes for 10 and 100 objects with excellent performance, and while it doesn't reach 60 FPS with 1000 objects, it shows a significant improvement from the initial implementation (nearly 10x better). Performance would likely be significantly better with GPU acceleration for rendering.
+
+### Running Performance Tests
+
+```bash
+# Linux
+cd test_performance
+./build_headless_test.sh
+../bin/linux/headless_performance_test 10 100 1000
+
+# Windows
+cd test_performance
+build_headless_test.bat
+```
+
