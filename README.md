@@ -1111,16 +1111,34 @@ build_headless_test.bat
 
 ## Editor Interface
 
-GameEngineSavi includes a built-in editor that allows you to create, modify, and manage your game scenes visually. The editor provides a familiar interface with panels for scene hierarchy, properties, and asset management.
+### Current Implementation Status
+The editor is currently in early development with basic functionality implemented:
+
+#### Implemented Features
+- Basic panel layout with Hierarchy, Scene View, Inspector, and Project panels
+- Scene object selection in Hierarchy panel
+- Basic object property editing in Inspector panel
+- Basic camera movement in Scene View
+- Object property editing (position, rotation, scale) in Inspector panel
+- Basic drag and drop support for OBJ files
+- Default scene creation with a light and a cube
+
+#### Work in Progress Features
+- Scene View currently shows a placeholder gray rectangle
+- Menu system (File, GameObject) not yet implemented
+- Play/Stop functionality partially implemented in code but no UI elements yet
+- Scene serialization and loading in development
+- Transform gizmos for visual object manipulation not yet implemented
+- Asset management system in early development
 
 ### Editor Layout
 
 The editor is divided into several panels:
 
 1. **Hierarchy Panel** - Lists all game objects in the current scene
-2. **Scene View Panel** - Displays the 3D scene for editing
+2. **Scene View Panel** - Currently displays a placeholder gray rectangle
 3. **Inspector Panel** - Shows and edits properties of the selected object
-4. **Project Panel** - Manages project assets and files
+4. **Project Panel** - Basic file browser functionality
 
 ![Editor Interface](screenshots/editor/editor_interface.png)
 
@@ -1138,57 +1156,29 @@ To launch the editor:
 run_editor.bat
 ```
 
-### Editor Panels
+### Using the Current Editor Build
 
-#### Hierarchy Panel
+#### Basic Navigation
+- Select objects in the Hierarchy panel
+- Edit object properties in the Inspector panel
+- Use mouse and keyboard to navigate in Scene View:
+  - WASD keys to move the camera
+  - Mouse look to rotate the camera view
+  - Left click to select objects
+  - Right click + drag to rotate camera
+  - Mouse wheel to zoom
 
-The Hierarchy Panel displays all game objects in the current scene in a tree view. You can:
+#### Object Manipulation
+- Select objects in the Hierarchy panel to edit their properties
+- Use the Inspector panel to modify:
+  - Object name
+  - Position (X, Y, Z)
+  - Rotation (X, Y, Z)
+  - Scale (X, Y, Z)
 
-- Select objects by clicking on them
-- Rename objects by double-clicking their names
-- Create new objects with the "+" button
-- Delete objects with the "Delete" key or right-click menu
-- Organize objects with parent-child relationships by dragging
-
-#### Scene View Panel
-
-The Scene View Panel displays the 3D scene and allows you to manipulate objects visually:
-
-![Scene View](screenshots/editor/scene_view.png)
-
-- **Navigation**: 
-  - Orbit: Hold middle mouse button and drag
-  - Pan: Hold Shift + middle mouse button and drag
-  - Zoom: Mouse wheel
-  
-- **Object Manipulation**:
-  - Select: Left-click on an object
-  - Move: Drag the arrows of the transform gizmo
-  - Rotate: Drag the rotation rings of the transform gizmo
-  - Scale: Drag the scale handles of the transform gizmo
-
-- **View Controls**:
-  - Perspective/Orthographic toggle
-  - Wireframe mode toggle
-  - Grid display toggle
-
-#### Inspector Panel
-
-The Inspector Panel displays and allows editing of the selected object's properties:
-
-- **Transform**: Position, rotation, and scale
-- **Components**: Add, remove, and configure components
-- **Materials**: Adjust material properties and textures
-- **Tags and Layers**: Set object tags and layers
-
-#### Project Panel
-
-The Project Panel displays the project's assets and files:
-
-- **File Browser**: Navigate through project folders
-- **Asset Preview**: Preview selected assets
-- **Import**: Import new assets into the project
-- **Create**: Create new assets (materials, prefabs, etc.)
+#### Importing Objects
+- Drag OBJ files into the Scene View to import them
+- Imported objects will appear in the Hierarchy panel
 
 ### Default Scene
 
@@ -1200,73 +1190,7 @@ When you create a new scene, it includes:
 
 ![Default Scene](screenshots/editor/default_scene.png)
 
-### Editor Workflow
-
-#### Creating a New Scene
-
-1. Click "File > New Scene" in the menu bar
-2. The default scene will be created with a light and a cube
-3. Save the scene with "File > Save Scene"
-
-#### Adding Objects
-
-1. Click "GameObject > Create" in the menu bar
-2. Select the type of object to create
-3. The new object will appear in the scene and hierarchy
-
-#### Importing Assets
-
-1. Click "File > Import" in the menu bar
-2. Select the file to import
-3. The asset will be imported and appear in the Project Panel
-
-#### Drag and Drop
-
-The editor supports drag and drop operations:
-
-- Drag models from the Project Panel to the Scene View to create new objects
-- Drag textures onto materials to assign them
-- Drag prefabs into the scene to instantiate them
-
-#### Play Mode
-
-To test your scene:
-
-1. Click the "Play" button in the toolbar
-2. The scene will enter play mode and run the game logic
-3. Click "Stop" to exit play mode and return to editing
-
-### Editor Shortcuts
-
-| Shortcut       | Action                    |
-|----------------|---------------------------|
-| Ctrl+N         | New Scene                 |
-| Ctrl+O         | Open Scene                |
-| Ctrl+S         | Save Scene                |
-| Ctrl+Shift+S   | Save Scene As             |
-| F              | Focus Selected            |
-| W              | Move Tool                 |
-| E              | Rotate Tool               |
-| R              | Scale Tool                |
-| Q              | No Tool (Selection Only)  |
-| Delete         | Delete Selected           |
-| Ctrl+D         | Duplicate Selected        |
-| Ctrl+Z         | Undo                      |
-| Ctrl+Y         | Redo                      |
-| Space          | Play/Stop                 |
-| Ctrl+1         | Hierarchy Panel Focus     |
-| Ctrl+2         | Scene View Focus          |
-| Ctrl+3         | Inspector Panel Focus     |
-| Ctrl+4         | Project Panel Focus       |
-
-### Building and Running
-
-To build and run your game from the editor:
-
-1. Configure build settings in "File > Build Settings"
-2. Select the target platform (Windows, Linux)
-3. Click "Build" to create an executable
-4. Click "Build and Run" to build and launch the game
+Note: Many features shown in earlier documentation are still under development. This document reflects the current working state of the editor.
 
 ## JSON Serialization
 The engine uses nlohmann/json 3.11.3 for object serialization. See [JSON Library Notes](docs/json_library.md) for implementation details and guidelines.
