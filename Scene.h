@@ -4,6 +4,7 @@
 #include <vector>
 #include <memory>
 #include <atomic>
+#include <string>
 #include "GameObject.h"
 #include "Camera.h"
 #include "EngineTime.h"
@@ -11,6 +12,7 @@
 #include "PointLight.h"
 #include "Shaders/Core/ShaderProgram.h"
 #include "CameraManager.h"
+#include "SceneSerializer.h"
 
 class Scene {
 private:
@@ -27,6 +29,10 @@ private:
     float physicsAccumulator = 0.0f;    // Accumulator for physics updates
     Camera* mainCamera = nullptr;       // Main camera for rendering
     Camera* minimapCamera = nullptr;    // Minimap camera for top-down view
+    std::string currentScenePath;       // Path to the current scene file
+    
+    // Private method for cleaning up resources during scene transitions
+    void CleanupResources();
 
 public:
     Scene() : isRunning(false) {}
@@ -74,6 +80,14 @@ public:
     Camera* GetMainCamera() const { return mainCamera; }
     Camera* GetMinimapCamera() const { return minimapCamera; }
     CameraManager* GetCameraManager() const { return cameraManager.get(); }
+    
+    // Scene transition methods
+    void UnloadScene();
+    void LoadScene(const std::string& scenePath);
+    void TransferObject(GameObject* obj, const std::string& targetScenePath);
+    
+    // GameObject finding
+    GameObject* FindGameObject(const std::string& name) const;
 };
 
 #endif // SCENE_H
