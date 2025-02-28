@@ -22,6 +22,57 @@ void Scene::Initialize() {
 
 void Scene::Load() {
     // Load scene resources
+    
+    // Create a default point light if none exists
+    if (pointLights.empty()) {
+        PointLight defaultLight;
+        defaultLight.position = Vector3(0, 5, 0);
+        defaultLight.color = Vector3(1.0f, 1.0f, 1.0f);
+        defaultLight.intensity = 1.0f;
+        defaultLight.range = 20.0f;
+        AddPointLight(defaultLight);
+        
+        // Create a game object for the light
+        GameObject* lightObj = new GameObject("Default Light");
+        lightObj->SetPosition(Vector3(0, 5, 0));
+        AddGameObject(lightObj);
+        
+        std::cout << "Created default point light" << std::endl;
+    }
+    
+    // Create a default cube if no game objects exist
+    if (gameObjects.empty() || (gameObjects.size() == 1 && gameObjects[0]->GetName() == "Default Light")) {
+        GameObject* cubeObj = new GameObject("Default Cube");
+        
+        // Load cube model
+        Model* cubeModel = new Model();
+        if (cubeModel->LoadFromFile("test_assets/cube.obj")) {
+            cubeObj->AddMesh(cubeModel);
+            cubeObj->SetPosition(Vector3(0, 0, 0));
+            AddGameObject(cubeObj);
+            std::cout << "Created default cube" << std::endl;
+        } else {
+            std::cerr << "Failed to load default cube model" << std::endl;
+            delete cubeModel;
+            delete cubeObj;
+        }
+    }
+    
+    // Set up a default camera if none exists
+    if (!mainCamera) {
+        Camera* defaultCamera = new Camera();
+        defaultCamera->SetPosition(Vector3(0, 2, 5));
+        defaultCamera->LookAt(Vector3(0, 0, 0));
+        defaultCamera->fieldOfView = 45.0f;
+        defaultCamera->SetEnabled(true);
+        
+        // Add camera to scene
+        AddCamera(defaultCamera);
+        SetMainCamera(defaultCamera);
+        
+        std::cout << "Created default camera" << std::endl;
+    }
+    
     std::cout << "Scene loaded" << std::endl;
 }
 
