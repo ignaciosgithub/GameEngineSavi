@@ -33,10 +33,34 @@ public:
     void SetPosition(const Vector3& pos) { position = pos; }
     
     // Get camera rotation
-    Vector3 GetRotation() const { return Vector3(0, 0, 0); } // Placeholder
+    Vector3 GetRotation() const {
+        // Convert look direction to Euler angles
+        Vector3 normalized = lookDirection;
+        normalized.normalize();
+        
+        // Calculate pitch (x-rotation)
+        float pitch = asin(normalized.y) * 180.0f / M_PI;
+        
+        // Calculate yaw (y-rotation)
+        float yaw = atan2(normalized.x, normalized.z) * 180.0f / M_PI;
+        
+        return Vector3(pitch, yaw, 0);
+    }
     
     // Set camera rotation
-    void SetRotation(const Vector3& rotation) {} // Placeholder
+    void SetRotation(const Vector3& rotation) {
+        // Convert Euler angles to look direction
+        float yaw = rotation.y * M_PI / 180.0f;   // Convert to radians
+        float pitch = rotation.x * M_PI / 180.0f; // Convert to radians
+        
+        // Calculate new look direction
+        lookDirection.x = sin(yaw) * cos(pitch);
+        lookDirection.y = sin(pitch);
+        lookDirection.z = cos(yaw) * cos(pitch);
+        
+        // Normalize the look direction
+        lookDirection.normalize();
+    }
     
     // Look at a specific point
     void LookAt(const Vector3& target) {
@@ -47,9 +71,14 @@ public:
     // Get view matrix
     Matrix4x4 GetViewMatrix() const {
         Vector3 up(0, 1, 0);
-        Vector3 right = Vector3::Cross(up, lookDirection);
+        Vector3 forward = lookDirection;
+        forward.normalize();
+        
+        Vector3 right = Vector3::Cross(up, forward);
         right.normalize();
-        up = Vector3::Cross(lookDirection, right);
+        
+        up = Vector3::Cross(forward, right);
+        up.normalize();
         
         Matrix4x4 view;
         view.elements[0][0] = right.x;
@@ -58,12 +87,12 @@ public:
         view.elements[1][0] = up.x;
         view.elements[1][1] = up.y;
         view.elements[1][2] = up.z;
-        view.elements[2][0] = lookDirection.x;
-        view.elements[2][1] = lookDirection.y;
-        view.elements[2][2] = lookDirection.z;
+        view.elements[2][0] = -forward.x;  // Negate forward direction for OpenGL convention
+        view.elements[2][1] = -forward.y;
+        view.elements[2][2] = -forward.z;
         view.elements[3][0] = -Vector3::Dot(right, position);
         view.elements[3][1] = -Vector3::Dot(up, position);
-        view.elements[3][2] = -Vector3::Dot(lookDirection, position);
+        view.elements[3][2] = Vector3::Dot(forward, position);  // Positive dot product with forward
         view.elements[3][3] = 1.0f;
         
         return view;
