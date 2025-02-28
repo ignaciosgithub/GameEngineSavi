@@ -39,6 +39,9 @@ public:
     
     // Handle object manipulation
     void HandleObjectManipulation(int mouseX, int mouseY);
+    
+    // Helper function to calculate matrix determinant
+    float CalculateMatrixDeterminant(const Matrix4x4& matrix);
 };
 
 #endif // SCENE_VIEW_PANEL_H

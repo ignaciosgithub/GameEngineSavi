@@ -264,11 +264,27 @@ void SceneViewPanel::DebugRenderState() {
         return;
     }
     
-    std::cout << "SceneViewPanel Debug Info:" << std::endl;
+    std::cout << "\n===== Scene View Panel Debug Information =====\n" << std::endl;
     std::cout << "Panel position: x=" << x << ", y=" << y << ", width=" << width << ", height=" << height << std::endl;
     std::cout << "Viewport: x=" << x << ", y=" << (y + 20) << ", width=" << width << ", height=" << (height - 20) << std::endl;
     
+    // Debug OpenGL state
+    std::cout << "\n----- OpenGL State -----" << std::endl;
+    GLboolean depthTestEnabled;
+    glGetBooleanv(GL_DEPTH_TEST, &depthTestEnabled);
+    std::cout << "Depth test enabled: " << (depthTestEnabled ? "YES" : "NO") << std::endl;
+    
+    GLboolean lightingEnabled;
+    glGetBooleanv(GL_LIGHTING, &lightingEnabled);
+    std::cout << "Lighting enabled: " << (lightingEnabled ? "YES" : "NO") << std::endl;
+    
+    GLfloat clearColor[4];
+    glGetFloatv(GL_COLOR_CLEAR_VALUE, clearColor);
+    std::cout << "Clear color: (" << clearColor[0] << ", " << clearColor[1] << ", " 
+              << clearColor[2] << ", " << clearColor[3] << ")" << std::endl;
+    
     // Debug camera info
+    std::cout << "\n----- Camera Information -----" << std::endl;
     Camera* camera = editor->GetEditorCamera();
     if (camera) {
         Vector3 camPos = camera->GetPosition();
@@ -278,16 +294,36 @@ void SceneViewPanel::DebugRenderState() {
         Vector3 lookDir = camera->lookDirection;
         std::cout << "Camera look direction: (" << lookDir.x << ", " << lookDir.y << ", " << lookDir.z << ")" << std::endl;
         
-        // Debug camera field of view
-        std::cout << "Camera FOV: " << camera->fieldOfView << std::endl;
+        // Debug camera field of view and other parameters
+        std::cout << "Camera FOV: " << camera->fieldOfView << " degrees" << std::endl;
+        std::cout << "Camera near plane: " << camera->nearPlane << std::endl;
+        std::cout << "Camera far plane: " << camera->farPlane << std::endl;
+        std::cout << "Camera aspect ratio: " << camera->aspectRatio << std::endl;
+        
+        // Calculate distance to origin (where the default cube should be)
+        float distanceToOrigin = sqrt(camPos.x*camPos.x + camPos.y*camPos.y + camPos.z*camPos.z);
+        std::cout << "Distance to origin: " << distanceToOrigin << " units" << std::endl;
+        
+        // Check if camera is too close to origin
+        if (distanceToOrigin < 0.5f) {
+            std::cout << "WARNING: Camera is very close to origin! This might cause rendering issues." << std::endl;
+        }
+        
+        // Calculate view matrix for debugging
+        Matrix4x4 viewMatrix = camera->GetViewMatrix();
+        std::cout << "View matrix determinant: " << CalculateMatrixDeterminant(viewMatrix) << std::endl;
     } else {
         std::cout << "Editor camera is null" << std::endl;
     }
     
     // Debug scene info
+    std::cout << "\n----- Scene Information -----" << std::endl;
     Scene* scene = editor->GetScene();
     if (scene) {
         std::cout << "Scene has " << scene->GetGameObjectCount() << " game objects" << std::endl;
+        
+        // Check for default cube
+        bool foundDefaultCube = false;
         
         // List the first few objects
         int maxObjectsToList = 5;
@@ -298,10 +334,81 @@ void SceneViewPanel::DebugRenderState() {
                 Vector3 objPos = obj->GetPosition();
                 std::cout << "Object " << i << ": " << obj->GetName() 
                           << " at (" << objPos.x << ", " << objPos.y << ", " << objPos.z << ")" << std::endl;
+                
+                // Check if this is the default cube
+                if (obj->GetName() == "Default Cube") {
+                    foundDefaultCube = true;
+                    
+                    // Calculate distance from camera to cube
+                    if (camera) {
+                        Vector3 camPos = camera->GetPosition();
+                        float dx = camPos.x - objPos.x;
+                        float dy = camPos.y - objPos.y;
+                        float dz = camPos.z - objPos.z;
+                        float distanceToCube = sqrt(dx*dx + dy*dy + dz*dz);
+                        
+                        std::cout << "Distance from camera to cube: " << distanceToCube << " units" << std::endl;
+                        
+                        // Check if cube is too close to camera
+                        if (distanceToCube < camera->nearPlane * 1.5f) {
+                            std::cout << "WARNING: Default cube is very close to camera's near plane!" << std::endl;
+                            std::cout << "This might cause the cube to be clipped or not visible." << std::endl;
+                        }
+                    }
+                    
+                    // Check if cube has a mesh
+                    std::cout << "Cube has " << obj->GetMeshCount() << " meshes" << std::endl;
+                    if (obj->GetMeshCount() == 0) {
+                        std::cout << "WARNING: Default cube has no meshes!" << std::endl;
+                    }
+                }
+                
                 count++;
             }
+        }
+        
+        if (!foundDefaultCube) {
+            std::cout << "WARNING: Default cube not found in scene!" << std::endl;
+        }
+        
+        // Debug light info
+        std::cout << "\n----- Light Information -----" << std::endl;
+        const std::vector<PointLight>& lights = scene->GetPointLights();
+        std::cout << "Scene has " << lights.size() << " point lights" << std::endl;
+        
+        for (size_t i = 0; i < lights.size() && i < 3; i++) {
+            std::cout << "Light " << i << " position: (" 
+                      << lights[i].position.x << ", " 
+                      << lights[i].position.y << ", " 
+                      << lights[i].position.z << ")" << std::endl;
+            std::cout << "Light " << i << " color: (" 
+                      << lights[i].color.x << ", " 
+                      << lights[i].color.y << ", " 
+                      << lights[i].color.z << ")" << std::endl;
+            std::cout << "Light " << i << " intensity: " << lights[i].intensity << std::endl;
         }
     } else {
         std::cout << "Scene is null" << std::endl;
     }
+    
+    // Debug GUI colors
+    std::cout << "\n----- GUI Color Information -----" << std::endl;
+    std::cout << "Panel background color: Used in Panel::Draw()" << std::endl;
+    std::cout << "Text color: Set with glColor3f(0.0f, 0.0f, 0.0f) in SceneViewPanel::Draw()" << std::endl;
+    std::cout << "If these colors are similar, text might not be visible against the background" << std::endl;
+    
+    std::cout << "\n============================================\n" << std::endl;
+}
+
+// Helper function to calculate matrix determinant (simplified for 4x4)
+float SceneViewPanel::CalculateMatrixDeterminant(const Matrix4x4& matrix) {
+    // This is a simplified calculation that just checks if the matrix is valid
+    // A full determinant calculation would be more complex
+    float sum = 0.0f;
+    for (int i = 0; i < 4; i++) {
+        for (int j = 0; j < 4; j++) {
+            sum += fabs(matrix.elements[i][j]);
+        }
+    }
+    return sum > 0.0f ? sum : 0.0f;
 }
