@@ -1068,6 +1068,13 @@ build_shader_test.bat
 
 Here are some visual examples of GameEngineSavi's capabilities:
 
+### Editor Interface
+![Editor Interface](screenshots/editor/editor_interface_color.png)
+*GameEngineSavi Editor with Default Cube and Scene View*
+
+![Editor Scene View](screenshots/editor/editor_interface_color_highlighted.png)
+*Editor Scene View with Coordinate Axes and Default Cube Highlighted*
+
 ### Animation System
 ![Animation System](screenshots/AnimationTest.png)
 *Keyframe Animation with Vertex Interpolation*
