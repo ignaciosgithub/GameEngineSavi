@@ -447,3 +447,16 @@ float ProjectSettings::GetMaxDist() const {
 void ProjectSettings::SetMaxDist(float distance) {
     engineSettings.navigation.maxDist = distance > 0.0f ? distance : 2.0f;
 }
+
+// Physics-related methods for compatibility
+float ProjectSettings::GetPhysicsGravity() const {
+    return GetGravity();
+}
+
+float ProjectSettings::GetPhysicsTimeStep() const {
+    return GetFixedTimeStep();
+}
+
+float ProjectSettings::GetGlobalRestitution() const {
+    return 0.5f; // Default restitution value
+}

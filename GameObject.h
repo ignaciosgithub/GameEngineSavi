@@ -16,7 +16,6 @@ class GameObject {
 private:
     std::string name;
     std::vector<std::shared_ptr<MonoBehaviourLike>> components;
-
 public:
     Vector3 position;
     Vector3 rotation;
@@ -28,6 +27,10 @@ public:
     
     // Meshes
     std::vector<Model*> meshes;
+    
+    // Public method to update components
+    void UpdateComponents(float deltaTime);
+    
     
     // Constructors
     GameObject() : name("GameObject"), position(0,0,0), rotation(0,0,0), size(1,1,1) {}
@@ -80,6 +83,30 @@ public:
     
     // Get the name of the GameObject
     std::string GetName() const { return name; }
+    
+    // Get position, rotation, and scale
+    Vector3 GetPosition() const;
+    Vector3 GetRotation() const;
+    Vector3 GetScale() const;
+    
+    // Set position, rotation, and scale
+    void SetPosition(const Vector3& pos);
+    void SetRotation(const Vector3& rot);
+    void SetScale(const Vector3& scale);
+    
+    // Set name
+    void SetName(const std::string& newName);
+    
+    // Child management
+    void AddChild(GameObject* child);
+    void RemoveChild(GameObject* child);
+    
+    // Mesh management
+    void RemoveMesh(Model* mesh);
+    
+    // Component management
+    void AddComponent(std::shared_ptr<MonoBehaviourLike> component);
+    void RemoveComponent(std::shared_ptr<MonoBehaviourLike> component);
 };
 
 #endif // GAMEOBJECT_H

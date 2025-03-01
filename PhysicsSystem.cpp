@@ -1,198 +1,165 @@
 #include "PhysicsSystem.h"
 #include "CollisionSystem.h"
-#include "EngineCondition.h"
-#include "ProjectSettings/ProjectSettings.h"
 #include "RigidBody.h"
-#include <algorithm>
+#include "GameObject.h"
+#include "ProjectSettings/ProjectSettings.h"
 #include <iostream>
 
-PhysicsSystem::PhysicsSystem()
-    : gravity(-9.81f), fixedTimeStep(1.0f / 60.0f), enableCollisions(true),
-      globalRestitution(0.2f), collisionSystem(nullptr) {
-  // Initialize with default values
-  // These will be overridden by Initialize() if called
+// Implementation of PhysicsSystem methods
+
+PhysicsSystem::PhysicsSystem() 
+    : gravity(9.81f), fixedTimeStep(1.0f/60.0f), enableCollisions(true), globalRestitution(0.5f), collisionSystem(nullptr) {
+    // Initialize with default values
 }
 
 PhysicsSystem::~PhysicsSystem() {
-  // Clear the bodies vector
-  bodies.clear();
+    // Clean up resources
+    if (collisionSystem) {
+        delete collisionSystem;
+        collisionSystem = nullptr;
+    }
+    
+    // Clear bodies
+    bodies.clear();
 }
 
 void PhysicsSystem::Initialize() {
-  // Load physics settings from ProjectSettings
-  auto &settings = ProjectSettings::GetInstance();
-  fixedTimeStep = settings.GetFixedTimeStep();
-  gravity = settings.GetGravity();
-  enableCollisions = settings.GetEnableCollisions();
-
-// Additional debug information in debug builds
-#ifdef DEBUG_BUILD
-  if (EngineCondition::IsDebugBuild()) {
-    std::cout << "Physics system initialized with settings from project:"
-              << std::endl;
-    std::cout << "  Fixed time step: " << fixedTimeStep << std::endl;
+    // Load settings from ProjectSettings
+    auto& settings = ProjectSettings::GetInstance();
+    
+    // Set gravity
+    gravity = settings.GetPhysicsGravity();
+    
+    // Set fixed time step
+    fixedTimeStep = settings.GetPhysicsTimeStep();
+    
+    // Set collision detection
+    enableCollisions = settings.GetEnableCollisions();
+    
+    // Set global restitution
+    globalRestitution = settings.GetGlobalRestitution();
+    
+    // Create collision system if not already created
+    if (!collisionSystem) {
+        collisionSystem = new CollisionSystem();
+    }
+    
+    std::cout << "PhysicsSystem initialized with:" << std::endl;
     std::cout << "  Gravity: " << gravity << std::endl;
-    std::cout << "  Collisions enabled: " << (enableCollisions ? "Yes" : "No")
-              << std::endl;
-  }
-#endif
+    std::cout << "  Fixed time step: " << fixedTimeStep << std::endl;
+    std::cout << "  Collisions enabled: " << (enableCollisions ? "Yes" : "No") << std::endl;
+    std::cout << "  Global restitution: " << globalRestitution << std::endl;
 }
 
 void PhysicsSystem::Update(float deltaTime) {
-  // Physics simulation is now always updated with fixed timestep
-  // No need to scale forces/velocities since deltaTime is constant
-  // Apply gravity and update physics for all bodies
-  for (auto body : bodies) {
-    if (body->IsGravityEnabled()) {
-      // Apply gravity force (F = m*g)
-      Vector3 gravityForce(0, gravity * body->GetMass(), 0);
-      body->ApplyForce(gravityForce);
+    if (bodies.empty()) {
+        return;
     }
-
-    // Update physics state (handled by RigidBody)
-    body->PhysicsUpdate(deltaTime);
-  }
-
-  // Check for collisions if we have a collision system and collisions are
-  // enabled
-  if (collisionSystem && enableCollisions) {
-// Additional debug information in debug builds
-#ifdef DEBUG_BUILD
-    if (EngineCondition::IsDebugBuild()) {
-      std::cout << "Physics update: " << bodies.size() << " bodies, "
-                << "Delta time: " << deltaTime * 1000.0f << "ms" << std::endl;
-    }
-#endif
-
-    // Check all possible pairs of bodies for collisions
-    for (size_t i = 0; i < bodies.size(); i++) {
-      for (size_t j = i + 1; j < bodies.size(); j++) {
-        RigidBody *bodyA = bodies[i];
-        RigidBody *bodyB = bodies[j];
-
-        // Skip if both bodies are static
-        if (!bodyA->IsDynamic() && !bodyB->IsDynamic()) {
-          continue;
+    
+    // Apply gravity to all bodies
+    for (auto& body : bodies) {
+        if (body->GetUseGravity()) {
+            body->AddForce(Vector3(0, -gravity * body->GetMass(), 0));
         }
-
-        // Check for collision
-        CollisionInfo collisionInfo;
-        if (collisionSystem->CheckCollision(bodyA, bodyB, collisionInfo)) {
-          // Resolve the collision
-          collisionSystem->ResolveCollision(bodyA, bodyB, collisionInfo);
-
-          // Trigger collision events
-          bodyA->OnCollision(bodyB, collisionInfo);
-          bodyB->OnCollision(bodyA, collisionInfo);
-
-// Additional debug information in debug builds
-#ifdef DEBUG_BUILD
-          if (EngineCondition::IsDebugBuild()) {
-            std::cout << "Collision detected between "
-                      << bodyA->GetGameObject()->GetName() << " and "
-                      << bodyB->GetGameObject()->GetName() << std::endl;
-          }
-#endif
-        }
-      }
     }
-  }
-
-  // Pause physics updates in editor editing and compiling modes
-  if (EngineCondition::IsInEditorEditing() ||
-      EngineCondition::IsInEditorCompiling()) {
-#ifdef DEBUG_BUILD
-    std::cout << "Physics updates paused in editor" << std::endl;
-#endif
-    return;
-  }
+    
+    // Update positions based on forces
+    for (auto& body : bodies) {
+        body->Update(deltaTime);
+    }
+    
+    // Check for collisions if enabled
+    if (enableCollisions && collisionSystem) {
+        for (size_t i = 0; i < bodies.size(); ++i) {
+            for (size_t j = i + 1; j < bodies.size(); ++j) {
+                RigidBody* bodyA = bodies[i];
+                RigidBody* bodyB = bodies[j];
+                
+                if (!bodyA->GetIsKinematic() || !bodyB->GetIsKinematic()) {
+                    CollisionInfo collision;
+                    if (collisionSystem->CheckCollision(bodyA, bodyB, collision)) {
+                        // Handle collision response
+                        collisionSystem->ResolveCollision(bodyA, bodyB, collision, globalRestitution);
+                        
+                        // Log collision
+                        std::cout << "Collision detected between bodies" << std::endl;
+                    }
+                }
+            }
+        }
+    }
 }
 
-void PhysicsSystem::AddBody(RigidBody *body) {
-  // Check if body is already in the system
-  if (std::find(bodies.begin(), bodies.end(), body) == bodies.end()) {
-    bodies.push_back(body);
-
-// Additional debug information in debug builds
-#ifdef DEBUG_BUILD
-    if (EngineCondition::IsDebugBuild()) {
-      std::cout << "Added body to physics system: "
-                << body->GetGameObject()->GetName() << std::endl;
+void PhysicsSystem::AddBody(RigidBody* body) {
+    if (!body) {
+        return;
     }
-#endif
-  }
+    
+    // Check if body already exists
+    auto it = std::find(bodies.begin(), bodies.end(), body);
+    if (it == bodies.end()) {
+        bodies.push_back(body);
+        
+        // Log addition
+        std::cout << "Added rigid body" << std::endl;
+    }
 }
 
-void PhysicsSystem::RemoveBody(RigidBody *body) {
-  // Remove body from the system
-  bodies.erase(std::remove(bodies.begin(), bodies.end(), body), bodies.end());
-
-// Additional debug information in debug builds
-#ifdef DEBUG_BUILD
-  if (EngineCondition::IsDebugBuild()) {
-    std::cout << "Removed body from physics system: "
-              << body->GetGameObject()->GetName() << std::endl;
-  }
-#endif
+void PhysicsSystem::RemoveBody(RigidBody* body) {
+    if (!body) {
+        return;
+    }
+    
+    // Find and remove body
+    auto it = std::find(bodies.begin(), bodies.end(), body);
+    if (it != bodies.end()) {
+        bodies.erase(it);
+        
+        // Log removal
+        std::cout << "Removed rigid body for object" << std::endl;
+    }
 }
 
 void PhysicsSystem::SetGravity(float value) {
-  gravity = value;
-
-// Additional debug information in debug builds
-#ifdef DEBUG_BUILD
-  if (EngineCondition::IsDebugBuild()) {
-    std::cout << "Gravity set to: " << gravity << std::endl;
-  }
-#endif
+    gravity = value;
 }
 
-float PhysicsSystem::GetGravity() const { return gravity; }
+float PhysicsSystem::GetGravity() const {
+    return gravity;
+}
 
 void PhysicsSystem::SetFixedTimeStep(float value) {
-  fixedTimeStep = value;
-
-// Additional debug information in debug builds
-#ifdef DEBUG_BUILD
-  if (EngineCondition::IsDebugBuild()) {
-    std::cout << "Fixed time step set to: " << fixedTimeStep << std::endl;
-  }
-#endif
+    fixedTimeStep = value > 0.0f ? value : 1.0f/60.0f;
 }
 
-float PhysicsSystem::GetFixedTimeStep() const { return fixedTimeStep; }
+float PhysicsSystem::GetFixedTimeStep() const {
+    return fixedTimeStep;
+}
 
 void PhysicsSystem::SetEnableCollisions(bool enable) {
-  enableCollisions = enable;
-
-// Additional debug information in debug builds
-#ifdef DEBUG_BUILD
-  if (EngineCondition::IsDebugBuild()) {
-    std::cout << "Collisions " << (enableCollisions ? "enabled" : "disabled")
-              << std::endl;
-  }
-#endif
+    enableCollisions = enable;
 }
 
-bool PhysicsSystem::GetEnableCollisions() const { return enableCollisions; }
+bool PhysicsSystem::GetEnableCollisions() const {
+    return enableCollisions;
+}
 
 void PhysicsSystem::SetGlobalRestitution(float value) {
-  globalRestitution = value;
-
-// Additional debug information in debug builds
-#ifdef DEBUG_BUILD
-  if (EngineCondition::IsDebugBuild()) {
-    std::cout << "Global restitution set to: " << globalRestitution << std::endl;
-  }
-#endif
+    globalRestitution = value;
 }
 
-float PhysicsSystem::GetGlobalRestitution() const { return globalRestitution; }
-
-void PhysicsSystem::SetCollisionSystem(CollisionSystem *system) {
-  collisionSystem = system;
+float PhysicsSystem::GetGlobalRestitution() const {
+    return globalRestitution;
 }
 
-CollisionSystem *PhysicsSystem::GetCollisionSystem() const {
-  return collisionSystem;
+void PhysicsSystem::SetCollisionSystem(CollisionSystem* system) {
+    if (collisionSystem) {
+        delete collisionSystem;
+    }
+    
+    collisionSystem = system;
+}
+
+CollisionSystem* PhysicsSystem::GetCollisionSystem() const {
+    return collisionSystem;
 }
