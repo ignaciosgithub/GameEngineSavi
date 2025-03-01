@@ -1,89 +1,53 @@
 #ifndef SHADER_H
 #define SHADER_H
 
-#include "../../platform.h"
 #include <string>
+#include <unordered_map>
+#include "../../GL/gl_types.h"
 
-namespace Shaders {
-
-/**
- * Shader class
- * Represents a single shader stage (vertex, fragment, geometry, etc.)
- */
 class Shader {
 public:
-    /**
-     * Shader types
-     */
-    enum Type {
-        VERTEX,
-        FRAGMENT,
-        GEOMETRY
-    };
+    // Constructor
+    Shader();
     
-    /**
-     * Constructor
-     * @param type The shader type
-     */
-    Shader(Type type);
-    
-    /**
-     * Destructor
-     */
+    // Destructor
     ~Shader();
     
-    /**
-     * Load shader source from a file
-     * @param path The path to the shader file
-     * @return True if successful, false otherwise
-     */
-    bool LoadFromFile(const std::string& path);
+    // Load shader from file
+    bool LoadFromFile(const std::string& filename, GLenum shaderType);
     
-    /**
-     * Load shader source from a string
-     * @param source The shader source code
-     * @return True if successful, false otherwise
-     */
-    bool LoadFromString(const std::string& source);
+    // Load shader from string
+    bool LoadFromString(const std::string& source, GLenum shaderType);
     
-    /**
-     * Compile the shader
-     * @return True if successful, false otherwise
-     */
+    // Compile the shader
     bool Compile();
     
-    /**
-     * Get the shader handle
-     * @return The OpenGL shader handle
-     */
+    // Check if the shader is compiled
+    bool IsCompiled() const;
+    
+    // Get the shader handle
     GLuint GetHandle() const { return handle; }
     
-    /**
-     * Get the shader type
-     * @return The shader type
-     */
-    Type GetType() const { return type; }
+    // Get the shader type
+    GLenum GetType() const;
     
-    /**
-     * Get the last error message
-     * @return The error message
-     */
-    const std::string& GetError() const { return errorLog; }
+    // Get the shader source
+    const std::string& GetSource() const;
+    
+    // Get the shader info log
+    std::string GetInfoLog() const;
     
 private:
+    std::string source;      // Shader source code
+    GLenum type;             // Shader type (vertex, fragment, etc.)
+    bool compiled;           // Is the shader compiled?
     GLuint handle;          // OpenGL shader handle
-    Type type;              // Shader type
-    std::string source;     // Shader source code
-    std::string errorLog;   // Error log
-    bool isCompiled;        // Is the shader compiled?
     
-    /**
-     * Get the OpenGL shader type
-     * @return The OpenGL shader type
-     */
+    // Get the OpenGL shader type from the file extension
+    GLenum GetShaderTypeFromExtension(const std::string& filename);
+    
+    // Get the OpenGL shader type from the shader type
     GLenum GetGLShaderType() const;
 };
-
-} // namespace Shaders
 
 #endif // SHADER_H
