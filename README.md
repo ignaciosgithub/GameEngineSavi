@@ -374,7 +374,18 @@ editor->CaptureScreenshot("my_custom_screenshot.png");
 
 The screenshot functionality uses the `FrameCapture` class which reads the OpenGL frame buffer and saves it as a PNG file. This class can be used in your own games to implement screenshot functionality.
 
-![Editor Interface](screenshots/editor/editor_interface.png)
+#### Editor Interface
+![Editor Interface](screenshots/editor/editor_interface_improved.png)
+
+#### Scene View
+The scene view shows the 3D objects with proper lighting and perspective:
+![Scene View](screenshots/editor/scene_view_improved.png)
+
+The editor interface includes:
+- Hierarchy panel showing scene objects
+- Inspector panel with object properties
+- Scene view with 3D rendering
+- Project panel for asset management
 
 
 ## Error Handling
