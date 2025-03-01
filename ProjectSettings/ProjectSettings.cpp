@@ -54,6 +54,11 @@ ProjectSettings::ProjectSettings()
     engineSettings.audio.channels = 2;
     engineSettings.audio.enableAudio = true;
     
+    // Default navigation settings
+    engineSettings.navigation.navMeshRefreshRate = 10.0f;
+    engineSettings.navigation.maxAngleDiff = 45.0f;
+    engineSettings.navigation.maxDist = 2.0f;
+    
     // Default asset paths
     assetPaths["models"] = "Assets/Models";
     assetPaths["textures"] = "Assets/Textures";
@@ -112,6 +117,13 @@ bool ProjectSettings::LoadFromFile(const std::string& filePath) {
             engineSettings.audio.enableAudio = j["engineSettings"]["audio"]["enableAudio"];
         }
         
+        // Load navigation settings if they exist
+        if (j["engineSettings"].contains("navigation")) {
+            engineSettings.navigation.navMeshRefreshRate = j["engineSettings"]["navigation"]["navMeshRefreshRate"];
+            engineSettings.navigation.maxAngleDiff = j["engineSettings"]["navigation"]["maxAngleDiff"];
+            engineSettings.navigation.maxDist = j["engineSettings"]["navigation"]["maxDist"];
+        }
+        
         // Load asset paths
         auto assetPathsJson = j["assetPaths"];
         for (auto it = assetPathsJson.begin(); it != assetPathsJson.end(); ++it) {
@@ -167,6 +179,11 @@ bool ProjectSettings::SaveToFile(const std::string& filePath) {
         j["engineSettings"]["audio"]["sampleRate"] = engineSettings.audio.sampleRate;
         j["engineSettings"]["audio"]["channels"] = engineSettings.audio.channels;
         j["engineSettings"]["audio"]["enableAudio"] = engineSettings.audio.enableAudio;
+        
+        // Navigation settings
+        j["engineSettings"]["navigation"]["navMeshRefreshRate"] = engineSettings.navigation.navMeshRefreshRate;
+        j["engineSettings"]["navigation"]["maxAngleDiff"] = engineSettings.navigation.maxAngleDiff;
+        j["engineSettings"]["navigation"]["maxDist"] = engineSettings.navigation.maxDist;
         
         // Asset paths
         for (auto it = assetPaths.begin(); it != assetPaths.end(); ++it) {
@@ -404,4 +421,29 @@ std::string ProjectSettings::GetAssetPath(const std::string& type) const {
 
 void ProjectSettings::SetAssetPath(const std::string& type, const std::string& path) {
     assetPaths[type] = path;
+}
+
+// Navigation settings getters and setters
+float ProjectSettings::GetNavMeshRefreshRate() const {
+    return engineSettings.navigation.navMeshRefreshRate;
+}
+
+void ProjectSettings::SetNavMeshRefreshRate(float rate) {
+    engineSettings.navigation.navMeshRefreshRate = rate > 0.0f ? rate : 10.0f;
+}
+
+float ProjectSettings::GetMaxAngleDiff() const {
+    return engineSettings.navigation.maxAngleDiff;
+}
+
+void ProjectSettings::SetMaxAngleDiff(float angle) {
+    engineSettings.navigation.maxAngleDiff = angle;
+}
+
+float ProjectSettings::GetMaxDist() const {
+    return engineSettings.navigation.maxDist;
+}
+
+void ProjectSettings::SetMaxDist(float distance) {
+    engineSettings.navigation.maxDist = distance > 0.0f ? distance : 2.0f;
 }
