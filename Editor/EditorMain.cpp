@@ -3,6 +3,7 @@
 #include "../platform.h"
 #include "../EngineTime.h"
 #include "../gl_types.h"
+#include "../FrameCapture.h"
 #include <iostream>
 #include <memory>
 #include <thread>
@@ -226,6 +227,13 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam) 
         
     case WM_KEYDOWN:
         if (editor) {
+            // Handle F12 key for screenshot
+            if (wParam == VK_F12) {
+                std::cout << "Capturing screenshot..." << std::endl;
+                editor->CaptureScreenshot("screenshots/editor/editor_interface.png");
+                return 0;
+            }
+            
             // Handle WASD keys for camera movement
             Camera* camera = editor->GetEditorCamera();
             if (camera) {
@@ -263,7 +271,9 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam) 
         return DefWindowProc(hWnd, message, wParam, lParam);
     }
 }
-#else
+#endif // End of Windows-specific code
+
+#ifndef PLATFORM_WINDOWS
 // Linux entry point
 int main(int argc, char** argv) {
     // Create editor
@@ -350,6 +360,11 @@ int main(int argc, char** argv) {
                 // Handle key press
                 if (XLookupKeysym(&event.xkey, 0) == XK_Escape) {
                     running = false;
+                }
+                // Handle F12 key for screenshot
+                else if (XLookupKeysym(&event.xkey, 0) == XK_F12 && editor) {
+                    std::cout << "Capturing screenshot..." << std::endl;
+                    editor->CaptureScreenshot("screenshots/editor/editor_interface.png");
                 }
                 // Handle WASD keys for camera movement
                 else if (editor) {
@@ -476,4 +491,4 @@ int main(int argc, char** argv) {
     
     return 0;
 }
-#endif
+#endif // End of Linux-specific code

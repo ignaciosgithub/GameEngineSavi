@@ -185,3 +185,26 @@ void Editor::TogglePlay() {
 bool Editor::IsPlaying() const {
     return isPlaying;
 }
+
+bool Editor::CaptureScreenshot(const std::string& filename) {
+    // Render a fresh frame to ensure we capture the latest state
+    Render();
+    
+    // Get the scene view panel's dimensions for the screenshot
+    if (sceneViewPanel) {
+        int x, y, width, height;
+        sceneViewPanel->GetDimensions(x, y, width, height);
+        
+        // Adjust for panel header
+        y += 30;
+        height -= 30;
+        
+        std::cout << "Capturing screenshot of scene view: " << width << "x" << height << std::endl;
+        
+        // Capture the viewport to file
+        return FrameCapture::CaptureViewportToFile(filename);
+    }
+    
+    std::cerr << "Failed to capture screenshot: Scene view panel not available" << std::endl;
+    return false;
+}
