@@ -26,7 +26,7 @@ The engine is structured around these core components:
 - **GameObject**: The fundamental entity in the engine that can contain components, meshes, and child objects
 - **MonoBehaviourLike**: Base class for all behavior components with lifecycle methods (Awake, Start, Update, etc.)
 - **Scene**: Manages game objects, cameras, and the game loop
-- **Time**: Handles time-related functionality for frame-rate independent gameplay
+- **TimeManager**: Handles time-related functionality for frame-rate independent gameplay
 
 ### Rendering System
 
@@ -421,7 +421,7 @@ To use GameEngineSavi in your project:
 // Create a new scene
 std::unique_ptr<Scene> scene = std::make_unique<Scene>();
 
-// Load the scene (initializes Time)
+// Load the scene (initializes TimeManager)
 scene->Load();
 
 // Create a game object
