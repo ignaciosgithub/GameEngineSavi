@@ -1,5 +1,8 @@
 #include "TimeManager.h"
 
+// Initialize static instance
+TimeManager* TimeManager::instance = nullptr;
+
 void TimeManager::Update()
 {
     // Get the current time

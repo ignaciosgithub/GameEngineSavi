@@ -23,7 +23,7 @@
 #include "MonoBehaviourLike.h"
 #include "GameObject.h"
 #include "Prefab.h"
-#include "Time.h"
+#include "TimeManager.h"
 #include "Scene.h"
 #include "EngineCondition.h"
 #include "GUI/GUI.h"
