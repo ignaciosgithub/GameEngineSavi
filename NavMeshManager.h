@@ -36,6 +36,9 @@ public:
     // Get the navigation mesh
     NavMesh* GetNavMesh() const;
     
+    // Set the navigation mesh
+    void SetNavMesh(NavMesh* mesh);
+    
     // Add an AI entity to the manager
     void AddAIEntity(AIEntity* entity);
     

@@ -4,6 +4,7 @@
 #include "Vector3.h"
 #include <vector>
 #include <memory>
+#include <unordered_map>
 
 // Forward declarations
 class GameObject;
@@ -54,6 +55,12 @@ public:
     
     // Clear the navigation mesh
     void Clear();
+    
+    // Find a path from start to target using A* algorithm
+    std::vector<size_t> FindPath(const Vector3& start, const Vector3& target, const Vector3& orientation, float maxAngleDiff, float maxDist) const;
+    
+    // Calculate heuristic for A* algorithm (distance to target)
+    float CalculateHeuristic(size_t nodeIndex, size_t targetNodeIndex) const;
 };
 
 #endif // NAV_MESH_H

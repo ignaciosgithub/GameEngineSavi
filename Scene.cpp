@@ -5,15 +5,15 @@
 
 void Scene::Initialize() {
     // Initialize time
-    time = std::make_unique<TimeManager>();
+    time = std::unique_ptr<TimeManager>(new TimeManager());
     
     // Initialize physics system if not already set
     if (!physicsSystem) {
-        physicsSystem = std::make_unique<PhysicsSystem>();
+        physicsSystem = std::unique_ptr<PhysicsSystem>(new PhysicsSystem());
     }
     
     // Initialize camera manager
-    cameraManager = std::make_unique<CameraManager>();
+    cameraManager = std::unique_ptr<CameraManager>(new CameraManager());
     
     // Set running flag
     isRunning = true;
@@ -227,7 +227,7 @@ void Scene::Render() {
 void Scene::RenderScene() {
     // Initialize camera manager if not already created
     if (!cameraManager) {
-        cameraManager = std::make_unique<CameraManager>();
+        cameraManager = std::unique_ptr<CameraManager>(new CameraManager());
         
         // Set main camera if available
         if (mainCamera) {

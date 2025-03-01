@@ -18,11 +18,7 @@ void GameObject::Render(const std::vector<PointLight>& lightss) {
     }
 }
 
-void GameObject::AddMesh(Model* mesh) {
-    if (mesh) {
-        meshes.push_back(mesh);
-    }
-}
+// AddMesh is already defined in GameObject.h
 
 void GameObject::AddLight(PointLight light) {
     lights.push_back(light);

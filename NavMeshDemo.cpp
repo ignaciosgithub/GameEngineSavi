@@ -19,7 +19,7 @@ int main() {
     Camera* camera = new Camera();
     camera->position = Vector3(0, 5, -10);
     // Set camera direction instead of rotation
-    camera->lookAt = Vector3(0, 0, 0);
+    camera->LookAt(Vector3(0, 0, 0));
     scene.AddCamera(std::unique_ptr<Camera>(camera));
     scene.SetMainCamera(camera);
     
@@ -86,7 +86,7 @@ int main() {
         navMeshManager.Update(deltaTime);
         
         // Test raycasting
-        Vector3 direction = (camera->lookAt - camera->position).normalized();
+        Vector3 direction = (camera->lookDirection).normalized();
         Raycast ray(camera->position, direction);
         RaycastHit hit;
         
