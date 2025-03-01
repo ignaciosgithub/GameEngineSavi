@@ -226,9 +226,8 @@ void AudioSystem::SetListenerVelocity(const Vector3& velocity) {
     listenerVelocity = velocity;
     
 #if AUDIO_ENABLED
-    // SDL_mixer doesn't have direct spatial audio support
-    // In a more advanced implementation, we would use this velocity
-    // to calculate doppler effect for each audio source
+    // SDL_mixer doesn't support spatial audio or Doppler effect.
+    // Velocity is stored but not used for audio processing.
 #endif
 }
 

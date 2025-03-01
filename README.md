@@ -1134,6 +1134,11 @@ Here are some visual examples of GameEngineSavi's capabilities:
 
 ### Audio System
 ![Audio System](screenshots/AudioTest.png)
+
+### Audio System Limitations
+- The engine uses SDL_mixer for audio playback
+- SDL_mixer does not support spatial audio features like Doppler effect
+- Position and velocity of audio sources/listeners are tracked but do not affect audio playback
 *MP3 Playback with Spatial Audio*
 
 ### Networking System

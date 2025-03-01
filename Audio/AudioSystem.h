@@ -11,6 +11,13 @@
 class AudioClip;
 class AudioSource;
 
+/**
+ * Audio system implementation using SDL_mixer.
+ * Note: SDL_mixer does not support spatial audio features like
+ * Doppler effect or 3D positional audio. Position and velocity
+ * values are stored but do not affect audio playback.
+ */
+
 class AudioSystem {
 private:
     static AudioSystem* instance;
