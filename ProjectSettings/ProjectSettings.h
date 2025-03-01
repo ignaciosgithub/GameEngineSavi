@@ -1,7 +1,7 @@
 #ifndef PROJECT_SETTINGS_H
 #define PROJECT_SETTINGS_H
 
-#include "platform.h"
+#include "../platform.h"
 #include <string>
 #include <vector>
 #include <map>
@@ -60,6 +60,13 @@ private:
             int channels;
             bool enableAudio;
         } audio;
+        
+        // Navigation settings
+        struct NavigationSettings {
+            float navMeshRefreshRate;
+            float maxAngleDiff;
+            float maxDist;
+        } navigation;
     } engineSettings;
     
     // Asset paths
@@ -136,6 +143,16 @@ public:
     
     bool GetEnableAudio() const;
     void SetEnableAudio(bool enabled);
+    
+    // Navigation settings getters and setters
+    float GetNavMeshRefreshRate() const;
+    void SetNavMeshRefreshRate(float rate);
+    
+    float GetMaxAngleDiff() const;
+    void SetMaxAngleDiff(float angle);
+    
+    float GetMaxDist() const;
+    void SetMaxDist(float distance);
     
     std::string GetAssetPath(const std::string& type) const;
     void SetAssetPath(const std::string& type, const std::string& path);
