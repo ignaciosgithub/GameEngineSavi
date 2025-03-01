@@ -5,7 +5,7 @@
 
 void Scene::Initialize() {
     // Initialize time
-    time = std::make_unique<EngineTime>();
+    time = std::make_unique<TimeManager>();
     
     // Initialize physics system if not already set
     if (!physicsSystem) {

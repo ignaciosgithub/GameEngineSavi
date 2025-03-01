@@ -7,7 +7,7 @@
 #include <string>
 #include "GameObject.h"
 #include "Camera.h"
-#include "EngineTime.h"
+#include "TimeManager.h"
 #include "PhysicsSystem.h"
 #include "PointLight.h"
 #include "Shaders/Core/ShaderProgram.h"
@@ -19,7 +19,7 @@ private:
     std::vector<std::unique_ptr<GameObject>> gameObjects;
     std::vector<std::unique_ptr<Camera>> cameras;
     std::vector<PointLight> pointLights;
-    std::unique_ptr<EngineTime> time;
+    std::unique_ptr<TimeManager> time;
     std::unique_ptr<PhysicsSystem> physicsSystem;
     std::unique_ptr<CameraManager> cameraManager;
     std::atomic<bool> isRunning;
