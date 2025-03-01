@@ -107,10 +107,17 @@ void Panel::Draw() {
     glVertex2f(x, y + height);
     glEnd();
     
+    // Enable scissor test for text clipping
+    glEnable(GL_SCISSOR_TEST);
+    glScissor(static_cast<int>(x), static_cast<int>(y), static_cast<int>(width), static_cast<int>(height));
+    
     // Draw children
     for (auto& child : children) {
         child->Draw();
     }
+    
+    // Disable scissor test
+    glDisable(GL_SCISSOR_TEST);
 }
 
 bool Panel::HandleInput(int mouseX, int mouseY, bool clicked) {

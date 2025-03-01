@@ -21,9 +21,9 @@ Editor::Editor(int width, int height)
     // Create scene
     scene = std::unique_ptr<Scene>(new Scene());
     
-    // Create editor camera
+    // Create editor camera with better angle for 3D visualization
     editorCamera = std::unique_ptr<Camera>(new Camera());
-    editorCamera->SetPosition(Vector3(0, 2, 5));
+    editorCamera->SetPosition(Vector3(3.0f, 2.5f, 4.0f));  // Position camera at angle
     editorCamera->LookAt(Vector3(0, 0, 0));
     editorCamera->fieldOfView = 45.0f;
 }
@@ -58,25 +58,26 @@ void Editor::Initialize() {
 }
 
 void Editor::CreateDefaultScene() {
-    // Create a default point light
+    // Create a default point light at an angle for better shadows
     GameObject* lightObj = new GameObject("Default Light");
     PointLight light;
     light.SetColor(Vector3(1.0f, 1.0f, 1.0f));
-    light.SetIntensity(1.0f);
+    light.SetIntensity(1.2f);  // Slightly brighter
     lightObj->AddLight(light);
-    lightObj->SetPosition(Vector3(0, 5, 0));
+    lightObj->SetPosition(Vector3(5.0f, 5.0f, 5.0f));  // Position light at angle
     scene->AddGameObject(lightObj);
     
-    // Create a default cube
+    // Create a default cube rotated to show 3D
     GameObject* cubeObj = new GameObject("Default Cube");
     // Load cube model
     Model* cubeModel = new Model();
     cubeModel->LoadFromFile("test_assets/cube.obj");
     cubeObj->AddMesh(cubeModel);
     cubeObj->SetPosition(Vector3(0, 0, 0));
+    cubeObj->SetRotation(Vector3(30.0f, 45.0f, 0.0f));  // Rotate for 3D view
     scene->AddGameObject(cubeObj);
     
-    std::cout << "Default scene created" << std::endl;
+    std::cout << "Default scene created with 3D cube and angled lighting" << std::endl;
 }
 
 void Editor::Update(float deltaTime) {
