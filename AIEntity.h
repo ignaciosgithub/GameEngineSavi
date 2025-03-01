@@ -3,8 +3,11 @@
 
 #include "MonoBehaviourLike.h"
 #include "Vector3.h"
+#include <vector>
+#include <iostream>
 
 class GameObject;
+class NavMesh;
 
 class AIEntity : public MonoBehaviourLike {
 private:
@@ -13,6 +16,14 @@ private:
     float maxAngleDiff;
     float maxDist;
     GameObject* gameObject;
+    
+    // Path following
+    std::vector<size_t> currentPath;
+    size_t currentPathIndex;
+    Vector3 targetPosition;
+    bool hasTarget;
+    float moveSpeed;
+    bool pathNeedsUpdate;
     
 public:
     AIEntity();
@@ -47,6 +58,30 @@ public:
     
     // Get the game object associated with this AI entity
     GameObject* GetGameObject() const;
+    
+    // Set the target position for the AI entity
+    void SetTarget(const Vector3& target);
+    
+    // Get the target position
+    Vector3 GetTarget() const;
+    
+    // Find a path to the target
+    void FindPathToTarget();
+    
+    // Follow the current path
+    void FollowPath(float deltaTime);
+    
+    // Check if the AI entity has reached the target
+    bool HasReachedTarget() const;
+    
+    // Handle NavMesh refresh
+    void OnNavMeshRefresh();
+    
+    // Set the movement speed
+    void SetMoveSpeed(float speed);
+    
+    // Get the movement speed
+    float GetMoveSpeed() const;
     
     // MonoBehaviourLike overrides
     void Update(float deltaTime) override;

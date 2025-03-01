@@ -69,10 +69,34 @@ void NavMeshManager::RefreshNavMesh() {
     navMesh->ConnectNodes(0, 2);
     navMesh->ConnectNodes(1, 3);
     navMesh->ConnectNodes(2, 3);
+    
+    // Notify all AI entities that the NavMesh has been refreshed
+    for (AIEntity* entity : aiEntities) {
+        if (entity) {
+            entity->OnNavMeshRefresh();
+        }
+    }
 }
 
 NavMesh* NavMeshManager::GetNavMesh() const {
-    return navMesh.get();
+    return navMesh;
+}
+
+void NavMeshManager::SetNavMesh(NavMesh* mesh) {
+    if (mesh) {
+        // Delete the old navMesh if it exists
+        if (navMesh) {
+            delete navMesh;
+        }
+        navMesh = mesh;
+        
+        // Notify all AI entities that the NavMesh has been updated
+        for (AIEntity* entity : aiEntities) {
+            if (entity) {
+                entity->OnNavMeshRefresh();
+            }
+        }
+    }
 }
 
 void NavMeshManager::AddAIEntity(AIEntity* entity) {
