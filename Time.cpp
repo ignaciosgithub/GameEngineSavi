@@ -1,6 +1,6 @@
-#include "Time.h"
+#include "TimeManager.h"
 
-void Time::Update()
+void TimeManager::Update()
 {
     // Get the current time
     auto currentFrameTime = std::chrono::high_resolution_clock::now();

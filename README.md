@@ -170,7 +170,7 @@ The engine uses a high-resolution clock for precise timing:
 
 ```cpp
 // Get delta time between frames
-float dt = Time::GetInstance().DeltaTime();
+float dt = TimeManager::GetInstance().DeltaTime();
 
 // Physics uses fixed timestep
 float fixedDt = ProjectSettings::GetInstance().GetFixedTimeStep();
