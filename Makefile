@@ -2,7 +2,7 @@
 
 # Define compiler and flags
 CXX = g++
-CXXFLAGS = -std=c++14 -Wall -Wextra -g
+CXXFLAGS = -std=c++14 -Wall -Wextra -g -I./ThirdParty/stb
 
 # Define different LDFLAGS for different targets
 OPENGL_LDFLAGS = -lGL -lGLU -lX11

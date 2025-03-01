@@ -321,6 +321,7 @@ The editor camera is positioned at (0, 2, 5) by default, looking at the origin (
 | Ctrl+Z | Undo |
 | Ctrl+Y | Redo |
 | Space | Play/Stop |
+| F12 | Capture Screenshot |
 | Ctrl+1 | Hierarchy Panel Focus |
 | Ctrl+2 | Scene View Focus |
 | Ctrl+3 | Inspector Panel Focus |
@@ -348,6 +349,33 @@ mingw32-make -f Makefile.mingw editor
 # Run the editor
 run_editor.bat
 ```
+
+### Screenshot Functionality
+
+The editor includes built-in screenshot functionality that allows you to capture the current view of the editor or game scene. This is useful for:
+
+- Documenting your game development progress
+- Creating promotional materials
+- Reporting bugs or issues
+- Sharing your work with others
+
+To capture a screenshot:
+
+1. Press the **F12** key while the editor is running
+2. The screenshot will be saved to the `screenshots/editor/` directory
+3. The filename will be `editor_interface.png` by default
+
+You can also programmatically capture screenshots using the `Editor::CaptureScreenshot()` method:
+
+```cpp
+// Capture a screenshot with a custom filename
+editor->CaptureScreenshot("my_custom_screenshot.png");
+```
+
+The screenshot functionality uses the `FrameCapture` class which reads the OpenGL frame buffer and saves it as a PNG file. This class can be used in your own games to implement screenshot functionality.
+
+![Editor Interface](screenshots/editor/editor_interface.png)
+
 
 ## Error Handling
 

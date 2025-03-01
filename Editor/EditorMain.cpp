@@ -226,6 +226,13 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam) 
         
     case WM_KEYDOWN:
         if (editor) {
+            // Handle F12 key for screenshot
+            if (wParam == VK_F12) {
+                std::cout << "Capturing screenshot..." << std::endl;
+                editor->CaptureScreenshot("screenshots/editor/editor_interface.png");
+                return 0;
+            }
+            
             // Handle WASD keys for camera movement
             Camera* camera = editor->GetEditorCamera();
             if (camera) {
@@ -350,6 +357,11 @@ int main(int argc, char** argv) {
                 // Handle key press
                 if (XLookupKeysym(&event.xkey, 0) == XK_Escape) {
                     running = false;
+                }
+                // Handle F12 key for screenshot
+                else if (XLookupKeysym(&event.xkey, 0) == XK_F12 && editor) {
+                    std::cout << "Capturing screenshot..." << std::endl;
+                    editor->CaptureScreenshot("screenshots/editor/editor_interface.png");
                 }
                 // Handle WASD keys for camera movement
                 else if (editor) {

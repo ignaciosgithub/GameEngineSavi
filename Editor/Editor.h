@@ -84,6 +84,9 @@ public:
     
     // Check if the scene is playing
     bool IsPlaying() const;
+    
+    // Capture a screenshot of the editor view
+    bool CaptureScreenshot(const std::string& filename);
 };
 
 #endif // EDITOR_H
