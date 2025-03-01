@@ -40,13 +40,14 @@ void SceneViewPanel::Draw() {
     // Save current OpenGL state
     glPushAttrib(GL_ALL_ATTRIB_BITS);
     
-    // Enable 3D rendering states
+    // Set up OpenGL for 3D rendering
     glEnable(GL_DEPTH_TEST);
     glEnable(GL_LIGHTING);
     glEnable(GL_LIGHT0);
     glEnable(GL_CULL_FACE);
     glEnable(GL_NORMALIZE);
     glEnable(GL_COLOR_MATERIAL);
+    glClearColor(0.15f, 0.15f, 0.15f, 1.0f);  // Darker background for better contrast
     
     // Set material properties
     GLfloat mat_ambient[] = { 0.7f, 0.7f, 0.7f, 1.0f };
