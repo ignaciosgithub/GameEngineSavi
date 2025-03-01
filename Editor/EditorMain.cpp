@@ -3,6 +3,7 @@
 #include "../platform.h"
 #include "../EngineTime.h"
 #include "../gl_types.h"
+#include "../FrameCapture.h"
 #include <iostream>
 #include <memory>
 #include <thread>
@@ -270,7 +271,9 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam) 
         return DefWindowProc(hWnd, message, wParam, lParam);
     }
 }
-#else
+#endif // End of Windows-specific code
+
+#ifndef PLATFORM_WINDOWS
 // Linux entry point
 int main(int argc, char** argv) {
     // Create editor
@@ -488,4 +491,4 @@ int main(int argc, char** argv) {
     
     return 0;
 }
-#endif
+#endif // End of Linux-specific code
