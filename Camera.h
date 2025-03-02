@@ -74,10 +74,10 @@ public:
         Vector3 forward = lookDirection;
         forward.normalize();
         
-        Vector3 right = Vector3::Cross(up, forward);
+        Vector3 right = up.cross(forward);
         right.normalize();
         
-        up = Vector3::Cross(forward, right);
+        up = forward.cross(right);
         up.normalize();
         
         Matrix4x4 view;
@@ -90,9 +90,9 @@ public:
         view.elements[2][0] = -forward.x;  // Negate forward direction for OpenGL convention
         view.elements[2][1] = -forward.y;
         view.elements[2][2] = -forward.z;
-        view.elements[3][0] = -Vector3::Dot(right, position);
-        view.elements[3][1] = -Vector3::Dot(up, position);
-        view.elements[3][2] = Vector3::Dot(forward, position);  // Positive dot product with forward
+        view.elements[3][0] = -right.dot(position);
+        view.elements[3][1] = -up.dot(position);
+        view.elements[3][2] = forward.dot(position);  // Positive dot product with forward
         view.elements[3][3] = 1.0f;
         
         return view;

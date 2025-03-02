@@ -1,20 +1,21 @@
 #include "RigidBody.h"
 #include "GameObject.h"
+#include <iostream>
 #include <algorithm>
 
-RigidBody::RigidBody() 
-    : mass(1.0f), 
-      frictionCoeff(0.5f), 
-      useGravity(true), 
-      isKinematic(false),
-      drag(0.0f),
-      angularDrag(0.05f),
-      velocity(0, 0, 0), 
-      angularVelocity(0, 0, 0), 
-      force(0, 0, 0), 
-      torque(0, 0, 0),
-      inertiaTensor(1.0f, 1.0f, 1.0f),
-      gameObject(nullptr) {
+RigidBody::RigidBody() {
+    mass = 1.0f;
+    frictionCoeff = 0.5f;
+    useGravity = true;
+    isKinematic = false;
+    drag = 0.0f;
+    angularDrag = 0.05f;
+    velocity = Vector3(0, 0, 0);
+    angularVelocity = Vector3(0, 0, 0);
+    force = Vector3(0, 0, 0);
+    torque = Vector3(0, 0, 0);
+    inertiaTensor = Vector3(1.0f, 1.0f, 1.0f);
+    gameObject = nullptr;
     CalculateInertiaTensor();
 }
 

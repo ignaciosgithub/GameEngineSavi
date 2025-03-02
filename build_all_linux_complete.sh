@@ -7,7 +7,7 @@ echo "Building GameEngineSavi for Linux..."
 CFLAGS="-std=c++11 -Wall -Wextra -g"
 
 # Set include paths
-INCLUDES="-I."
+INCLUDES="-I. -IThirdParty/OpenGL/include"
 
 # Create output directory if it doesn't exist
 mkdir -p bin/linux
@@ -93,6 +93,10 @@ echo "Compiling ProjectSettings..."
 g++ $CFLAGS $INCLUDES -c ProjectSettings/ProjectSettings.cpp -o bin/linux/ProjectSettings.o
 check_status "ProjectSettings compilation"
 
+# Compile profiler
+echo "Compiling Profiler..."
+g++ $CFLAGS $INCLUDES -c Profiler.cpp -o bin/linux/Profiler.o || echo "Warning: Profiler compilation failed, but continuing..."
+
 # Create a static library with the components that compiled successfully
 echo "Creating static library..."
 ar rcs bin/linux/libGameEngineSavi.a bin/linux/Vector3.o bin/linux/Matrix4x4.o bin/linux/Model.o bin/linux/GameObject.o bin/linux/Camera.o bin/linux/Raycast.o bin/linux/TimeManager.o bin/linux/NavMesh.o bin/linux/NavMeshManager.o bin/linux/AIEntity.o bin/linux/ProjectSettings.o
@@ -107,6 +111,9 @@ if [ -f bin/linux/PhysicsSystem.o ]; then
 fi
 if [ -f bin/linux/Scene.o ]; then
     ar rcs bin/linux/libGameEngineSavi.a bin/linux/Scene.o
+fi
+if [ -f bin/linux/Profiler.o ]; then
+    ar rcs bin/linux/libGameEngineSavi.a bin/linux/Profiler.o
 fi
 
 # Build demos
