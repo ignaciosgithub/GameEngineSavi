@@ -15,8 +15,7 @@
     #include <ws2tcpip.h>
     #include <windows.h>
     #include <windowsx.h>
-    #include <gl/gl.h>
-    #include <gl/glu.h>
+    #include "ThirdParty/OpenGL/include/GL/platform_gl.h"
     #include <psapi.h>  // For GetProcessMemoryInfo
     
     // Windows-specific library dependencies

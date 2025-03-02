@@ -7,7 +7,7 @@ echo "Building GameEngineSavi for Linux..."
 CFLAGS="-std=c++11 -Wall -Wextra -g"
 
 # Set include paths
-INCLUDES="-I."
+INCLUDES="-I. -IThirdParty/OpenGL/include"
 
 # Create output directory if it doesn't exist
 mkdir -p bin/linux
