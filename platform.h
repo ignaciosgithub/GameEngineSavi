@@ -17,6 +17,7 @@
     #include <windowsx.h>
     #include <gl/gl.h>
     #include <gl/glu.h>
+    #include <psapi.h>  // For GetProcessMemoryInfo
     
     // Windows-specific library dependencies
     #pragma comment(lib, "ws2_32.lib")
@@ -61,8 +62,9 @@
     #include <sys/socket.h>
     #include <netinet/in.h>
     #include <arpa/inet.h>
-    #include <unistd.h>
+    #include <unistd.h>  // For sysconf
     #include <fcntl.h>
+    #include <stdio.h>   // For FILE operations
     
     // Linux-specific socket type definitions
     typedef int SocketHandle;
