@@ -7,12 +7,12 @@ class GameObject;
 
 // Structure to hold information about a raycast hit
 struct RaycastHit {
-    GameObject* hitObject;
-    Vector3 hitPoint;
-    Vector3 hitNormal;
+    GameObject* gameObject;
+    Vector3 point;
+    Vector3 normal;
     float distance;
     
-    RaycastHit() : hitObject(nullptr), hitPoint(0, 0, 0), hitNormal(0, 1, 0), distance(0) {}
+    RaycastHit() : gameObject(nullptr), point(0, 0, 0), normal(0, 1, 0), distance(0) {}
 };
 
 #endif // RAYCAST_HIT_H

@@ -91,9 +91,9 @@ int main() {
         RaycastHit hit;
         
         if (ray.Cast(hit, &scene)) {
-            std::cout << "Hit object: " << hit.hitObject->GetName() << std::endl;
-            std::cout << "Hit point: (" << hit.hitPoint.x << ", " << hit.hitPoint.y << ", " << hit.hitPoint.z << ")" << std::endl;
-            std::cout << "Hit normal: (" << hit.hitNormal.x << ", " << hit.hitNormal.y << ", " << hit.hitNormal.z << ")" << std::endl;
+            std::cout << "Hit object: " << hit.gameObject->GetName() << std::endl;
+            std::cout << "Hit point: (" << hit.point.x << ", " << hit.point.y << ", " << hit.point.z << ")" << std::endl;
+            std::cout << "Hit normal: (" << hit.normal.x << ", " << hit.normal.y << ", " << hit.normal.z << ")" << std::endl;
             std::cout << "Hit distance: " << hit.distance << std::endl;
         }
         

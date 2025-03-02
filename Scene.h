@@ -65,8 +65,8 @@ public:
     const std::vector<PointLight>& GetPointLights() const { return pointLights; }
     
     // Shader management
-    void SetGlobalShaderUniforms(Shaders::ShaderProgram* program);
-    void UpdateLightUniforms(Shaders::ShaderProgram* program);
+    void SetGlobalShaderUniforms(ShaderProgram* program);
+    void UpdateLightUniforms(ShaderProgram* program);
     
     // Frame rate configuration
     void SetTargetFPS(float fps) { targetFPS = fps > 0.0f ? fps : 60.0f; }

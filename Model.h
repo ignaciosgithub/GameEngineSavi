@@ -3,10 +3,27 @@
 
 #include <vector>
 #include <string>
+#include <functional>
+#include <cmath>
 #include "Vector3.h"
+#include "Vector2.h"
+#include "Matrix4x4.h"
+#include "Triangle.h"
+// Face.h is already included elsewhere, so we'll just forward declare it
+class Face;
 #include "Shaders/Core/ShaderProgram.h"
 #include "GL/gl_types.h"
 #include "MonoBehaviourLike.h"
+#include "Texture.h"
+#include "platform.h"
+
+// Platform-specific OpenGL includes
+#ifdef PLATFORM_WINDOWS
+#include <windows.h>
+#include <gl/gl.h>
+#else
+#include <GL/gl.h>
+#endif
 
 class PointLight;
 
@@ -23,6 +40,18 @@ private:
     
     // Shader program
     ShaderProgram* shaderProgram;
+    
+    // Position and rotation
+    Vector3 position;
+    Vector3 rotation;
+    
+    // Textures
+    Texture* albedoTexture = nullptr;
+    Texture* normalTexture = nullptr;
+    Texture* opacityTexture = nullptr;
+    
+    // Callback for when vertices are updated
+    std::function<void(Model*)> onVerticesUpdated;
     
     // Calculate normal for a vertex
     Vector3 calculateNormal(size_t i) const {
@@ -50,6 +79,27 @@ public:
     // Load model from file
     bool LoadFromFile(const std::string& filename);
     
+    // Load model from OBJ file
+    void loadOBJ(std::string path);
+    
+    // Load texture
+    void loadTexture(const std::string& path, const std::string& type);
+    
+    // Set texture tiling
+    void setTiling(float x, float y);
+    
+    // Translate model
+    void translate(const Vector3& vec);
+    
+    // Rotate model
+    void rotate();
+    
+    // Draw model (compatibility method)
+    void draw(const std::vector<PointLight>& pointLights);
+    
+    // Draw model (compatibility method)
+    void drawcomp(const std::vector<PointLight>& pointLights);
+    
     // Create a simple cube
     void CreateCube();
     
@@ -65,8 +115,14 @@ public:
     // Render the model
     void Render(const std::vector<PointLight>& lights);
     
+    // Update uniforms
+    void UpdateUniforms(const Matrix4x4& viewMatrix, const Matrix4x4& projectionMatrix);
+    
     // Update vertices
     void UpdateVertices(const std::vector<GLfloat>& newVertices);
+    
+    // Initialize buffers
+    void InitializeBuffers();
     
     // Set shader program
     void SetShaderProgram(ShaderProgram* program);

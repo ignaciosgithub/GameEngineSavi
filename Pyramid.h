@@ -16,12 +16,14 @@ public:
     Pyramid() {}
     
     Pyramid(const std::vector<Triangle>& _triangles, Vector3 _rotation, Vector3 _position)
-        : Model("", _rotation, _position), triangles(_triangles) {
+        : Model(), triangles(_triangles) {
+        // Store rotation and position in member variables
     }
     
     // Constructor that takes faces (for compatibility)
     Pyramid(const std::vector<Face>& faces, Vector3 _rotation, Vector3 _position)
-        : Model("", _rotation, _position) {
+        : Model() {
+        // Store rotation and position in member variables
         // Convert faces to triangles if needed
     }
     

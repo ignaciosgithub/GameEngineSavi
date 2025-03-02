@@ -154,6 +154,11 @@ public:
     float GetMaxDist() const;
     void SetMaxDist(float distance);
     
+    // Physics compatibility methods
+    float GetPhysicsGravity() const;
+    float GetPhysicsTimeStep() const;
+    float GetGlobalRestitution() const;
+    
     std::string GetAssetPath(const std::string& type) const;
     void SetAssetPath(const std::string& type, const std::string& path);
 };

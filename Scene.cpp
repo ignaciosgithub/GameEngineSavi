@@ -1,7 +1,11 @@
 #include "Scene.h"
 #include <iostream>
 #include <algorithm>
+#include <thread>
+#include <chrono>
 #include "EngineCondition.h"
+#include "Scene_includes_fixed.h"
+#include "GameObject_extensions_fixed.h"
 
 void Scene::Initialize() {
     // Initialize time
@@ -35,7 +39,7 @@ void Scene::Load() {
         
         // Create a game object for the light
         GameObject* lightObj = new GameObject("Default Light");
-        lightObj->SetPosition(Vector3(0, 5, 0));
+        lightObj->position = Vector3(0, 5, 0);
         AddGameObject(lightObj);
         
         std::cout << "Created default point light" << std::endl;
@@ -49,7 +53,7 @@ void Scene::Load() {
         Model* cubeModel = new Model();
         if (cubeModel->LoadFromFile("test_assets/cube.obj")) {
             cubeObj->AddMesh(cubeModel);
-            cubeObj->SetPosition(Vector3(0, 0, 0));
+            cubeObj->position = Vector3(0, 0, 0);
             AddGameObject(cubeObj);
             std::cout << "Created default cube" << std::endl;
         } else {
@@ -122,7 +126,7 @@ void Scene::Stop() {
 
 void Scene::Update(float deltaTime) {
     // Update time
-    time->Update(deltaTime);
+    time->Update();
     
     // Accumulate time for physics updates
     physicsAccumulator += deltaTime;
@@ -136,10 +140,8 @@ void Scene::Update(float deltaTime) {
         
         // Update game objects with fixed timestep
         for (auto& gameObject : gameObjects) {
-            // Update components
-            for (auto& component : gameObject->components) {
-                component->FixedUpdate();
-            }
+            // Update components through public method
+            gameObject->UpdateComponents(physicsTimeStep);
         }
         
         physicsAccumulator -= physicsTimeStep;
@@ -147,10 +149,8 @@ void Scene::Update(float deltaTime) {
     
     // Update game objects
     for (auto& gameObject : gameObjects) {
-        // Update components
-        for (auto& component : gameObject->components) {
-            component->Update(deltaTime);
-        }
+        // Update components through public method
+        gameObject->UpdateComponents(deltaTime);
     }
     
     // Update cameras
@@ -338,7 +338,7 @@ void Scene::RenderScene() {
                 }
                 
                 // Set shader program if available
-                Shaders::ShaderProgram* program = mesh->GetShaderProgram();
+                ShaderProgram* program = mesh->GetShaderProgram();
                 if (program) {
                     program->Use();
                     
@@ -358,7 +358,7 @@ void Scene::RenderScene() {
         }
         
         // Draw coordinate axes for debugging (only in editor mode)
-        if (EngineCondition::IsInEditMode()) {
+        if (EngineCondition::IsInEditor()) {
             DrawDebugAxes();
         }
     }
@@ -461,7 +461,7 @@ void Scene::RemovePointLight(size_t index) {
     }
 }
 
-void Scene::SetGlobalShaderUniforms(Shaders::ShaderProgram* program) {
+void Scene::SetGlobalShaderUniforms(ShaderProgram* program) {
     if (!program) {
         return;
     }
@@ -479,7 +479,7 @@ void Scene::SetGlobalShaderUniforms(Shaders::ShaderProgram* program) {
     UpdateLightUniforms(program);
 }
 
-void Scene::UpdateLightUniforms(Shaders::ShaderProgram* program) {
+void Scene::UpdateLightUniforms(ShaderProgram* program) {
     if (!program) {
         return;
     }
@@ -530,7 +530,8 @@ void Scene::CleanupResources() {
     
     // Reset physics system
     if (physicsSystem) {
-        physicsSystem->Reset();
+        // Reset physics system
+        // physicsSystem->Reset(); // Uncomment when Reset method is implemented
     }
     
     // Reset frame count

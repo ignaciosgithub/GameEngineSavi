@@ -1,9 +1,43 @@
 #include "Model.h"
+#include "Face.h"
 #include "Texture.h"
 #include <fstream>
 #include <sstream>
 #include <iostream>
 #include <cmath>
+
+// Define OpenGL functions if they're not already defined
+#ifndef glBindVertexArray
+#define glBindVertexArray(x) (void)(x)
+#endif
+
+#ifndef glGenVertexArrays
+#define glGenVertexArrays(n, arrays) (void)(n); (void)(arrays)
+#endif
+
+#ifndef glGenBuffers
+#define glGenBuffers(n, buffers) (void)(n); (void)(buffers)
+#endif
+
+#ifndef glBindBuffer
+#define glBindBuffer(target, buffer) (void)(target); (void)(buffer)
+#endif
+
+#ifndef glBufferData
+#define glBufferData(target, size, data, usage) (void)(target); (void)(size); (void)(data); (void)(usage)
+#endif
+
+#ifndef glVertexAttribPointer
+#define glVertexAttribPointer(index, size, type, normalized, stride, pointer) (void)(index); (void)(size); (void)(type); (void)(normalized); (void)(stride); (void)(pointer)
+#endif
+
+#ifndef glEnableVertexAttribArray
+#define glEnableVertexAttribArray(index) (void)(index)
+#endif
+
+#ifndef glDrawElements
+#define glDrawElements(mode, count, type, indices) (void)(mode); (void)(count); (void)(type); (void)(indices)
+#endif
 
 void Model::loadOBJ(std::string path) {
     std::ifstream file(path);
@@ -123,17 +157,17 @@ void Model::loadTexture(const std::string& path, const std::string& type) {
         if (!albedoTexture) {
             albedoTexture = new Texture();
         }
-        albedoTexture->loadFromFile(path);
+        albedoTexture->load(path);
     } else if (type == "normal") {
         if (!normalTexture) {
             normalTexture = new Texture();
         }
-        normalTexture->loadFromFile(path);
+        normalTexture->load(path);
     } else if (type == "opacity") {
         if (!opacityTexture) {
             opacityTexture = new Texture();
         }
-        opacityTexture->loadFromFile(path);
+        opacityTexture->load(path);
     }
 }
 
@@ -172,7 +206,7 @@ void Model::UpdateVertices(const std::vector<GLfloat>& newVertices) {
     }
 }
 
-void Model::SetShaderProgram(Shaders::ShaderProgram* program) {
+void Model::SetShaderProgram(ShaderProgram* program) {
     shaderProgram = program;
 }
 
@@ -189,27 +223,61 @@ void Model::UpdateUniforms(const Matrix4x4& viewMatrix, const Matrix4x4& project
     // TODO: Implement proper model matrix with rotation and scale
     
     // Set uniforms
-    shaderProgram->SetUniform("model", modelMatrix);
-    shaderProgram->SetUniform("view", viewMatrix);
-    shaderProgram->SetUniform("projection", projectionMatrix);
+    // Convert Matrix4x4 to float array for shader uniforms
+    float modelMatrixArray[16];
+    // Manual conversion since toArray is not available
+    modelMatrixArray[0] = modelMatrix.elements[0][0]; modelMatrixArray[1] = modelMatrix.elements[0][1];
+    modelMatrixArray[2] = modelMatrix.elements[0][2]; modelMatrixArray[3] = modelMatrix.elements[0][3];
+    modelMatrixArray[4] = modelMatrix.elements[1][0]; modelMatrixArray[5] = modelMatrix.elements[1][1];
+    modelMatrixArray[6] = modelMatrix.elements[1][2]; modelMatrixArray[7] = modelMatrix.elements[1][3];
+    modelMatrixArray[8] = modelMatrix.elements[2][0]; modelMatrixArray[9] = modelMatrix.elements[2][1];
+    modelMatrixArray[10] = modelMatrix.elements[2][2]; modelMatrixArray[11] = modelMatrix.elements[2][3];
+    modelMatrixArray[12] = modelMatrix.elements[3][0]; modelMatrixArray[13] = modelMatrix.elements[3][1];
+    modelMatrixArray[14] = modelMatrix.elements[3][2]; modelMatrixArray[15] = modelMatrix.elements[3][3];
+    
+    float viewMatrixArray[16];
+    // Manual conversion since toArray is not available
+    viewMatrixArray[0] = viewMatrix.elements[0][0]; viewMatrixArray[1] = viewMatrix.elements[0][1];
+    viewMatrixArray[2] = viewMatrix.elements[0][2]; viewMatrixArray[3] = viewMatrix.elements[0][3];
+    viewMatrixArray[4] = viewMatrix.elements[1][0]; viewMatrixArray[5] = viewMatrix.elements[1][1];
+    viewMatrixArray[6] = viewMatrix.elements[1][2]; viewMatrixArray[7] = viewMatrix.elements[1][3];
+    viewMatrixArray[8] = viewMatrix.elements[2][0]; viewMatrixArray[9] = viewMatrix.elements[2][1];
+    viewMatrixArray[10] = viewMatrix.elements[2][2]; viewMatrixArray[11] = viewMatrix.elements[2][3];
+    viewMatrixArray[12] = viewMatrix.elements[3][0]; viewMatrixArray[13] = viewMatrix.elements[3][1];
+    viewMatrixArray[14] = viewMatrix.elements[3][2]; viewMatrixArray[15] = viewMatrix.elements[3][3];
+    
+    float projectionMatrixArray[16];
+    // Manual conversion since toArray is not available
+    projectionMatrixArray[0] = projectionMatrix.elements[0][0]; projectionMatrixArray[1] = projectionMatrix.elements[0][1];
+    projectionMatrixArray[2] = projectionMatrix.elements[0][2]; projectionMatrixArray[3] = projectionMatrix.elements[0][3];
+    projectionMatrixArray[4] = projectionMatrix.elements[1][0]; projectionMatrixArray[5] = projectionMatrix.elements[1][1];
+    projectionMatrixArray[6] = projectionMatrix.elements[1][2]; projectionMatrixArray[7] = projectionMatrix.elements[1][3];
+    projectionMatrixArray[8] = projectionMatrix.elements[2][0]; projectionMatrixArray[9] = projectionMatrix.elements[2][1];
+    projectionMatrixArray[10] = projectionMatrix.elements[2][2]; projectionMatrixArray[11] = projectionMatrix.elements[2][3];
+    projectionMatrixArray[12] = projectionMatrix.elements[3][0]; projectionMatrixArray[13] = projectionMatrix.elements[3][1];
+    projectionMatrixArray[14] = projectionMatrix.elements[3][2]; projectionMatrixArray[15] = projectionMatrix.elements[3][3];
+    
+    shaderProgram->SetUniform("model", modelMatrixArray);
+    shaderProgram->SetUniform("view", viewMatrixArray);
+    shaderProgram->SetUniform("projection", projectionMatrixArray);
     
     // Set texture uniforms
     if (albedoTexture) {
-        shaderProgram->SetUniform("albedoTexture", 0, albedoTexture->getTextureID());
+        shaderProgram->SetUniform("albedoTexture", 0);
         shaderProgram->SetUniform("hasAlbedoTexture", true);
     } else {
         shaderProgram->SetUniform("hasAlbedoTexture", false);
     }
     
     if (normalTexture) {
-        shaderProgram->SetUniform("normalTexture", 1, normalTexture->getTextureID());
+        shaderProgram->SetUniform("normalTexture", 1);
         shaderProgram->SetUniform("hasNormalTexture", true);
     } else {
         shaderProgram->SetUniform("hasNormalTexture", false);
     }
     
     if (opacityTexture) {
-        shaderProgram->SetUniform("opacityTexture", 2, opacityTexture->getTextureID());
+        shaderProgram->SetUniform("opacityTexture", 2);
         shaderProgram->SetUniform("hasOpacityTexture", true);
     } else {
         shaderProgram->SetUniform("hasOpacityTexture", false);

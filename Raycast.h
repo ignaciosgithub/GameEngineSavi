@@ -6,6 +6,7 @@
 #include <vector>
 
 class GameObject;
+class Scene; // Forward declaration for Scene
 
 class Raycast
 {
