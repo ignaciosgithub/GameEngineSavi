@@ -2,7 +2,7 @@
 #include "../EngineCondition.h"
 #include "../platform.h"
 #include "../EngineTime.h"
-#include "../gl_types.h"
+#include "ThirdParty/OpenGL/include/GL/gl_types.h"
 #include "../FrameCapture.h"
 #include <iostream>
 #include <memory>
@@ -11,12 +11,12 @@
 
 #ifdef PLATFORM_WINDOWS
 #include <windows.h>
-#include <GL/gl.h>
-#include <GL/glu.h>
+#include "ThirdParty/OpenGL/include/GL/platform_gl.h"
+
 #else
-#include <GL/gl.h>
-#include <GL/glu.h>
-#include <GL/glx.h>
+#include "ThirdParty/OpenGL/include/GL/platform_gl.h"
+
+
 #include <X11/keysym.h>
 #include <X11/Xlib.h>
 #endif
@@ -194,7 +194,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam) 
                     // Update camera look direction based on mouse movement
                     Vector3 dir = camera->lookDirection;
                     Vector3 up(0, 1, 0);
-                    Vector3 right = Vector3::Cross(up, dir);
+                    Vector3 right = up.cross(dir);
                     right.normalize();
                     
                     // Rotate around Y axis (left/right)
@@ -205,7 +205,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam) 
                     
                     // Rotate around X axis (up/down)
                     float angleX = deltaY * sensitivity;
-                    Vector3 newUp = Vector3::Cross(dir, right);
+                    Vector3 newUp = dir.cross(right);
                     newUp.normalize();
                     dir = dir * cos(angleX) + newUp * sin(angleX);
                     
@@ -239,7 +239,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam) 
             if (camera) {
                 Vector3 pos = camera->GetPosition();
                 Vector3 dir = camera->lookDirection;
-                Vector3 right = Vector3::Cross(Vector3(0, 1, 0), dir);
+                Vector3 right = Vector3(0, 1, 0).cross(dir);
                 right.normalize();
                 
                 float moveSpeed = 0.5f;
@@ -372,7 +372,7 @@ int main(int argc, char** argv) {
                     if (camera) {
                         Vector3 pos = camera->GetPosition();
                         Vector3 dir = camera->lookDirection;
-                        Vector3 right = Vector3::Cross(Vector3(0, 1, 0), dir);
+                        Vector3 right = Vector3(0, 1, 0).cross(dir);
                         right.normalize();
                         
                         float moveSpeed = 0.5f;
@@ -429,7 +429,7 @@ int main(int argc, char** argv) {
                             // Update camera look direction based on mouse movement
                             Vector3 dir = camera->lookDirection;
                             Vector3 up(0, 1, 0);
-                            Vector3 right = Vector3::Cross(up, dir);
+                            Vector3 right = up.cross(dir);
                             right.normalize();
                             
                             // Rotate around Y axis (left/right)
@@ -440,7 +440,7 @@ int main(int argc, char** argv) {
                             
                             // Rotate around X axis (up/down)
                             float angleX = deltaY * sensitivity;
-                            Vector3 newUp = Vector3::Cross(dir, right);
+                            Vector3 newUp = dir.cross(right);
                             newUp.normalize();
                             dir = dir * cos(angleX) + newUp * sin(angleX);
                             
