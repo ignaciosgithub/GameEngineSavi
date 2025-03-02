@@ -129,6 +129,13 @@ if %ERRORLEVEL% NEQ 0 (
     exit /b 1
 )
 
+REM Compile profiler
+echo Compiling Profiler...
+g++ %CFLAGS% %INCLUDES% -c Profiler.cpp -o bin\windows\Profiler.o
+if %ERRORLEVEL% NEQ 0 (
+    echo Warning: Profiler compilation failed, but continuing...
+)
+
 REM Create a static library with the components that compiled successfully
 echo Creating static library...
 ar rcs bin\windows\libGameEngineSavi.a bin\windows\Vector3.o bin\windows\Matrix4x4.o bin\windows\Model.o bin\windows\GameObject.o bin\windows\Camera.o bin\windows\Raycast.o bin\windows\TimeManager.o bin\windows\NavMesh.o bin\windows\NavMeshManager.o bin\windows\AIEntity.o bin\windows\ProjectSettings.o
@@ -145,6 +152,9 @@ if exist bin\windows\PhysicsSystem.o (
 )
 if exist bin\windows\Scene.o (
     ar rcs bin\windows\libGameEngineSavi.a bin\windows\Scene.o
+)
+if exist bin\windows\Profiler.o (
+    ar rcs bin\windows\libGameEngineSavi.a bin\windows\Profiler.o
 )
 
 REM Build demos
