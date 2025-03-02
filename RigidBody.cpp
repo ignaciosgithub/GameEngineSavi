@@ -5,6 +5,7 @@
 
 RigidBody::RigidBody() {
     mass = 1.0f;
+    frictionCoeff = 0.5f;
     useGravity = true;
     isKinematic = false;
     drag = 0.0f;
@@ -13,23 +14,19 @@ RigidBody::RigidBody() {
     angularVelocity = Vector3(0, 0, 0);
     force = Vector3(0, 0, 0);
     torque = Vector3(0, 0, 0);
+    inertiaTensor = Vector3(1.0f, 1.0f, 1.0f);
     gameObject = nullptr;
+    CalculateInertiaTensor();
 }
 
 RigidBody::~RigidBody() {
     // Nothing to clean up
 }
 
-void RigidBody::SetGameObject(GameObject* obj) {
-    gameObject = obj;
-}
-
-GameObject* RigidBody::GetGameObject() const {
-    return gameObject;
-}
-
 void RigidBody::SetMass(float value) {
-    mass = std::max(0.0001f, value);
+    // Mass must be positive
+    mass = std::max(0.001f, value);
+    CalculateInertiaTensor();
 }
 
 float RigidBody::GetMass() const {
@@ -105,22 +102,38 @@ void RigidBody::AddForceAtPosition(const Vector3& newForce, const Vector3& posit
 }
 
 void RigidBody::AddRelativeForce(const Vector3& newForce) {
-    // TODO: Transform force from local to world space
-    force += newForce;
+    // Transform force from local to world space
+    if (gameObject) {
+        // Simple approximation - in a real implementation, we would use a proper
+        // transformation matrix based on the game object's rotation
+        Vector3 worldForce = newForce; // Placeholder for transformation
+        force += worldForce;
+    } else {
+        force += newForce;
+    }
 }
 
 void RigidBody::AddRelativeTorque(const Vector3& newTorque) {
-    // TODO: Transform torque from local to world space
-    torque += newTorque;
+    // Transform torque from local to world space
+    if (gameObject) {
+        // Simple approximation - in a real implementation, we would use a proper
+        // transformation matrix based on the game object's rotation
+        Vector3 worldTorque = newTorque; // Placeholder for transformation
+        torque += worldTorque;
+    } else {
+        torque += newTorque;
+    }
 }
 
 void RigidBody::OnCollision(RigidBody* other, const CollisionInfo& info) {
-    // Handle collision event
-    // This is a placeholder for custom collision response
+    // This is called by the physics system when a collision is detected
+    // We can use this to trigger the MonoBehaviourLike collision events
+    OnCollisionEnter();
 }
 
 void RigidBody::Update(float deltaTime) {
     if (isKinematic || !gameObject) {
+        ClearForces();
         return;
     }
     
@@ -135,8 +148,13 @@ void RigidBody::Update(float deltaTime) {
             velocity *= dragFactor;
         }
         
-        // Apply angular forces
-        angularVelocity += torque * (1.0f / mass) * deltaTime;
+        // Apply angular forces using inertia tensor
+        Vector3 angularAcceleration;
+        angularAcceleration.x = torque.x / inertiaTensor.x;
+        angularAcceleration.y = torque.y / inertiaTensor.y;
+        angularAcceleration.z = torque.z / inertiaTensor.z;
+        
+        angularVelocity += angularAcceleration * deltaTime;
         
         // Apply angular drag
         if (angularDrag > 0) {
@@ -157,6 +175,59 @@ void RigidBody::Update(float deltaTime) {
     gameObject->SetRotation(rotation);
     
     // Reset forces and torques
-    force = Vector3(0, 0, 0);
-    torque = Vector3(0, 0, 0);
+    ClearForces();
+}
+
+void RigidBody::OnCollisionEnter() {
+    // Override of MonoBehaviourLike method
+    // Called when this body first collides with another
+}
+
+void RigidBody::OnCollisionStay() {
+    // Override of MonoBehaviourLike method
+    // Called while this body is colliding with another
+}
+
+void RigidBody::OnCollisionExit() {
+    // Override of MonoBehaviourLike method
+    // Called when this body stops colliding with another
+}
+
+void RigidBody::SetGameObject(GameObject* obj) {
+    gameObject = obj;
+    CalculateInertiaTensor();
+}
+
+GameObject* RigidBody::GetGameObject() const {
+    return gameObject;
+}
+
+void RigidBody::CalculateInertiaTensor() {
+    // Validate mass
+    if (mass <= 0) {
+        mass = 1.0f;  // Prevent division by zero
+    }
+
+    // Default to unit sphere if no game object
+    if (!gameObject) {
+        float sphereInertia = (2.0f/5.0f) * mass;
+        inertiaTensor = Vector3(sphereInertia, sphereInertia, sphereInertia);
+        return;
+    }
+
+    // Get object scale, prevent zero dimensions
+    Vector3 size = gameObject->GetScale();
+    size.x = std::max(0.01f, size.x);
+    size.y = std::max(0.01f, size.y);
+    size.z = std::max(0.01f, size.z);
+
+    // Box inertia tensor calculation
+    float factor = 1.0f / 12.0f;
+    float x2 = size.x * size.x;
+    float y2 = size.y * size.y;
+    float z2 = size.z * size.z;
+
+    inertiaTensor.x = factor * mass * (y2 + z2);
+    inertiaTensor.y = factor * mass * (x2 + z2);
+    inertiaTensor.z = factor * mass * (x2 + y2);
 }
