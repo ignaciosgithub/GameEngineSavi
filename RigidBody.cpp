@@ -1,172 +1,23 @@
 #include "RigidBody.h"
 #include "GameObject.h"
+#include <iostream>
 #include <algorithm>
 
-RigidBody::RigidBody() 
-    : mass(1.0f), 
-      frictionCoeff(0.5f), 
-      useGravity(true), 
-      isDynamic(true),
-      velocity(0, 0, 0), 
-      angularVelocity(0, 0, 0), 
-      force(0, 0, 0), 
-      torque(0, 0, 0),
-      gameObject(nullptr) {
+RigidBody::RigidBody() {
+    mass = 1.0f;
+    useGravity = true;
+    isKinematic = false;
+    drag = 0.0f;
+    angularDrag = 0.05f;
+    velocity = Vector3(0, 0, 0);
+    angularVelocity = Vector3(0, 0, 0);
+    force = Vector3(0, 0, 0);
+    torque = Vector3(0, 0, 0);
+    gameObject = nullptr;
 }
 
 RigidBody::~RigidBody() {
     // Nothing to clean up
-}
-
-void RigidBody::SetMass(float value) {
-    // Mass must be positive
-    mass = std::max(0.001f, value);
-}
-
-float RigidBody::GetMass() const {
-    return mass;
-}
-
-void RigidBody::SetFrictionCoefficient(float coeff) {
-    // Friction coefficient must be non-negative
-    frictionCoeff = std::max(0.0f, coeff);
-}
-
-float RigidBody::GetFrictionCoefficient() const {
-    return frictionCoeff;
-}
-
-void RigidBody::EnableGravity(bool enable) {
-    useGravity = enable;
-}
-
-bool RigidBody::IsGravityEnabled() const {
-    return useGravity;
-}
-
-void RigidBody::SetDynamic(bool dynamic) {
-    isDynamic = dynamic;
-}
-
-bool RigidBody::IsDynamic() const {
-    return isDynamic;
-}
-
-void RigidBody::SetVelocity(const Vector3& vel) {
-    velocity = vel;
-}
-
-Vector3 RigidBody::GetVelocity() const {
-    return velocity;
-}
-
-void RigidBody::SetAngularVelocity(const Vector3& angVel) {
-    angularVelocity = angVel;
-}
-
-Vector3 RigidBody::GetAngularVelocity() const {
-    return angularVelocity;
-}
-
-void RigidBody::ApplyForce(const Vector3& f) {
-    force += f;
-}
-
-void RigidBody::ApplyForceAtPoint(const Vector3& f, const Vector3& point) {
-    // Apply force
-    force += f;
-    
-    // Calculate torque: τ = r × F
-    // Where r is the vector from center of mass to the point of force application
-    if (gameObject) {
-        Vector3 r = point - gameObject->position;
-        
-        // Cross product: r × F
-        Vector3 t = r.cross(f);
-        
-        torque += t;
-    }
-}
-
-void RigidBody::ApplyTorque(const Vector3& t) {
-    torque += t;
-}
-
-void RigidBody::ClearForces() {
-    force = Vector3(0, 0, 0);
-    torque = Vector3(0, 0, 0);
-}
-
-void RigidBody::PhysicsUpdate(float deltaTime) {
-    if (!isDynamic) {
-        // Static bodies don't move
-        ClearForces();
-        return;
-    }
-    
-    // Update linear velocity: v = v + (F/m) * dt
-    Vector3 acceleration = force * (1.0f / mass);
-    velocity += acceleration * deltaTime;
-    
-    // Apply friction to slow down movement
-    if (velocity.magnitude() > 0.001f) {
-        // Simple friction model: Ff = -μ * N * v̂
-        // Where N is the normal force (approximated as mass * gravity)
-        // and v̂ is the normalized velocity vector
-        float normalForce = mass * 9.81f; // Approximation
-        Vector3 frictionForce = velocity.normalized() * (-frictionCoeff * normalForce);
-        
-        // Apply friction to velocity directly
-        Vector3 frictionAccel = frictionForce * (1.0f / mass);
-        velocity += frictionAccel * deltaTime;
-        
-        // Ensure friction doesn't reverse direction
-        if (velocity.dot(velocity - frictionAccel * deltaTime) < 0) {
-            velocity = Vector3(0, 0, 0);
-        }
-    }
-    
-    // Update angular velocity: ω = ω + τ * dt
-    // (simplified, ignoring moment of inertia tensor)
-    angularVelocity += torque * deltaTime;
-    
-    // Update position and rotation if we have a game object
-    if (gameObject) {
-        // Update position: p = p + v * dt
-        gameObject->position += velocity * deltaTime;
-        
-        // Update rotation: θ = θ + ω * dt
-        gameObject->rotation += angularVelocity * deltaTime;
-    }
-    
-    // Clear forces for next frame
-    ClearForces();
-}
-
-void RigidBody::OnCollision(RigidBody* other, const CollisionInfo& info) {
-    // This is called by the physics system when a collision is detected
-    // We can use this to trigger the MonoBehaviourLike collision events
-    OnCollisionEnter();
-}
-
-void RigidBody::Update(float deltaTime) {
-    // This is called by the GameObject's Update loop
-    // Physics updates are handled by PhysicsSystem
-}
-
-void RigidBody::OnCollisionEnter() {
-    // Override of MonoBehaviourLike method
-    // Called when this body first collides with another
-}
-
-void RigidBody::OnCollisionStay() {
-    // Override of MonoBehaviourLike method
-    // Called while this body is colliding with another
-}
-
-void RigidBody::OnCollisionExit() {
-    // Override of MonoBehaviourLike method
-    // Called when this body stops colliding with another
 }
 
 void RigidBody::SetGameObject(GameObject* obj) {
@@ -175,4 +26,137 @@ void RigidBody::SetGameObject(GameObject* obj) {
 
 GameObject* RigidBody::GetGameObject() const {
     return gameObject;
+}
+
+void RigidBody::SetMass(float value) {
+    mass = std::max(0.0001f, value);
+}
+
+float RigidBody::GetMass() const {
+    return mass;
+}
+
+void RigidBody::SetUseGravity(bool value) {
+    useGravity = value;
+}
+
+bool RigidBody::GetUseGravity() const {
+    return useGravity;
+}
+
+void RigidBody::SetIsKinematic(bool value) {
+    isKinematic = value;
+}
+
+bool RigidBody::GetIsKinematic() const {
+    return isKinematic;
+}
+
+void RigidBody::SetDrag(float value) {
+    drag = std::max(0.0f, value);
+}
+
+float RigidBody::GetDrag() const {
+    return drag;
+}
+
+void RigidBody::SetAngularDrag(float value) {
+    angularDrag = std::max(0.0f, value);
+}
+
+float RigidBody::GetAngularDrag() const {
+    return angularDrag;
+}
+
+void RigidBody::SetVelocity(const Vector3& value) {
+    velocity = value;
+}
+
+Vector3 RigidBody::GetVelocity() const {
+    return velocity;
+}
+
+void RigidBody::SetAngularVelocity(const Vector3& value) {
+    angularVelocity = value;
+}
+
+Vector3 RigidBody::GetAngularVelocity() const {
+    return angularVelocity;
+}
+
+void RigidBody::AddForce(const Vector3& newForce) {
+    force += newForce;
+}
+
+void RigidBody::AddTorque(const Vector3& newTorque) {
+    torque += newTorque;
+}
+
+void RigidBody::AddForceAtPosition(const Vector3& newForce, const Vector3& position) {
+    // Add force
+    force += newForce;
+    
+    // Calculate torque
+    if (gameObject) {
+        Vector3 relativePos = position - gameObject->GetPosition();
+        Vector3 resultingTorque = relativePos.cross(newForce);
+        torque += resultingTorque;
+    }
+}
+
+void RigidBody::AddRelativeForce(const Vector3& newForce) {
+    // TODO: Transform force from local to world space
+    force += newForce;
+}
+
+void RigidBody::AddRelativeTorque(const Vector3& newTorque) {
+    // TODO: Transform torque from local to world space
+    torque += newTorque;
+}
+
+void RigidBody::OnCollision(RigidBody* other, const CollisionInfo& info) {
+    // Handle collision event
+    // This is a placeholder for custom collision response
+}
+
+void RigidBody::Update(float deltaTime) {
+    if (isKinematic || !gameObject) {
+        return;
+    }
+    
+    // Apply forces to velocity
+    if (mass > 0) {
+        velocity += force * (1.0f / mass) * deltaTime;
+        
+        // Apply drag
+        if (drag > 0) {
+            float dragFactor = 1.0f - drag * deltaTime;
+            dragFactor = std::max(0.0f, dragFactor);
+            velocity *= dragFactor;
+        }
+        
+        // Apply angular forces
+        angularVelocity += torque * (1.0f / mass) * deltaTime;
+        
+        // Apply angular drag
+        if (angularDrag > 0) {
+            float angularDragFactor = 1.0f - angularDrag * deltaTime;
+            angularDragFactor = std::max(0.0f, angularDragFactor);
+            angularVelocity *= angularDragFactor;
+        }
+    }
+    
+    // Update position based on velocity
+    Vector3 position = gameObject->GetPosition();
+    position += velocity * deltaTime;
+    gameObject->SetPosition(position);
+    
+    // Update rotation based on angular velocity
+    Vector3 rotation = gameObject->GetRotation();
+    rotation += angularVelocity * deltaTime;
+    gameObject->SetRotation(rotation);
+    
+    // Reset forces and torques
+    force = Vector3(0, 0, 0);
+    torque = Vector3(0, 0, 0);
 }
