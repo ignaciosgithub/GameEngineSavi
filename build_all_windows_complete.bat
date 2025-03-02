@@ -5,7 +5,7 @@ echo Building GameEngineSavi for Windows...
 
 REM Set compiler options
 set CFLAGS=-std=c++11 -Wall -Wextra -g
-set INCLUDES=-I.
+set INCLUDES=-I. -IThirdParty/OpenGL/include
 
 REM Create output directory if it doesn't exist
 if not exist bin\windows mkdir bin\windows

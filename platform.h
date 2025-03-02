@@ -15,8 +15,8 @@
     #include <ws2tcpip.h>
     #include <windows.h>
     #include <windowsx.h>
-    #include <gl/gl.h>
-    #include <gl/glu.h>
+    #include "ThirdParty/OpenGL/include/GL/platform_gl.h"
+    
     
     // Windows-specific library dependencies
     #pragma comment(lib, "ws2_32.lib")
