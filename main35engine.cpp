@@ -50,10 +50,10 @@ inline float toRadians(float degrees) {
 std::unique_ptr<GUI> gui;
 
 #ifdef PLATFORM_WINDOWS
-LRESULT CALLBACK WndProc (HWND hWnd, UINT message,
-WPARAM wParam, LPARAM lParam);
-void EnableOpenGL (HWND hWnd, HDC *hDC, HGLRC *hRC);
-void DisableOpenGL (HWND hWnd, HDC hDC, HGLRC hRC);
+// Forward declarations for Windows-specific functions
+LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
+void EnableOpenGL(HWND hWnd, HDC* hDC, HGLRC* hRC);
+void DisableOpenGL(HWND hWnd, HDC hDC, HGLRC hRC);
 #endif
 
 /**************************
@@ -62,10 +62,10 @@ void DisableOpenGL (HWND hWnd, HDC hDC, HGLRC hRC);
  **************************/
 
 #ifdef PLATFORM_WINDOWS
-int WINAPI WinMain (HINSTANCE hInstance,
-                    HINSTANCE hPrevInstance,
-                    LPSTR lpCmdLine,
-                    int iCmdShow)
+int WINAPI WinMain(HINSTANCE hInstance,
+                   HINSTANCE hPrevInstance,
+                   LPSTR lpCmdLine,
+                   int iCmdShow)
 #else
 int main(int argc, char** argv)
 #endif
@@ -134,28 +134,28 @@ int main(int argc, char** argv)
     wc.cbClsExtra = 0;
     wc.cbWndExtra = 0;
     wc.hInstance = hInstance;
-    wc.hIcon = LoadIcon (NULL, IDI_APPLICATION);
-    wc.hCursor = LoadCursor (NULL, IDC_ARROW);
-    wc.hbrBackground = (HBRUSH) GetStockObject (BLACK_BRUSH);
+    wc.hIcon = LoadIcon(NULL, IDI_APPLICATION);
+    wc.hCursor = LoadCursor(NULL, IDC_ARROW);
+    wc.hbrBackground = (HBRUSH)GetStockObject(BLACK_BRUSH);
     wc.lpszMenuName = NULL;
     wc.lpszClassName = "GLSample";
-    RegisterClass (&wc);
+    RegisterClass(&wc);
 
     /* create main window */
-    hWnd = CreateWindow (
+    hWnd = CreateWindow(
       "GLSample", "OpenGL Sample", 
       WS_CAPTION | WS_POPUPWINDOW | WS_VISIBLE,
       0, 0, 256, 256,
       NULL, NULL, hInstance, NULL);
 
     /* enable OpenGL for the window */
-    EnableOpenGL (hWnd, &hDC, &hRC);
+    EnableOpenGL(hWnd, &hDC, &hRC);
 
     /* program main loop */
     while (!bQuit)
     {
         /* check for messages */
-        if (PeekMessage (&msg, NULL, 0, 0, PM_REMOVE))
+        if (PeekMessage(&msg, NULL, 0, 0, PM_REMOVE))
         {
             /* handle or dispatch messages */
             if (msg.message == WM_QUIT)
@@ -164,8 +164,8 @@ int main(int argc, char** argv)
             }
             else
             {
-                TranslateMessage (&msg);
-                DispatchMessage (&msg);
+                TranslateMessage(&msg);
+                DispatchMessage(&msg);
             }
         }
         else
@@ -188,10 +188,10 @@ int main(int argc, char** argv)
     }
 
     /* shutdown OpenGL */
-    DisableOpenGL (hWnd, hDC, hRC);
+    DisableOpenGL(hWnd, hDC, hRC);
 
     /* destroy the window explicitly */
-    DestroyWindow (hWnd);
+    DestroyWindow(hWnd);
 
     return msg.wParam;
     #else
@@ -227,23 +227,21 @@ int main(int argc, char** argv)
     #endif
 }
 
-
 #ifdef PLATFORM_WINDOWS
 /********************
  * Window Procedure
  *
  ********************/
 
-LRESULT CALLBACK WndProc (HWND hWnd, UINT message,
-                          WPARAM wParam, LPARAM lParam)
+LRESULT CALLBACK WndProc(HWND hWnd, UINT message,
+                         WPARAM wParam, LPARAM lParam)
 {
-
     switch (message)
     {
     case WM_CREATE:
         return 0;
     case WM_CLOSE:
-        PostQuitMessage (0);
+        PostQuitMessage(0);
         return 0;
 
     case WM_DESTROY:
@@ -282,27 +280,26 @@ LRESULT CALLBACK WndProc (HWND hWnd, UINT message,
         return 0;
 
     default:
-        return DefWindowProc (hWnd, message, wParam, lParam);
+        return DefWindowProc(hWnd, message, wParam, lParam);
     }
 }
-
 
 /*******************
  * Enable OpenGL
  *
  *******************/
 
-void EnableOpenGL (HWND hWnd, HDC *hDC, HGLRC *hRC)
+void EnableOpenGL(HWND hWnd, HDC* hDC, HGLRC* hRC)
 {
     PIXELFORMATDESCRIPTOR pfd;
     int iFormat;
 
     /* get the device context (DC) */
-    *hDC = GetDC (hWnd);
+    *hDC = GetDC(hWnd);
 
     /* set the pixel format for the DC */
-    ZeroMemory (&pfd, sizeof (pfd));
-    pfd.nSize = sizeof (pfd);
+    ZeroMemory(&pfd, sizeof(pfd));
+    pfd.nSize = sizeof(pfd);
     pfd.nVersion = 1;
     pfd.dwFlags = PFD_DRAW_TO_WINDOW | 
       PFD_SUPPORT_OPENGL | PFD_DOUBLEBUFFER;
@@ -310,25 +307,23 @@ void EnableOpenGL (HWND hWnd, HDC *hDC, HGLRC *hRC)
     pfd.cColorBits = 24;
     pfd.cDepthBits = 16;
     pfd.iLayerType = PFD_MAIN_PLANE;
-    iFormat = ChoosePixelFormat (*hDC, &pfd);
-    SetPixelFormat (*hDC, iFormat, &pfd);
+    iFormat = ChoosePixelFormat(*hDC, &pfd);
+    SetPixelFormat(*hDC, iFormat, &pfd);
 
     /* create and enable the render context (RC) */
-    *hRC = wglCreateContext( *hDC );
-    wglMakeCurrent( *hDC, *hRC );
-
+    *hRC = wglCreateContext(*hDC);
+    wglMakeCurrent(*hDC, *hRC);
 }
-
 
 /******************
  * Disable OpenGL
  *
  ******************/
 
-void DisableOpenGL (HWND hWnd, HDC hDC, HGLRC hRC)
+void DisableOpenGL(HWND hWnd, HDC hDC, HGLRC hRC)
 {
-    wglMakeCurrent (NULL, NULL);
-    wglDeleteContext (hRC);
-    ReleaseDC (hWnd, hDC);
+    wglMakeCurrent(NULL, NULL);
+    wglDeleteContext(hRC);
+    ReleaseDC(hWnd, hDC);
 }
 #endif

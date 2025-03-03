@@ -5,7 +5,7 @@
 #include <chrono>
 #include "EngineCondition.h"
 #include "Scene_includes.h"
-#include "GameObject_extensions_fixed.h"
+// GameObject extensions included via GameObject.h
 
 void Scene::Initialize() {
     // Initialize time
@@ -22,20 +22,28 @@ void Scene::Initialize() {
     // Set running flag
     isRunning = true;
     
+    // Game objects are initialized via constructor
+    
     std::cout << "Scene initialized" << std::endl;
 }
 
-void Scene::Load() {
-    // Load scene resources
-    
+void Scene::CreateDefaultObjects() {
     // Create a default point light if none exists
-    if (pointLights.empty()) {
-        PointLight defaultLight;
-        defaultLight.position = Vector3(0, 5, 0);
-        defaultLight.color = Vector3(1.0f, 1.0f, 1.0f);
-        defaultLight.intensity = 1.0f;
-        defaultLight.range = 20.0f;
-        AddPointLight(defaultLight);
+    bool hasPointLight = false;
+    for (auto& gameObject : gameObjects) {
+        if (!gameObject->lights.empty()) {
+            hasPointLight = true;
+            break;
+        }
+    }
+    
+    if (!hasPointLight) {
+        // Create a point light
+        PointLight light;
+        light.position = Vector3(0, 5, 0);
+        light.color = Vector3(1, 1, 1);
+        light.intensity = 1.0f;
+        light.range = 10.0f;
         
         // Create a game object for the light
         GameObject* lightObj = new GameObject("Default Light");
@@ -46,10 +54,11 @@ void Scene::Load() {
     }
     
     // Create a default cube if no game objects exist
-    if (gameObjects.empty() || (gameObjects.size() == 1 && gameObjects[0]->GetName() == "Default Light")) {
+    if (gameObjects.size() <= 1) {
+        // Create a cube
         GameObject* cubeObj = new GameObject("Default Cube");
         
-        // Load cube model
+        // Load a cube model
         Model* cubeModel = new Model();
         if (cubeModel->LoadFromFile("test_assets/cube.obj")) {
             cubeObj->AddMesh(cubeModel);
@@ -57,71 +66,102 @@ void Scene::Load() {
             AddGameObject(cubeObj);
             std::cout << "Created default cube" << std::endl;
         } else {
-            std::cerr << "Failed to load default cube model" << std::endl;
             delete cubeModel;
             delete cubeObj;
+            std::cout << "Failed to load cube model" << std::endl;
         }
     }
     
-    // Set up a default camera if none exists
+    // Create a default camera if none exists
     if (!mainCamera) {
-        Camera* defaultCamera = new Camera();
-        defaultCamera->SetPosition(Vector3(0, 2, 5));
-        defaultCamera->LookAt(Vector3(0, 0, 0));
-        defaultCamera->fieldOfView = 45.0f;
-        defaultCamera->SetEnabled(true);
+        // Create a camera
+        Camera* camera = new Camera();
+        camera->SetPosition(Vector3(0, 2, -5));
+        // Use LookAt instead of SetTarget
+        camera->LookAt(Vector3(0, 0, 0));
+        // Use fieldOfView instead of SetFOV
+        camera->fieldOfView = 60.0f;
+        camera->SetNearPlane(0.1f);
+        camera->SetFarPlane(1000.0f);
         
-        // Add camera to scene
-        AddCamera(defaultCamera);
-        SetMainCamera(defaultCamera);
+        // Set as main camera
+        SetMainCamera(camera);
         
         std::cout << "Created default camera" << std::endl;
     }
-    
-    std::cout << "Scene loaded" << std::endl;
 }
 
-void Scene::Run() {
-    if (!isRunning) {
-        Initialize();
+void Scene::AddGameObject(GameObject* gameObject) {
+    if (!gameObject) {
+        return;
     }
     
-    float lastFrameTime = 0.0f;
-    float deltaTime = 0.0f;
-    
-    // Main loop
-    while (isRunning) {
-        // Calculate delta time
-        float currentTime = time->DeltaTime();
-        deltaTime = currentTime - lastFrameTime;
-        lastFrameTime = currentTime;
+    // Check if the game object is already in the scene
+    auto it = std::find(gameObjects.begin(), gameObjects.end(), gameObject);
+    if (it == gameObjects.end()) {
+        // Add the game object to the scene
+        gameObjects.push_back(gameObject);
         
-        // Cap delta time to avoid spiral of death
-        if (deltaTime > 0.25f) {
-            deltaTime = 0.25f;
-        }
+        // Game object is already initialized via constructor
         
-        // Update scene
-        Update(deltaTime);
-        
-        // Render scene
-        Render();
-        
-        // Frame rate limiting
-        if (targetFPS > 0.0f) {
-            float targetFrameTime = 1.0f / targetFPS;
-            float sleepTime = targetFrameTime - deltaTime;
-            if (sleepTime > 0.0f) {
-                // Sleep to maintain target frame rate
-                std::this_thread::sleep_for(std::chrono::milliseconds(static_cast<int>(sleepTime * 1000)));
-            }
-        }
+        std::cout << "Added game object: " << gameObject->GetName() << std::endl;
     }
 }
 
-void Scene::Stop() {
-    isRunning = false;
-    std::cout << "Scene stopped" << std::endl;
+void Scene::RemoveGameObject(GameObject* gameObject) {
+    if (!gameObject) {
+        return;
+    }
+    
+    // Find the game object in the scene
+    auto it = std::find(gameObjects.begin(), gameObjects.end(), gameObject);
+    if (it != gameObjects.end()) {
+        // Remove the game object from the scene
+        gameObjects.erase(it);
+        
+        std::cout << "Removed game object: " << gameObject->GetName() << std::endl;
+    }
+}
+
+void Scene::SetMainCamera(Camera* camera) {
+    if (!camera) {
+        return;
+    }
+    
+    // Set the main camera
+    mainCamera = camera;
+    
+    // Add the camera to the camera manager
+    if (cameraManager) {
+        cameraManager->SetMainCamera(camera);
+    }
+    
+    std::cout << "Set main camera" << std::endl;
+}
+
+void Scene::SetGravity(const Vector3& gravity) {
+    if (physicsSystem) {
+        // Convert Vector3 to float (use y component)
+        physicsSystem->SetGravity(gravity.y);
+    }
+}
+
+Vector3 Scene::GetGravity() const {
+    if (physicsSystem) {
+        // Convert float to Vector3 (set y component)
+        float gravityValue = physicsSystem->GetGravity();
+        return Vector3(0, gravityValue, 0);
+    }
+    
+    return Vector3(0, -9.81f, 0); // Default gravity
+}
+
+void Scene::SetPhysicsTimeStep(float timeStep) {
+    physicsTimeStep = timeStep;
+}
+
+float Scene::GetPhysicsTimeStep() const {
+    return physicsTimeStep;
 }
 
 void Scene::Update(float deltaTime) {
@@ -131,9 +171,9 @@ void Scene::Update(float deltaTime) {
     // Accumulate time for physics updates
     physicsAccumulator += deltaTime;
     
-    // Fixed timestep physics updates
+    // Update physics with fixed time step
     while (physicsAccumulator >= physicsTimeStep) {
-        // Update physics
+        // Update physics system
         if (physicsSystem) {
             physicsSystem->Update(physicsTimeStep);
         }
@@ -154,74 +194,48 @@ void Scene::Update(float deltaTime) {
     }
     
     // Update cameras
-    for (auto& camera : cameras) {
-        // Update camera logic if needed
-        camera->Update(deltaTime);
+    if (mainCamera) {
+        mainCamera->Update(deltaTime);
     }
     
-    // Increment frame counter
+    // Update frame count
     frameCount++;
 }
 
 void Scene::Render() {
-    // Set up OpenGL state
-    glEnable(GL_DEPTH_TEST);
-    glDepthFunc(GL_LESS);
-    glEnable(GL_CULL_FACE);
-    glCullFace(GL_BACK);
-    glEnable(GL_LIGHTING);
-    glEnable(GL_LIGHT0);
-    glEnable(GL_COLOR_MATERIAL);
-    glEnable(GL_NORMALIZE);
-    
-    // Set up background color (light gray)
-    glClearColor(0.8f, 0.8f, 0.8f, 1.0f);
-    
-    // Clear screen
+    // Clear the screen
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     
-    // Set up default light if we have one
-    if (!pointLights.empty()) {
-        const PointLight& defaultLight = pointLights[0];
-        
-        // Set light position
-        GLfloat lightPos[] = {
-            defaultLight.position.x,
-            defaultLight.position.y,
-            defaultLight.position.z,
-            1.0f  // Positional light
-        };
-        glLightfv(GL_LIGHT0, GL_POSITION, lightPos);
-        
-        // Set light color
-        GLfloat lightAmbient[] = {0.2f, 0.2f, 0.2f, 1.0f};
-        GLfloat lightDiffuse[] = {
-            defaultLight.color.x * defaultLight.intensity,
-            defaultLight.color.y * defaultLight.intensity,
-            defaultLight.color.z * defaultLight.intensity,
-            1.0f
-        };
-        GLfloat lightSpecular[] = {
-            defaultLight.color.x * defaultLight.intensity,
-            defaultLight.color.y * defaultLight.intensity,
-            defaultLight.color.z * defaultLight.intensity,
-            1.0f
-        };
-        
-        glLightfv(GL_LIGHT0, GL_AMBIENT, lightAmbient);
-        glLightfv(GL_LIGHT0, GL_DIFFUSE, lightDiffuse);
-        glLightfv(GL_LIGHT0, GL_SPECULAR, lightSpecular);
-        
-        // Set light attenuation based on range
-        float attenuation = 1.0f / (defaultLight.range * defaultLight.range);
-        glLightf(GL_LIGHT0, GL_QUADRATIC_ATTENUATION, attenuation);
+    // Render the scene
+    RenderScene();
+}
+
+void Scene::RenderGameObject(GameObject* gameObject, const Matrix4x4& viewMatrix, const Matrix4x4& projectionMatrix, const Vector3& cameraPosition) {
+    if (!gameObject) {
+        return;
     }
     
-    // Render scene
-    RenderScene();
+    // Skip disabled game objects
+    if (!gameObject->IsEnabled()) {
+        return;
+    }
     
-    // Swap buffers
-    // Note: This would be handled by the window system
+    // Get the model matrix
+    Matrix4x4 model = gameObject->GetModelMatrix();
+    
+    // Render meshes
+    for (auto& mesh : gameObject->GetMeshes()) {
+        if (mesh) {
+            RenderMesh(mesh, model, viewMatrix, projectionMatrix, cameraPosition);
+        }
+    }
+    
+    // Render children
+    for (auto& child : gameObject->GetChildren()) {
+        if (child) {
+            RenderGameObject(child, viewMatrix, projectionMatrix, cameraPosition);
+        }
+    }
 }
 
 void Scene::RenderScene() {
@@ -233,128 +247,37 @@ void Scene::RenderScene() {
         if (mainCamera) {
             cameraManager->SetMainCamera(mainCamera);
         }
-        
-        // Set minimap camera if available
-        if (minimapCamera) {
-            cameraManager->SetMinimapCamera(minimapCamera);
-        }
     }
     
-    // Skip rendering if no cameras are available
-    if (!mainCamera && cameraManager->GetActiveCameras().empty()) {
-        std::cerr << "Warning: No active cameras available for rendering" << std::endl;
-        return;
-    }
+    // Get active cameras
+    std::vector<Camera*> cameras = cameraManager->GetActiveCameras();
     
-    // Use camera manager to render from all active cameras
-    if (cameraManager) {
-        cameraManager->RenderFromAllCameras();
-    }
-    
-    // For each active camera, render the scene
-    std::vector<Camera*> activeCameras;
-    
-    // Add main camera if it exists and is enabled
-    if (mainCamera && mainCamera->IsEnabled()) {
-        activeCameras.push_back(mainCamera);
-    }
-    
-    // Add cameras from camera manager if available
-    if (cameraManager) {
-        auto managerCameras = cameraManager->GetActiveCameras();
-        activeCameras.insert(activeCameras.end(), managerCameras.begin(), managerCameras.end());
-    }
-    
-    // If no active cameras, use the first camera in the list
-    if (activeCameras.empty() && !cameras.empty()) {
-        activeCameras.push_back(cameras[0].get());
-    }
-    
-    // Render from each active camera
-    for (auto camera : activeCameras) {
-        if (!camera || !camera->IsEnabled()) {
+    // Render from all cameras
+    for (auto& camera : cameras) {
+        if (!camera) {
             continue;
         }
         
-        // Set viewport for this camera
-        int viewportX = static_cast<int>(camera->viewportX * 800); // Assuming 800x600 window
-        int viewportY = static_cast<int>(camera->viewportY * 600);
-        int viewportWidth = static_cast<int>(camera->viewportWidth * 800);
-        int viewportHeight = static_cast<int>(camera->viewportHeight * 600);
+        // Set viewport
+        int viewportX = 0;
+        int viewportY = 0;
+        int viewportWidth = camera->GetViewportWidth();
+        int viewportHeight = camera->GetViewportHeight();
         
         glViewport(viewportX, viewportY, viewportWidth, viewportHeight);
         
-        // Set projection matrix
-        glMatrixMode(GL_PROJECTION);
-        glLoadIdentity();
-        
-        // Get projection matrix from camera
-        Matrix4x4 projectionMatrix = camera->GetProjectionMatrix();
-        glLoadMatrixf(&projectionMatrix.elements[0][0]);
-        
-        // Set modelview matrix
-        glMatrixMode(GL_MODELVIEW);
-        glLoadIdentity();
-        
-        // Get view matrix from camera
+        // Get view and projection matrices
         Matrix4x4 viewMatrix = camera->GetViewMatrix();
-        glLoadMatrixf(&viewMatrix.elements[0][0]);
+        Matrix4x4 projectionMatrix = camera->GetProjectionMatrix();
         
-        // Debug output
-        std::cout << "Rendering from camera at position: (" 
-                  << camera->position.x << ", " 
-                  << camera->position.y << ", " 
-                  << camera->position.z << ")" << std::endl;
+        // Get camera position
+        Vector3 cameraPosition = camera->GetPosition();
         
         // Render game objects
         for (auto& gameObject : gameObjects) {
-            if (!gameObject) {
-                continue;
+            if (gameObject) {
+                RenderGameObject(gameObject, viewMatrix, projectionMatrix, cameraPosition);
             }
-            
-            // Save current matrix
-            glPushMatrix();
-            
-            // Apply object transformation
-            Vector3 position = gameObject->GetPosition();
-            Vector3 rotation = gameObject->GetRotation();
-            Vector3 scale = gameObject->GetScale();
-            
-            // Translate to object position
-            glTranslatef(position.x, position.y, position.z);
-            
-            // Apply rotation
-            glRotatef(rotation.x, 1.0f, 0.0f, 0.0f);
-            glRotatef(rotation.y, 0.0f, 1.0f, 0.0f);
-            glRotatef(rotation.z, 0.0f, 0.0f, 1.0f);
-            
-            // Apply scale
-            glScalef(scale.x, scale.y, scale.z);
-            
-            // Render meshes
-            for (auto& mesh : gameObject->meshes) {
-                if (!mesh) {
-                    continue;
-                }
-                
-                // Set shader program if available
-                ShaderProgram* program = mesh->GetShaderProgram();
-                if (program) {
-                    program->Use();
-                    
-                    // Set global uniforms
-                    SetGlobalShaderUniforms(program);
-                    
-                    // Set model-specific uniforms
-                    mesh->UpdateUniforms(viewMatrix, projectionMatrix);
-                }
-                
-                // Render mesh
-                mesh->Render(pointLights);
-            }
-            
-            // Restore matrix
-            glPopMatrix();
         }
         
         // Draw coordinate axes for debugging (only in editor mode)
@@ -364,101 +287,45 @@ void Scene::RenderScene() {
     }
 }
 
-void Scene::DrawDebugAxes() {
-    // Disable lighting for drawing axes
-    glDisable(GL_LIGHTING);
+void Scene::RenderMesh(Model* mesh, const Matrix4x4& modelMatrix, const Matrix4x4& viewMatrix, const Matrix4x4& projectionMatrix, const Vector3& cameraPosition) {
+    if (!mesh) {
+        return;
+    }
     
-    // Draw X axis (red)
+    // Get all point lights in the scene
+    std::vector<PointLight> pointLights;
+    for (auto& gameObject : gameObjects) {
+        if (gameObject) {
+            for (auto& light : gameObject->lights) {
+                pointLights.push_back(light);
+            }
+        }
+    }
+    
+    // Render the mesh with the lights
+    mesh->Render(pointLights);
+}
+
+void Scene::DrawDebugAxes() {
+    // Draw coordinate axes for debugging
     glBegin(GL_LINES);
+    
+    // X axis (red)
     glColor3f(1.0f, 0.0f, 0.0f);
     glVertex3f(0.0f, 0.0f, 0.0f);
     glVertex3f(1.0f, 0.0f, 0.0f);
-    glEnd();
     
-    // Draw Y axis (green)
-    glBegin(GL_LINES);
+    // Y axis (green)
     glColor3f(0.0f, 1.0f, 0.0f);
     glVertex3f(0.0f, 0.0f, 0.0f);
     glVertex3f(0.0f, 1.0f, 0.0f);
-    glEnd();
     
-    // Draw Z axis (blue)
-    glBegin(GL_LINES);
+    // Z axis (blue)
     glColor3f(0.0f, 0.0f, 1.0f);
     glVertex3f(0.0f, 0.0f, 0.0f);
     glVertex3f(0.0f, 0.0f, 1.0f);
+    
     glEnd();
-    
-    // Re-enable lighting
-    glEnable(GL_LIGHTING);
-}
-
-void Scene::SetMainCamera(Camera* camera) {
-    mainCamera = camera;
-    
-    // Update camera manager if it exists
-    if (cameraManager) {
-        cameraManager->SetMainCamera(camera);
-    }
-}
-
-void Scene::SetMinimapCamera(Camera* camera) {
-    minimapCamera = camera;
-    
-    // Update camera manager if it exists
-    if (cameraManager) {
-        cameraManager->SetMinimapCamera(camera);
-    }
-}
-
-void Scene::EnableCamera(Camera* camera) {
-    if (camera) {
-        camera->SetEnabled(true);
-    }
-}
-
-void Scene::DisableCamera(Camera* camera) {
-    if (camera) {
-        camera->SetEnabled(false);
-    }
-}
-
-void Scene::SetResolutionChangeAllowed(bool allowed) {
-    if (cameraManager) {
-        cameraManager->SetResolutionChangeAllowed(allowed);
-    }
-}
-
-void Scene::UpdateResolution(int width, int height) {
-    if (cameraManager) {
-        cameraManager->UpdateViewports(width, height);
-    }
-}
-
-void Scene::AddGameObject(std::unique_ptr<GameObject> gameObject) {
-    gameObjects.push_back(std::move(gameObject));
-}
-
-void Scene::AddGameObject(GameObject* gameObject) {
-    gameObjects.push_back(std::unique_ptr<GameObject>(gameObject));
-}
-
-void Scene::AddCamera(std::unique_ptr<Camera> camera) {
-    cameras.push_back(std::move(camera));
-}
-
-void Scene::AddCamera(Camera* camera) {
-    cameras.push_back(std::unique_ptr<Camera>(camera));
-}
-
-void Scene::AddPointLight(const PointLight& light) {
-    pointLights.push_back(light);
-}
-
-void Scene::RemovePointLight(size_t index) {
-    if (index < pointLights.size()) {
-        pointLights.erase(pointLights.begin() + index);
-    }
 }
 
 void Scene::SetGlobalShaderUniforms(ShaderProgram* program) {
@@ -467,12 +334,16 @@ void Scene::SetGlobalShaderUniforms(ShaderProgram* program) {
     }
     
     // Set time uniforms
-    program->SetUniform("time", time->DeltaTime());
-    program->SetUniform("deltaTime", time->DeltaTime());
+    if (time) {
+        program->SetUniform("time", time->GetTime());
+        program->SetUniform("deltaTime", time->GetDeltaTime());
+    }
     
     // Set camera uniforms
     if (mainCamera) {
-        program->SetUniform("viewPos", mainCamera->GetPosition());
+        program->SetUniform("viewMatrix", mainCamera->GetViewMatrix());
+        program->SetUniform("projectionMatrix", mainCamera->GetProjectionMatrix());
+        program->SetUniform("cameraPosition", mainCamera->GetPosition());
     }
     
     // Set light uniforms
@@ -484,12 +355,22 @@ void Scene::UpdateLightUniforms(ShaderProgram* program) {
         return;
     }
     
-    // Set light count
-    program->SetUniform("lightCount", static_cast<int>(pointLights.size()));
+    // Get all point lights in the scene
+    std::vector<PointLight> pointLights;
+    for (auto& gameObject : gameObjects) {
+        if (gameObject) {
+            for (auto& light : gameObject->lights) {
+                pointLights.push_back(light);
+            }
+        }
+    }
     
-    // Set light properties
-    for (size_t i = 0; i < pointLights.size(); i++) {
-        std::string prefix = "lights[" + std::to_string(i) + "].";
+    // Set point light uniforms
+    int pointLightCount = std::min((int)pointLights.size(), 8); // Limit to 8 point lights
+    program->SetUniform("pointLightCount", pointLightCount);
+    
+    for (int i = 0; i < pointLightCount; i++) {
+        std::string prefix = "pointLights[" + std::to_string(i) + "].";
         program->SetUniform(prefix + "position", pointLights[i].position);
         program->SetUniform(prefix + "color", pointLights[i].color);
         program->SetUniform(prefix + "intensity", pointLights[i].intensity);
@@ -497,36 +378,11 @@ void Scene::UpdateLightUniforms(ShaderProgram* program) {
     }
 }
 
-void Scene::SetPhysicsSystem(std::unique_ptr<PhysicsSystem> system) {
-    physicsSystem = std::move(system);
-}
-
-PhysicsSystem* Scene::GetPhysicsSystem() const {
-    return physicsSystem.get();
-}
-
-GameObject* Scene::FindGameObject(const std::string& name) const {
-    for (const auto& gameObject : gameObjects) {
-        if (gameObject->GetName() == name) {
-            return gameObject.get();
-        }
+void Scene::Reset() {
+    // Reset time
+    if (time) {
+        time->Reset();
     }
-    return nullptr;
-}
-
-void Scene::CleanupResources() {
-    // Clear all game objects
-    gameObjects.clear();
-    
-    // Clear all cameras
-    cameras.clear();
-    
-    // Clear all point lights
-    pointLights.clear();
-    
-    // Reset camera pointers
-    mainCamera = nullptr;
-    minimapCamera = nullptr;
     
     // Reset physics system
     if (physicsSystem) {
@@ -539,4 +395,120 @@ void Scene::CleanupResources() {
     
     // Reset physics accumulator
     physicsAccumulator = 0.0f;
+    
+    // Reset game objects
+    for (auto& gameObject : gameObjects) {
+        if (gameObject) {
+            gameObject->Reset();
+        }
+    }
+}
+
+void Scene::Shutdown() {
+    // Shutdown game objects
+    for (auto& gameObject : gameObjects) {
+        if (gameObject) {
+            gameObject->Shutdown();
+        }
+    }
+    
+    // Clear game objects
+    gameObjects.clear();
+    
+    // Reset main camera
+    mainCamera = nullptr;
+    
+    // Reset camera manager
+    cameraManager.reset();
+    
+    // Reset physics system
+    physicsSystem.reset();
+    
+    // Reset time
+    time.reset();
+    
+    // Reset running flag
+    isRunning = false;
+}
+
+// Add missing destructor implementation
+Scene::~Scene() {
+    Shutdown();
+}
+
+void Scene::SetCreateDefaultObjects(bool create) {
+    createDefaultObjects = create;
+}
+
+bool Scene::GetCreateDefaultObjects() const {
+    return createDefaultObjects;
+}
+
+void Scene::SetRunning(bool running) {
+    isRunning = running;
+}
+
+bool Scene::IsRunning() const {
+    return isRunning;
+}
+
+void Scene::RenderFromCamera(Camera* camera) {
+    if (!camera) {
+        return;
+    }
+    
+    // Set viewport
+    int viewportX = 0;
+    int viewportY = 0;
+    int viewportWidth = camera->GetViewportWidth();
+    int viewportHeight = camera->GetViewportHeight();
+    
+    glViewport(viewportX, viewportY, viewportWidth, viewportHeight);
+    
+    // Get view and projection matrices
+    Matrix4x4 viewMatrix = camera->GetViewMatrix();
+    Matrix4x4 projectionMatrix = camera->GetProjectionMatrix();
+    
+    // Get camera position
+    Vector3 cameraPosition = camera->GetPosition();
+    
+    // Render game objects
+    for (auto& gameObject : gameObjects) {
+        if (gameObject) {
+            RenderGameObject(gameObject, viewMatrix, projectionMatrix, cameraPosition);
+        }
+    }
+}
+
+void Scene::SetMinimapCamera(Camera* camera) {
+    minimapCamera = camera;
+}
+
+Camera* Scene::GetMinimapCamera() const {
+    return minimapCamera;
+}
+
+Camera* Scene::GetMainCamera() const {
+    return mainCamera;
+}
+
+void Scene::SetResolutionChangeAllowed(bool allowed) {
+    resolutionChangeAllowed = allowed;
+}
+
+void Scene::UpdateResolution(int width, int height) {
+    if (!resolutionChangeAllowed) {
+        return;
+    }
+    
+    // Update viewport for all cameras
+    if (mainCamera) {
+        mainCamera->SetViewport(0, 0, width, height);
+    }
+    
+    if (minimapCamera) {
+        // Set minimap to a smaller size in the corner
+        int minimapSize = std::min(width, height) / 4;
+        minimapCamera->SetViewport(0, 0, minimapSize, minimapSize);
+    }
 }
