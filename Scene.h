@@ -1,96 +1,80 @@
-#ifndef SCENE_H
-#define SCENE_H
+#pragma once
 
 #include <vector>
 #include <memory>
-#include <atomic>
-#include <string>
-#include "GameObject.h"
-#include "Camera.h"
+#include "Vector3.h"
+#include "Matrix4x4.h"
 #include "TimeManager.h"
 #include "PhysicsSystem.h"
-#include "PointLight.h"
-#include "Shaders/Core/ShaderProgram.h"
 #include "CameraManager.h"
-#include "SceneSerializer.h"
+
+class GameObject;
+class Camera;
+class Model;
+class ShaderProgram;
 
 class Scene {
-private:
-    std::vector<std::unique_ptr<GameObject>> gameObjects;
-    std::vector<std::unique_ptr<Camera>> cameras;
-    std::vector<PointLight> pointLights;
-    std::unique_ptr<TimeManager> time;
-    std::unique_ptr<PhysicsSystem> physicsSystem;
-    std::unique_ptr<CameraManager> cameraManager;
-    std::atomic<bool> isRunning;
-    unsigned int frameCount = 0; // For debug information
-    float targetFPS = 60.0f;           // Target frames per second
-    float physicsTimeStep = 1.0f/60.0f; // Fixed physics timestep (60Hz)
-    float physicsAccumulator = 0.0f;    // Accumulator for physics updates
-    Camera* mainCamera = nullptr;       // Main camera for rendering
-    Camera* minimapCamera = nullptr;    // Minimap camera for top-down view
-    std::string currentScenePath;       // Path to the current scene file
-    
-    // Private method for cleaning up resources during scene transitions
-    void CleanupResources();
-
 public:
-    Scene() : isRunning(false) {}
-
-    void Initialize();
-    void Load();
-    void Run();
-    void Stop();
-    void Update(float deltaTime);
-    void Render();
-    void RenderScene();
+    Scene() : physicsTimeStep(1.0f / 60.0f), physicsAccumulator(0.0f), frameCount(0), createDefaultObjects(true), isRunning(false), mainCamera(nullptr), minimapCamera(nullptr) {}
+    ~Scene();
     
-    // Camera management
+    void Initialize();
+    void CreateDefaultObjects();
+    void Render();
+    
+    void AddGameObject(GameObject* gameObject);
+    void RemoveGameObject(GameObject* gameObject);
+    
+    void Update(float deltaTime);
+    
     void SetMainCamera(Camera* camera);
+    Camera* GetMainCamera() const;
+    
+    void SetPhysicsTimeStep(float timeStep);
+    float GetPhysicsTimeStep() const;
+    
+    void SetGravity(const Vector3& gravity);
+    Vector3 GetGravity() const;
+    
+    void SetCreateDefaultObjects(bool create);
+    bool GetCreateDefaultObjects() const;
+    
+    void SetRunning(bool running);
+    bool IsRunning() const;
+    
+    void RenderScene();
+    void RenderFromCamera(Camera* camera);
+    void RenderGameObject(GameObject* gameObject, const Matrix4x4& view, const Matrix4x4& projection, const Vector3& cameraPosition);
+    void RenderMesh(Model* mesh, const Matrix4x4& model, const Matrix4x4& view, const Matrix4x4& projection, const Vector3& cameraPosition);
+    void DrawDebugAxes();
+    
     void SetMinimapCamera(Camera* camera);
-    void EnableCamera(Camera* camera);
-    void DisableCamera(Camera* camera);
+    Camera* GetMinimapCamera() const;
+    
     void SetResolutionChangeAllowed(bool allowed);
     void UpdateResolution(int width, int height);
-
-    // Add GameObjects and Cameras to the scene
-    void AddGameObject(std::unique_ptr<GameObject> gameObject);
-    void AddGameObject(GameObject* gameObject);
-    void AddCamera(std::unique_ptr<Camera> camera);
-    void AddCamera(Camera* camera);
     
-    // Light management
-    void AddPointLight(const PointLight& light);
-    void RemovePointLight(size_t index);
-    const std::vector<PointLight>& GetPointLights() const { return pointLights; }
-    
-    // Shader management
     void SetGlobalShaderUniforms(ShaderProgram* program);
     void UpdateLightUniforms(ShaderProgram* program);
     
-    // Frame rate configuration
-    void SetTargetFPS(float fps) { targetFPS = fps > 0.0f ? fps : 60.0f; }
-    float GetTargetFPS() const { return targetFPS; }
+    void Reset();
+    void Shutdown();
     
-    // Physics system management
-    void SetPhysicsSystem(std::unique_ptr<PhysicsSystem> system);
-    PhysicsSystem* GetPhysicsSystem() const;
+private:
+    std::vector<GameObject*> gameObjects;
+    std::unique_ptr<TimeManager> time;
+    std::unique_ptr<PhysicsSystem> physicsSystem;
+    std::unique_ptr<CameraManager> cameraManager;
     
-    // Camera access
-    Camera* GetMainCamera() const { return mainCamera; }
-    Camera* GetMinimapCamera() const { return minimapCamera; }
-    CameraManager* GetCameraManager() const { return cameraManager.get(); }
+    float physicsTimeStep;
+    float physicsAccumulator;
+    int frameCount;
+    bool createDefaultObjects;
+    bool isRunning;
+    bool resolutionChangeAllowed;
     
-    // Scene transition methods
-    void UnloadScene();
-    void LoadScene(const std::string& scenePath);
-    void TransferObject(GameObject* obj, const std::string& targetScenePath);
+    Camera* mainCamera;
+    Camera* minimapCamera;
     
-    // GameObject finding
-    GameObject* FindGameObject(const std::string& name) const;
-    
-    // Debug rendering
-    void DrawDebugAxes();
+    Vector3 ambientLight;
 };
-
-#endif // SCENE_H

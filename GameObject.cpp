@@ -1,3 +1,4 @@
+#include "Matrix4x4.h"
 #include "GameObject.h"
 #include "Model.h"
 #include "MonoBehaviourLike.h"
@@ -102,4 +103,58 @@ void GameObject::RemoveChild(GameObject* child) {
     if (it != childGameObjects.end()) {
         childGameObjects.erase(it);
     }
+}
+
+// Add missing methods for editor compatibility
+// Initialize method removed as per user's instruction
+// GameObject is initialized via constructor
+
+// IsEnabled() is defined inline in GameObject.h
+
+Matrix4x4 GameObject::GetModelMatrix() const {
+    // Create rotation matrix
+    Matrix4x4 rotationMatrix = Matrix4x4::createRotation(rotation.x, rotation.y, rotation.z);
+    
+    // Create a basic model matrix
+    Matrix4x4 model;
+    model.identity();
+    
+    // Apply transformations (scale would be applied here if we had a scale method)
+    
+    // Apply rotation
+    model = rotationMatrix * model;
+    
+    // Apply translation manually
+    model.elements[3][0] = position.x;
+    model.elements[3][1] = position.y;
+    model.elements[3][2] = position.z;
+    
+    return model;
+}
+
+// GetMeshes() is defined inline in GameObject.h
+
+// GetChildren() is defined inline in GameObject.h
+
+void GameObject::Reset() {
+    // Reset components
+    for (auto& component : components) {
+        // Call OnDisable and then OnEnable to simulate a reset
+        component->OnDisable();
+        component->OnEnable();
+    }
+}
+
+void GameObject::Shutdown() {
+    // Shutdown components
+    for (auto& component : components) {
+        component->OnDestroy();
+    }
+    
+    // Clear component list
+    components.clear();
+}
+
+void GameObject::SetEnabled(bool enabled) {
+    this->enabled = enabled;
 }

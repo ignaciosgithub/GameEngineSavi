@@ -1,75 +1,90 @@
-#ifndef CAMERA_H
-#define CAMERA_H
+#pragma once
 
 #include "Vector3.h"
 #include "Matrix4x4.h"
-#include <cmath>
 
-class Camera
-{
+class Camera {
 public:
-    Vector3 position;
-    Vector3 lookDirection;
-    float fieldOfView;
-    float nearPlane = 0.1f;
-    float farPlane = 1000.0f;
-    float aspectRatio = 16.0f / 9.0f;
+    Camera() : position(0, 0, 0), rotation(0, 0, 0), scale(1, 1, 1), 
+               fieldOfView(60.0f), aspectRatio(16.0f / 9.0f), nearPlane(0.1f), farPlane(1000.0f),
+               viewportX(0.0f), viewportY(0.0f), viewportWidth(1.0f), viewportHeight(1.0f),
+               enabled(true) {}
     
-    // Viewport properties (normalized 0-1 coordinates)
-    float viewportX = 0.0f;
-    float viewportY = 0.0f;
-    float viewportWidth = 1.0f;
-    float viewportHeight = 1.0f;
-    bool enabled = true;
-   
-    Camera() : position(0, 0, 0), lookDirection(0, 1, -1), fieldOfView(90){}
-   
-    Camera(Vector3 pos, Vector3 dir, float fov) : position(pos), lookDirection(dir), fieldOfView(fov) {}
+    // Position
+    void SetPosition(const Vector3& position) { this->position = position; }
+    Vector3 GetPosition() const { return position; }
     
-    // Get camera position
-    const Vector3& GetPosition() const { return position; }
+    // Rotation
+    void SetRotation(const Vector3& rotation) { this->rotation = rotation; }
+    Vector3 GetRotation() const { return rotation; }
     
-    // Set camera position
-    void SetPosition(const Vector3& pos) { position = pos; }
+    // Scale
+    void SetScale(const Vector3& scale) { this->scale = scale; }
+    Vector3 GetScale() const { return scale; }
     
-    // Get camera rotation
-    Vector3 GetRotation() const {
-        // Convert look direction to Euler angles
-        Vector3 normalized = lookDirection;
-        normalized.normalize();
-        
-        // Calculate pitch (x-rotation)
-        float pitch = asin(normalized.y) * 180.0f / M_PI;
-        
-        // Calculate yaw (y-rotation)
-        float yaw = atan2(normalized.x, normalized.z) * 180.0f / M_PI;
-        
-        return Vector3(pitch, yaw, 0);
+    // Field of view
+    void SetFieldOfView(float fov) { fieldOfView = fov; }
+    float GetFieldOfView() const { return fieldOfView; }
+    
+    // Aspect ratio
+    void SetAspectRatio(float ratio) { aspectRatio = ratio; }
+    float GetAspectRatio() const { return aspectRatio; }
+    
+    // Clipping planes
+    void SetNearPlane(float near) { nearPlane = near; }
+    float GetNearPlane() const { return nearPlane; }
+    
+    void SetFarPlane(float far) { farPlane = far; }
+    float GetFarPlane() const { return farPlane; }
+    
+    // Viewport
+    void SetViewport(float x, float y, float width, float height) {
+        viewportX = x;
+        viewportY = y;
+        viewportWidth = width;
+        viewportHeight = height;
     }
     
-    // Set camera rotation
-    void SetRotation(const Vector3& rotation) {
-        // Convert Euler angles to look direction
-        float yaw = rotation.y * M_PI / 180.0f;   // Convert to radians
-        float pitch = rotation.x * M_PI / 180.0f; // Convert to radians
+    float GetViewportX() const { return viewportX; }
+    float GetViewportY() const { return viewportY; }
+    float GetViewportWidth() const { return viewportWidth; }
+    float GetViewportHeight() const { return viewportHeight; }
+    
+    // Enabled
+    void SetEnabled(bool enabled) { this->enabled = enabled; }
+    bool IsEnabled() const { return enabled; }
+    
+    // Look at a target
+    void LookAt(const Vector3& target) {
+        // Calculate the direction to look at
+        Vector3 direction = target - position;
+        direction.normalize();
         
-        // Calculate new look direction
+        // Calculate the rotation angles
+        float yaw = atan2(direction.x, direction.z) * 180.0f / 3.14159f;
+        float pitch = -asin(direction.y) * 180.0f / 3.14159f;
+        
+        // Set the rotation
+        rotation = Vector3(pitch, yaw, 0.0f);
+    }
+    
+    // Update the camera
+    void Update(float deltaTime) {
+        // Update camera logic here
+    }
+    
+    // Get the view matrix
+    Matrix4x4 GetViewMatrix() const {
+        // Calculate the look direction
+        float pitch = rotation.x * 3.14159f / 180.0f;
+        float yaw = rotation.y * 3.14159f / 180.0f;
+        
+        Vector3 lookDirection;
         lookDirection.x = sin(yaw) * cos(pitch);
         lookDirection.y = sin(pitch);
         lookDirection.z = cos(yaw) * cos(pitch);
         
-        // Normalize the look direction
-        lookDirection.normalize();
-    }
-    
-    // Look at a specific point
-    void LookAt(const Vector3& target) {
-        lookDirection = (target - position);
-        lookDirection.normalize();
-    }
-    
-    // Get view matrix
-    Matrix4x4 GetViewMatrix() const {
+        // Calculate the view matrix
         Vector3 up(0, 1, 0);
         Vector3 forward = lookDirection;
         forward.normalize();
@@ -98,56 +113,38 @@ public:
         return view;
     }
     
-    // Get projection matrix
+    // Get the projection matrix
     Matrix4x4 GetProjectionMatrix() const {
-        float f = 1.0f / tan(fieldOfView * 0.5f * M_PI / 180.0f);
-        float nf = 1.0f / (nearPlane - farPlane);
+        // Calculate the projection matrix
+        float f = 1.0f / tan(fieldOfView * 0.5f * 3.14159f / 180.0f);
+        float rangeInv = 1.0f / (nearPlane - farPlane);
         
         Matrix4x4 projection;
         projection.elements[0][0] = f / aspectRatio;
         projection.elements[1][1] = f;
-        projection.elements[2][2] = (farPlane + nearPlane) * nf;
+        projection.elements[2][2] = (nearPlane + farPlane) * rangeInv;
         projection.elements[2][3] = -1.0f;
-        projection.elements[3][2] = 2.0f * farPlane * nearPlane * nf;
+        projection.elements[3][2] = 2.0f * nearPlane * farPlane * rangeInv;
         projection.elements[3][3] = 0.0f;
         
         return projection;
     }
     
-    // Set viewport properties
-    void SetViewport(float x, float y, float width, float height) {
-        viewportX = x;
-        viewportY = y;
-        viewportWidth = width;
-        viewportHeight = height;
-    }
+private:
+    Vector3 position;
+    Vector3 rotation;
+    Vector3 scale;
     
-    // Enable/disable camera
-    void SetEnabled(bool isEnabled) {
-        enabled = isEnabled;
-    }
+public:
+    float fieldOfView;
+    float aspectRatio;
+    float nearPlane;
+    float farPlane;
     
-    // Check if camera is enabled
-    bool IsEnabled() const {
-        return enabled;
-    }
+    float viewportX;
+    float viewportY;
+    float viewportWidth;
+    float viewportHeight;
     
-    // Update aspect ratio based on viewport dimensions
-    void UpdateAspectRatio(int windowWidth, int windowHeight) {
-        if (windowWidth > 0 && windowHeight > 0) {
-            float viewportActualWidth = viewportWidth * windowWidth;
-            float viewportActualHeight = viewportHeight * windowHeight;
-            if (viewportActualWidth > 0 && viewportActualHeight > 0) {
-                aspectRatio = viewportActualWidth / viewportActualHeight;
-            }
-        }
-    }
-    
-    // Update camera (called every frame)
-    void Update(float deltaTime) {
-        // This method is called by the editor to update the camera
-        // The actual movement is handled in EditorMain.cpp through input handling
-    }
+    bool enabled;
 };
-
-#endif // CAMERA_H
