@@ -79,14 +79,15 @@ public:
         float pitch = rotation.x * 3.14159f / 180.0f;
         float yaw = rotation.y * 3.14159f / 180.0f;
         
-        Vector3 lookDirection;
-        lookDirection.x = sin(yaw) * cos(pitch);
-        lookDirection.y = sin(pitch);
-        lookDirection.z = cos(yaw) * cos(pitch);
+        // Create a local lookDirection for this method
+        Vector3 viewDirection;
+        viewDirection.x = sin(yaw) * cos(pitch);
+        viewDirection.y = sin(pitch);
+        viewDirection.z = cos(yaw) * cos(pitch);
         
         // Calculate the view matrix
         Vector3 up(0, 1, 0);
-        Vector3 forward = lookDirection;
+        Vector3 forward = viewDirection;
         forward.normalize();
         
         Vector3 right = up.cross(forward);
@@ -131,11 +132,12 @@ public:
     }
     
 private:
-    Vector3 position;
     Vector3 rotation;
     Vector3 scale;
     
 public:
+    Vector3 position;
+    Vector3 lookDirection;
     float fieldOfView;
     float aspectRatio;
     float nearPlane;

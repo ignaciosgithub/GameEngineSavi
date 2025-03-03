@@ -79,7 +79,7 @@ void PhysicsSystem::Update(float deltaTime) {
                     CollisionInfo collision;
                     if (collisionSystem->CheckCollision(bodyA, bodyB, collision)) {
                         // Handle collision response
-                        collisionSystem->ResolveCollision(bodyA, bodyB, collision, globalRestitution);
+                        collisionSystem->ResolveCollision(bodyA, bodyB, collision);
                         
                         // Log collision
                         std::cout << "Collision detected between bodies" << std::endl;

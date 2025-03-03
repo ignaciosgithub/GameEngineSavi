@@ -4,7 +4,7 @@
 #include <thread>
 #include <chrono>
 #include "EngineCondition.h"
-#include "Scene_includes_fixed.h"
+#include "Scene_includes.h"
 #include "GameObject_extensions_fixed.h"
 
 void Scene::Initialize() {
