@@ -1,41 +1,47 @@
-#ifndef TIME_MANAGER_H
-#define TIME_MANAGER_H
+#pragma once
 
+#include <ctime>  // Include ctime before chrono to avoid circular dependencies
 #include <chrono>
-#include <ctime> // Add explicit include for time.h
 
-class TimeManager
-{
-private:
-    // Using high_resolution_clock as our game timer
-    std::chrono::high_resolution_clock::time_point lastFrameTime;
-    float deltaTime; // Time between current frame and last frame
-    
-    // Singleton instance
-    static TimeManager* instance;
-
+class TimeManager {
 public:
-    // Constructor initializes the timing variables
-    TimeManager() : deltaTime(0.0f)
-    {
-        lastFrameTime = std::chrono::high_resolution_clock::now();
-    }
+    TimeManager();
+    ~TimeManager();
     
-    // Get singleton instance
-    static TimeManager& GetInstance() {
-        if (!instance) {
-            instance = new TimeManager();
-        }
-        return *instance;
-    }
-
-    // Update the timer every frame
+    // Update time values
     void Update();
-
-    // Get the time it took to render the last frame
-    float DeltaTime() const { return deltaTime; }
-   
-    // Since we're not dynamically allocating memory, we don't need a destructor in this case
+    
+    // Get delta time between frames
+    float DeltaTime() const;
+    
+    // Get total time since start
+    float GetTime() const;
+    
+    // Get delta time (alias for compatibility)
+    float GetDeltaTime() const { return DeltaTime(); }
+    
+    // Reset time values
+    void Reset();
+    
+    // Time scale factor
+    float timeScale;
+    
+    // Delta time between frames
+    float deltaTime;
+    
+    // Fixed time step for physics
+    float fixedDeltaTime;
+    
+private:
+    // Time point of the last frame
+    std::chrono::high_resolution_clock::time_point lastFrameTime;
+    
+    // Time point of the start
+    std::chrono::high_resolution_clock::time_point startTime;
+    
+    // Total time since start
+    float totalTime;
+    
+    // Static instance
+    static TimeManager* instance;
 };
-
-#endif // TIME_MANAGER_H
