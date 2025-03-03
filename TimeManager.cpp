@@ -10,6 +10,8 @@ TimeManager::TimeManager() {
     lastFrameTime = startTime;
     deltaTime = 0.0f;
     totalTime = 0.0f;
+    timeScale = 1.0f;
+    fixedDeltaTime = 1.0f / 60.0f; // Default to 60 Hz for physics
     
     // Set instance
     if (!instance) {
@@ -30,7 +32,7 @@ void TimeManager::Update() {
     
     // Calculate the time difference in seconds
     std::chrono::duration<float> timeDiff = currentFrameTime - lastFrameTime;
-    deltaTime = timeDiff.count();
+    deltaTime = timeDiff.count() * timeScale;
     
     // Update total time
     std::chrono::duration<float> totalTimeDiff = currentFrameTime - startTime;
@@ -45,11 +47,12 @@ float TimeManager::DeltaTime() const {
     return deltaTime;
 }
 
-// Add missing methods for editor compatibility
+// Get total time since start
 float TimeManager::GetTime() const {
     return totalTime;
 }
 
+// Reset time values
 void TimeManager::Reset() {
     startTime = std::chrono::high_resolution_clock::now();
     lastFrameTime = startTime;
