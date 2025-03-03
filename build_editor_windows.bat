@@ -25,7 +25,7 @@ g++ -std=c++11 -o bin\windows\Editor.exe ^
     RigidBody.cpp ^
     CollisionSystem.cpp ^
     PhysicsSystem.cpp ^
-    Scene_fixed_v3.cpp ^
+    Scene.cpp ^
     PointLight.cpp ^
     CameraManager.cpp ^
     Shaders\Core\ShaderProgram.cpp ^

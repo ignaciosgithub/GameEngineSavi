@@ -16,14 +16,14 @@ g++ -std=c++11 -o bin/linux/Editor \
     Vector3.cpp \
     Matrix4x4.cpp \
     Camera.cpp \
-    Model_fixed.cpp \
+    Model.cpp \
     MonoBehaviourLike.cpp \
-    TimeManager_fixed.cpp \
+    TimeManager.cpp \
     Raycast.cpp \
     RigidBody.cpp \
     CollisionSystem.cpp \
     PhysicsSystem.cpp \
-    Scene_fixed_v3.cpp \
+    Scene.cpp \
     PointLight.cpp \
     CameraManager.cpp \
     Shaders/Core/ShaderProgram.cpp \
