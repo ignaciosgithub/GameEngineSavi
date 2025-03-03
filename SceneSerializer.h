@@ -27,9 +27,9 @@ public:
     /**
      * @brief Loads a GameObject from a JSON file
      * @param filepath The path to the JSON file
-     * @return A unique_ptr to the loaded GameObject, or nullptr if loading failed
+     * @return A pointer to the loaded GameObject, or nullptr if loading failed
      */
-    static std::unique_ptr<GameObject> LoadObjectFromJson(const std::string& filepath);
+    static GameObject* LoadObjectFromJson(const std::string& filepath);
     
 private:
     /**

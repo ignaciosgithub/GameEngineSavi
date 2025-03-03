@@ -1,51 +1,48 @@
 #include "ShaderError.h"
 #include <iostream>
-#include <vector>
 
-namespace Shaders {
-
-void ShaderError::LogError(const std::string& message) {
-    std::cerr << "Shader Error: " << message << std::endl;
-}
-
+// Handle shader compilation errors
 std::string ShaderError::HandleCompileError(GLuint shader) {
-    GLint success;
+    GLint success = 0;
     glGetShaderiv(shader, GL_COMPILE_STATUS, &success);
     
-    if (!success) {
-        GLint logLength;
+    if (success == GL_FALSE) {
+        GLint logLength = 0;
         glGetShaderiv(shader, GL_INFO_LOG_LENGTH, &logLength);
         
-        std::vector<GLchar> log(logLength);
-        glGetShaderInfoLog(shader, logLength, nullptr, log.data());
-        
-        std::string errorMessage(log.begin(), log.end());
-        LogError("Shader compilation failed: " + errorMessage);
-        
-        return errorMessage;
+        if (logLength > 0) {
+            GLchar* log = new GLchar[logLength];
+            glGetShaderInfoLog(shader, logLength, NULL, log);
+            
+            std::string errorLog = log;
+            delete[] log;
+            
+            return errorLog;
+        }
     }
     
     return "";
 }
 
+// Handle shader program linking errors
 std::string ShaderError::HandleLinkError(GLuint program) {
-    GLint success;
+    GLint success = 0;
     glGetProgramiv(program, GL_LINK_STATUS, &success);
     
-    if (!success) {
-        GLint logLength;
+    if (success == GL_FALSE) {
+        GLint logLength = 0;
         glGetProgramiv(program, GL_INFO_LOG_LENGTH, &logLength);
         
-        std::vector<GLchar> log(logLength);
-        glGetProgramInfoLog(program, logLength, nullptr, log.data());
-        
-        std::string errorMessage(log.begin(), log.end());
-        LogError("Shader program linking failed: " + errorMessage);
-        
-        return errorMessage;
+        if (logLength > 0) {
+            GLchar* log = new GLchar[logLength];
+            glGetProgramInfoLog(program, logLength, NULL, log);
+            
+            std::string errorLog = log;
+            delete[] log;
+            
+            return errorLog;
+        }
     }
     
     return "";
 }
-
-} // namespace Shaders

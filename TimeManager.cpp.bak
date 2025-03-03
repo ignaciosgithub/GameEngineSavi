@@ -1,0 +1,29 @@
+#include "TimeManager.h"
+
+// Initialize static instance
+TimeManager* TimeManager::instance = nullptr;
+
+void TimeManager::Update()
+{
+    // Get the current time
+    auto currentFrameTime = std::chrono::high_resolution_clock::now();
+    
+    // Calculate the time difference in seconds
+    std::chrono::duration<float> timeDiff = currentFrameTime - lastFrameTime;
+    deltaTime = timeDiff.count();
+    
+    // Update lastFrameTime to the current time for the next Update call
+    lastFrameTime = currentFrameTime;
+}
+
+// Add missing methods for editor compatibility
+float TimeManager::GetTime() const {
+    return totalTime;
+}
+
+void TimeManager::Reset() {
+    startTime = std::chrono::high_resolution_clock::now();
+    lastFrameTime = startTime;
+    totalTime = 0.0f;
+    deltaTime = 0.0f;
+}

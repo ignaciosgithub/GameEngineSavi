@@ -1,41 +1,24 @@
-#ifndef HIERARCHY_PANEL_H
-#define HIERARCHY_PANEL_H
+#pragma once
 
-#include "../GUI/GUI.h"
-#include <vector>
-#include <string>
+#include "../Vector3.h"
 
-// Forward declarations
-class Editor;
 class GameObject;
 
-// Hierarchy panel that displays the scene hierarchy
-class HierarchyPanel : public Panel {
-private:
-    Editor* editor;
-    std::vector<GameObject*> gameObjects;
-    int selectedIndex;
-    
-    // Scroll position
-    int scrollOffset;
-    
-    // Item height
-    const int itemHeight = 20;
-    
+class HierarchyPanel {
 public:
-    HierarchyPanel(float x, float y, float w, float h, Editor* editor);
+    HierarchyPanel(int x, int y, int width, int height);
+    ~HierarchyPanel();
     
-    // Draw the panel
-    void Draw() override;
+    void Update(float deltaTime);
+    void Render();
+    void Resize(int x, int y, int width, int height);
     
-    // Handle input
-    bool HandleInput(int mouseX, int mouseY, bool clicked) override;
+    void AddGameObject(GameObject* gameObject);
+    void RemoveGameObject(GameObject* gameObject);
     
-    // Update the game object list
-    void UpdateGameObjectList();
-    
-    // Select an object by index
-    void SelectObject(int index);
+private:
+    int x;
+    int y;
+    int width;
+    int height;
 };
-
-#endif // HIERARCHY_PANEL_H

@@ -26,6 +26,12 @@ public:
         float attenuation = 1.0f / (1.0f + 0.09f * sqDistance + 0.032f * sqDistance * sqDistance);
         return intensity * attenuation;
     }
+    
+    // Editor support methods
+    void SetColor(const Vector3& col) { color = col; }
+    void SetIntensity(float intens) { intensity = intens; }
+    void SetRange(float rng) { range = rng; }
+    void SetPosition(const Vector3& pos) { position = pos; }
 };
 
 #endif // POINTLIGHT_H

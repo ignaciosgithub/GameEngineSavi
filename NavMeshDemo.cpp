@@ -20,7 +20,7 @@ int main() {
     camera->position = Vector3(0, 5, -10);
     // Set camera direction instead of rotation
     camera->LookAt(Vector3(0, 0, 0));
-    scene.AddCamera(std::unique_ptr<Camera>(camera));
+    scene.AddCamera(camera);
     scene.SetMainCamera(camera);
     
     // Create a floor
@@ -30,7 +30,7 @@ int main() {
     Model* floorModel = new Model();
     // Set up floor model
     floor->AddMesh(floorModel);
-    scene.AddGameObject(std::unique_ptr<GameObject>(floor));
+    scene.AddGameObject(floor);
     
     // Create some obstacles
     GameObject* obstacle1 = new GameObject("Obstacle1");
@@ -39,7 +39,7 @@ int main() {
     Model* obstacle1Model = new Model();
     // Set up obstacle1 model
     obstacle1->AddMesh(obstacle1Model);
-    scene.AddGameObject(std::unique_ptr<GameObject>(obstacle1));
+    scene.AddGameObject(obstacle1);
     
     GameObject* obstacle2 = new GameObject("Obstacle2");
     obstacle2->position = Vector3(-2, 1, -2);
@@ -47,7 +47,7 @@ int main() {
     Model* obstacle2Model = new Model();
     // Set up obstacle2 model
     obstacle2->AddMesh(obstacle2Model);
-    scene.AddGameObject(std::unique_ptr<GameObject>(obstacle2));
+    scene.AddGameObject(obstacle2);
     
     // Create an AI entity
     GameObject* aiGameObject = new GameObject("AIEntity");
@@ -56,7 +56,7 @@ int main() {
     Model* aiModel = new Model();
     // Set up AI model
     aiGameObject->AddMesh(aiModel);
-    scene.AddGameObject(std::unique_ptr<GameObject>(aiGameObject));
+    scene.AddGameObject(aiGameObject);
     
     AIEntity* aiEntity = new AIEntity();
     aiEntity->SetGameObject(aiGameObject);
@@ -66,7 +66,7 @@ int main() {
     aiEntity->SetMaxDist(2.0f);
     
     // Initialize the navigation mesh manager
-    NavMeshManager& navMeshManager = NavMeshManager::GetInstance();
+    NavMeshManager navMeshManager;
     navMeshManager.Initialize();
     navMeshManager.SetRefreshRate(10.0f);
     navMeshManager.AddAIEntity(aiEntity);
@@ -75,7 +75,7 @@ int main() {
     navMeshManager.RefreshNavMesh();
     
     // Main loop
-    TimeManager& timeManager = TimeManager::GetInstance();
+    TimeManager timeManager;
     bool running = true;
     
     while (running) {
