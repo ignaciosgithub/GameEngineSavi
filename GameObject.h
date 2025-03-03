@@ -7,6 +7,7 @@
 #include <memory>
 #include "Vector3.h"
 #include "PointLight.h"
+#include "Matrix4x4.h"
 
 // Forward declaration
 class Model;
@@ -16,6 +17,7 @@ class GameObject {
 private:
     std::string name;
     std::vector<std::shared_ptr<MonoBehaviourLike>> components;
+    bool enabled = true;
 public:
     Vector3 position;
     Vector3 rotation;
@@ -107,6 +109,24 @@ public:
     // Component management
     void AddComponent(std::shared_ptr<MonoBehaviourLike> component);
     void RemoveComponent(std::shared_ptr<MonoBehaviourLike> component);
+    
+    // Editor support methods
+    size_t GetMeshCount() const { return meshes.size(); }
+    Model* GetMesh(size_t index) const {
+        if (index < meshes.size()) {
+            return meshes[index];
+        }
+        return nullptr;
+    }
+    
+    // Missing methods for editor compatibility
+    bool IsEnabled() const { return enabled; }
+    void SetEnabled(bool enabled);
+    Matrix4x4 GetModelMatrix() const;
+    std::vector<Model*> GetMeshes() const { return meshes; }
+    std::vector<GameObject*> GetChildren() const { return childGameObjects; }
+    void Reset();
+    void Shutdown();
 };
 
 #endif // GAMEOBJECT_H
