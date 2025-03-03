@@ -1,51 +1,51 @@
-#ifndef GL_TYPES_H
-#define GL_TYPES_H
+#pragma once
 
-// Define OpenGL types for compatibility
-typedef unsigned int GLuint;
-typedef float GLfloat;
+// OpenGL type definitions
 typedef unsigned int GLenum;
+typedef unsigned int GLbitfield;
+typedef unsigned int GLuint;
 typedef int GLint;
+typedef int GLsizei;
 typedef unsigned char GLboolean;
+typedef signed char GLbyte;
+typedef short GLshort;
 typedef unsigned char GLubyte;
 typedef unsigned short GLushort;
-typedef short GLshort;
+typedef unsigned long GLulong;
+typedef float GLfloat;
+typedef float GLclampf;
 typedef double GLdouble;
-typedef unsigned int GLbitfield;
-typedef int GLsizei;
+typedef double GLclampd;
 typedef void GLvoid;
 
-// Define some common OpenGL constants
-#define GL_FALSE 0
-#define GL_TRUE 1
+// OpenGL constants
+#define GL_FALSE                          0
+#define GL_TRUE                           1
+
+// Shader constants
+#define GL_VERTEX_SHADER                  0x8B31
+#define GL_FRAGMENT_SHADER                0x8B30
+#define GL_GEOMETRY_SHADER                0x8DD9
+#define GL_COMPILE_STATUS                 0x8B81
+#define GL_LINK_STATUS                    0x8B82
+#define GL_INFO_LOG_LENGTH                0x8B84
 
 // Texture constants
-#define GL_TEXTURE0 0x84C0
-#define GL_TEXTURE1 0x84C1
-#define GL_TEXTURE2 0x84C2
-#define GL_TEXTURE3 0x84C3
-#define GL_TEXTURE4 0x84C4
-#define GL_TEXTURE5 0x84C5
-#define GL_TEXTURE6 0x84C6
-#define GL_TEXTURE7 0x84C7
+#define GL_TEXTURE0                       0x84C0
+#define GL_TEXTURE1                       0x84C1
+#define GL_TEXTURE2                       0x84C2
+#define GL_TEXTURE_2D                     0x0DE1
 
-// Shader types
-#define GL_VERTEX_SHADER 0x8B31
-#define GL_FRAGMENT_SHADER 0x8B30
-#define GL_GEOMETRY_SHADER 0x8DD9
+// Viewport constants
+#define GL_VIEWPORT                       0x0BA2
 
-// Buffer types
-#define GL_ARRAY_BUFFER 0x8892
-#define GL_ELEMENT_ARRAY_BUFFER 0x8893
+// Pixel format constants
+#define GL_RGBA                           0x1908
+#define GL_UNSIGNED_BYTE                  0x1401
 
-// Draw modes
-#define GL_TRIANGLES 0x0004
-#define GL_LINES 0x0001
-#define GL_POINTS 0x0000
+// Error constants
+#define GL_NO_ERROR                       0
 
-// Data types
-#define GL_FLOAT 0x1406
-#define GL_UNSIGNED_INT 0x1405
-#define GL_INT 0x1404
-
-#endif // GL_TYPES_H
+// Matrix constants
+#define GL_FALSE                          0
+#define GL_TRUE                           1

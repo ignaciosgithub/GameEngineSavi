@@ -1,74 +1,85 @@
 #include "Shader.h"
 #include "ShaderError.h"
+#include <iostream>
 #include <fstream>
 #include <sstream>
-#include <iostream>
 
-namespace Shaders {
-
-Shader::Shader(Type type) : type(type), handle(0), isCompiled(false) {
-    // Create shader
+// Constructor
+Shader::Shader(Type type) : type(type), handle(0) {
+    // Create a new shader
     handle = glCreateShader(GetGLShaderType());
 }
 
+// Destructor
 Shader::~Shader() {
-    // Delete shader
     if (handle != 0) {
         glDeleteShader(handle);
         handle = 0;
     }
 }
 
-bool Shader::LoadFromFile(const std::string& path) {
-    // Open file
-    std::ifstream file(path);
+// Load shader from file
+bool Shader::LoadFromFile(const std::string& filename) {
+    // Open the file
+    std::ifstream file(filename);
     if (!file.is_open()) {
-        errorLog = "Failed to open file: " + path;
+        std::cerr << "Error: Could not open shader file: " << filename << std::endl;
         return false;
     }
     
-    // Read file
+    // Read the file contents
     std::stringstream buffer;
     buffer << file.rdbuf();
+    
+    // Close the file
     file.close();
     
-    // Load source
+    // Load the shader from the string
     return LoadFromString(buffer.str());
 }
 
-bool Shader::LoadFromString(const std::string& source) {
-    // Store source
+// Load shader from string
+bool Shader::LoadFromString(const std::string& source, GLenum shaderType) {
+    // Store the source
     this->source = source;
     
-    // Set source
-    const char* sourcePtr = source.c_str();
-    glShaderSource(handle, 1, &sourcePtr, nullptr);
+    // Set the source
+    const GLchar* sourcePtr = source.c_str();
+    glShaderSource(handle, 1, &sourcePtr, NULL);
     
     return true;
 }
 
+// Compile the shader
 bool Shader::Compile() {
-    // Compile shader
+    // Compile the shader
     glCompileShader(handle);
     
-    // Check for errors
-    errorLog = ShaderError::HandleCompileError(handle);
-    isCompiled = errorLog.empty();
+    // Check if compilation was successful
+    GLint success = 0;
+    glGetShaderiv(handle, GL_COMPILE_STATUS, &success);
     
-    return isCompiled;
+    if (success == GL_FALSE) {
+        // Get the error message
+        std::string errorMessage = ShaderError::HandleCompileError(handle);
+        
+        // Print the error message
+        std::cerr << "Error compiling shader: " << errorMessage << std::endl;
+        
+        return false;
+    }
+    
+    return true;
 }
 
+// Get the OpenGL shader type
 GLenum Shader::GetGLShaderType() const {
     switch (type) {
         case VERTEX:
             return GL_VERTEX_SHADER;
         case FRAGMENT:
             return GL_FRAGMENT_SHADER;
-        case GEOMETRY:
-            return GL_GEOMETRY_SHADER;
         default:
             return GL_VERTEX_SHADER;
     }
 }
-
-} // namespace Shaders

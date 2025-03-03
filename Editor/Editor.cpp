@@ -1,211 +1,163 @@
 #include "Editor.h"
 #include "HierarchyPanel.h"
-#include "SceneViewPanel.h"
 #include "InspectorPanel.h"
 #include "ProjectPanel.h"
+#include "SceneViewPanel.h"
+#include "../Camera.h"
+#include "../Scene.h"
+#include "../GameObject.h"
 #include "../EngineCondition.h"
-#include "../ProjectSettings/ProjectSettings.h"
-#include "../GUI/TextField.h"
 #include <iostream>
 
-Editor::Editor(int width, int height) 
-    : windowWidth(width), 
-      windowHeight(height), 
-      selectedObject(nullptr), 
-      isPlaying(false), 
-      isDraggingObject(false) {
+Editor::Editor(int width, int height) : width(width), height(height), selectedGameObject(nullptr) {
+    std::cout << "Creating editor..." << std::endl;
     
-    // Create GUI
-    gui = std::unique_ptr<GUI>(new GUI());
+    // Set engine condition to editor mode
+    EngineCondition::SetInEditor(true);
+    
+    // Create editor camera
+    editorCamera = new Camera();
+    editorCamera->SetPosition(Vector3(0, 2, -5));
+    editorCamera->SetRotation(Vector3(15, 0, 0));
+    
+    // Create panels
+    hierarchyPanel = new HierarchyPanel(0, 0, 200, height);
+    inspectorPanel = new InspectorPanel(width - 300, 0, 300, height);
+    projectPanel = new ProjectPanel(200, height - 200, width - 500, 200);
+    sceneViewPanel = new SceneViewPanel(200, 0, width - 500, height - 200);
     
     // Create scene
-    scene = std::unique_ptr<Scene>(new Scene());
+    scene = new Scene();
+    scene->Initialize();
     
-    // Create editor camera with better angle for 3D visualization
-    editorCamera = std::unique_ptr<Camera>(new Camera());
-    editorCamera->SetPosition(Vector3(3.0f, 2.5f, 4.0f));  // Position camera at angle
-    editorCamera->LookAt(Vector3(0, 0, 0));
-    editorCamera->fieldOfView = 45.0f;
+    // Set main camera
+    scene->SetMainCamera(editorCamera);
+    
+    std::cout << "Editor created successfully." << std::endl;
 }
 
 Editor::~Editor() {
-    // Clean up resources
-}
-
-void Editor::Initialize() {
-    // Initialize the scene
-    scene->Initialize();
+    std::cout << "Destroying editor..." << std::endl;
     
-    // Create editor panels
-    hierarchyPanel = std::unique_ptr<HierarchyPanel>(new HierarchyPanel(10, 10, 200, windowHeight - 20, this));
-    sceneViewPanel = std::unique_ptr<SceneViewPanel>(new SceneViewPanel(220, 10, windowWidth - 430, windowHeight - 20, this));
-    inspectorPanel = std::unique_ptr<InspectorPanel>(new InspectorPanel(windowWidth - 200, 10, 190, windowHeight - 20, this));
-    projectPanel = std::unique_ptr<ProjectPanel>(new ProjectPanel(10, windowHeight - 200, windowWidth - 20, 190, this));
+    // Delete panels
+    if (hierarchyPanel) {
+        delete hierarchyPanel;
+        hierarchyPanel = nullptr;
+    }
     
-    // Add panels to GUI
-    gui->AddElement(hierarchyPanel.release());
-    gui->AddElement(sceneViewPanel.release());
-    gui->AddElement(inspectorPanel.release());
-    gui->AddElement(projectPanel.release());
+    if (inspectorPanel) {
+        delete inspectorPanel;
+        inspectorPanel = nullptr;
+    }
     
-    // Set engine condition to editor mode
-    EngineCondition::EnterEditMode();
+    if (projectPanel) {
+        delete projectPanel;
+        projectPanel = nullptr;
+    }
     
-    // Create default scene
-    CreateDefaultScene();
+    if (sceneViewPanel) {
+        delete sceneViewPanel;
+        sceneViewPanel = nullptr;
+    }
     
-    std::cout << "Editor initialized" << std::endl;
-}
-
-void Editor::CreateDefaultScene() {
-    // Create a default point light at an angle for better shadows
-    GameObject* lightObj = new GameObject("Default Light");
-    PointLight light;
-    light.SetColor(Vector3(1.0f, 1.0f, 1.0f));
-    light.SetIntensity(1.2f);  // Slightly brighter
-    lightObj->AddLight(light);
-    lightObj->SetPosition(Vector3(5.0f, 5.0f, 5.0f));  // Position light at angle
-    scene->AddGameObject(lightObj);
+    // Delete camera
+    if (editorCamera) {
+        delete editorCamera;
+        editorCamera = nullptr;
+    }
     
-    // Create a default cube rotated to show 3D
-    GameObject* cubeObj = new GameObject("Default Cube");
-    // Load cube model
-    Model* cubeModel = new Model();
-    cubeModel->LoadFromFile("test_assets/cube.obj");
-    cubeObj->AddMesh(cubeModel);
-    cubeObj->SetPosition(Vector3(0, 0, 0));
-    cubeObj->SetRotation(Vector3(30.0f, 45.0f, 0.0f));  // Rotate for 3D view
-    scene->AddGameObject(cubeObj);
+    // Delete scene
+    if (scene) {
+        delete scene;
+        scene = nullptr;
+    }
     
-    std::cout << "Default scene created with 3D cube and angled lighting" << std::endl;
+    // Reset engine condition
+    EngineCondition::SetInEditor(false);
+    
+    std::cout << "Editor destroyed successfully." << std::endl;
 }
 
 void Editor::Update(float deltaTime) {
-    // Update the scene if playing
-    if (isPlaying) {
+    // Update camera
+    if (editorCamera) {
+        // Update camera logic
+    }
+    
+    // Update scene
+    if (scene) {
         scene->Update(deltaTime);
     }
     
-    // Update editor camera
-    // This would handle camera movement based on input
-    // For now, we'll just update the camera's view matrix
-    editorCamera->Update(deltaTime);
+    // Update panels
+    if (hierarchyPanel) {
+        hierarchyPanel->Update(deltaTime);
+    }
+    
+    if (inspectorPanel) {
+        inspectorPanel->Update(deltaTime);
+    }
+    
+    if (projectPanel) {
+        projectPanel->Update(deltaTime);
+    }
+    
+    if (sceneViewPanel) {
+        sceneViewPanel->Update(deltaTime);
+    }
 }
 
 void Editor::Render() {
-    // Set the camera for rendering
-    scene->SetMainCamera(editorCamera.get());
-    
-    // Render the scene
-    scene->Render();
-    
-    // Render the GUI
-    gui->Draw();
-}
-
-void Editor::HandleInput(int x, int y, bool clicked) {
-    // Handle GUI input first
-    gui->HandleInput(x, y, clicked);
-    
-    // Handle scene input if not handled by GUI
-    // This would include object selection, camera movement, etc.
-}
-
-void Editor::HandleDragAndDrop(const std::string& filePath) {
-    // Check if the file is an OBJ file
-    if (filePath.substr(filePath.find_last_of(".") + 1) == "obj") {
-        // Load the OBJ file
-        GameObject* obj = LoadObjFile(filePath);
-        if (obj) {
-            // Add the object to the scene
-            scene->AddGameObject(obj);
-            // Select the new object
-            SelectObject(obj);
-            
-            std::cout << "Loaded OBJ file: " << filePath << std::endl;
-        }
+    // Render scene
+    if (scene) {
+        scene->RenderScene();
     }
-}
-
-GameObject* Editor::LoadObjFile(const std::string& filePath) {
-    // Create a new game object
-    GameObject* obj = new GameObject(filePath.substr(filePath.find_last_of("/\\") + 1));
     
-    // Load the model
-    Model* model = new Model();
-    if (model->LoadFromFile(filePath)) {
-        // Add the model to the game object
-        obj->AddMesh(model);
-        return obj;
-    } else {
-        // Failed to load model
-        delete obj;
-        delete model;
-        std::cout << "Failed to load OBJ file: " << filePath << std::endl;
-        return nullptr;
+    // Render panels
+    if (hierarchyPanel) {
+        hierarchyPanel->Render();
     }
-}
-
-void Editor::SelectObject(GameObject* object) {
-    selectedObject = object;
     
-    // Update inspector panel with selected object
     if (inspectorPanel) {
-        inspectorPanel->SetSelectedObject(object);
+        inspectorPanel->Render();
     }
     
-    std::cout << "Selected object: " << (object ? object->GetName() : "None") << std::endl;
-}
-
-GameObject* Editor::GetSelectedObject() const {
-    return selectedObject;
-}
-
-Camera* Editor::GetEditorCamera() const {
-    return editorCamera.get();
-}
-
-Scene* Editor::GetScene() const {
-    return scene.get();
-}
-
-void Editor::TogglePlay() {
-    isPlaying = !isPlaying;
-    
-    if (isPlaying) {
-        // Enter play mode
-        EngineCondition::EnterPlayMode();
-        std::cout << "Entered play mode" << std::endl;
-    } else {
-        // Enter edit mode
-        EngineCondition::EnterEditMode();
-        std::cout << "Entered edit mode" << std::endl;
+    if (projectPanel) {
+        projectPanel->Render();
     }
-}
-
-bool Editor::IsPlaying() const {
-    return isPlaying;
-}
-
-bool Editor::CaptureScreenshot(const std::string& filename) {
-    // Render a fresh frame to ensure we capture the latest state
-    Render();
     
-    // Get the scene view panel's dimensions for the screenshot
     if (sceneViewPanel) {
-        int x, y, width, height;
-        sceneViewPanel->GetDimensions(x, y, width, height);
-        
-        // Adjust for panel header
-        y += 30;
-        height -= 30;
-        
-        std::cout << "Capturing screenshot of scene view: " << width << "x" << height << std::endl;
-        
-        // Capture the viewport to file
-        return FrameCapture::CaptureViewportToFile(filename);
+        sceneViewPanel->Render();
+    }
+}
+
+void Editor::Resize(int newWidth, int newHeight) {
+    width = newWidth;
+    height = newHeight;
+    
+    // Resize panels
+    if (hierarchyPanel) {
+        hierarchyPanel->Resize(0, 0, 200, height);
     }
     
-    std::cerr << "Failed to capture screenshot: Scene view panel not available" << std::endl;
-    return false;
+    if (inspectorPanel) {
+        inspectorPanel->Resize(width - 300, 0, 300, height);
+    }
+    
+    if (projectPanel) {
+        projectPanel->Resize(200, height - 200, width - 500, 200);
+    }
+    
+    if (sceneViewPanel) {
+        sceneViewPanel->Resize(200, 0, width - 500, height - 200);
+    }
+}
+
+void Editor::SetSelectedGameObject(GameObject* gameObject) {
+    selectedGameObject = gameObject;
+    
+    // Update inspector panel
+    if (inspectorPanel) {
+        inspectorPanel->SetSelectedGameObject(gameObject);
+    }
 }

@@ -39,7 +39,7 @@ void SceneSerializer::SaveObjectToJson(const GameObject* obj, const std::string&
     }
 }
 
-std::unique_ptr<GameObject> SceneSerializer::LoadObjectFromJson(const std::string& filepath) {
+GameObject* SceneSerializer::LoadObjectFromJson(const std::string& filepath) {
     try {
         // Open file
         std::ifstream file(filepath);
@@ -58,7 +58,7 @@ std::unique_ptr<GameObject> SceneSerializer::LoadObjectFromJson(const std::strin
         Vector3 rotation = DeserializeVector3(j["rotation"]);
         Vector3 size = DeserializeVector3(j["size"]);
         
-        auto gameObject = std::make_unique<GameObject>(name, position, rotation, size);
+        GameObject* gameObject = new GameObject(name, position, rotation, size);
         
         // Deserialize lights
         if (j.contains("lights") && j["lights"].is_array()) {

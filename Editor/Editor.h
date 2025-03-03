@@ -1,92 +1,41 @@
-#ifndef EDITOR_H
-#define EDITOR_H
+#pragma once
 
-#include <memory>
-#include <vector>
-#include <string>
-#include "../GUI/GUI.h"
-#include "../Scene.h"
-#include "../Camera.h"
-#include "../GameObject.h"
-#include "../Model.h"
-#include "../PointLight.h"
+#include "../Vector3.h"
 
-// Forward declarations
+class Camera;
+class Scene;
+class GameObject;
 class HierarchyPanel;
-class SceneViewPanel;
 class InspectorPanel;
 class ProjectPanel;
+class SceneViewPanel;
 
-// Main Editor class that manages the editor UI and functionality
 class Editor {
-private:
-    std::unique_ptr<GUI> gui;
-    std::unique_ptr<Scene> scene;
-    std::unique_ptr<Camera> editorCamera;
-    
-    // Editor panels
-    std::unique_ptr<HierarchyPanel> hierarchyPanel;
-    std::unique_ptr<SceneViewPanel> sceneViewPanel;
-    std::unique_ptr<InspectorPanel> inspectorPanel;
-    std::unique_ptr<ProjectPanel> projectPanel;
-    
-    // Selected object in the scene
-    GameObject* selectedObject;
-    
-    // Editor state
-    bool isPlaying;
-    bool isDraggingObject;
-    std::string draggedFilePath;
-    
-    // Window dimensions
-    int windowWidth;
-    int windowHeight;
-    
 public:
     Editor(int width, int height);
     ~Editor();
     
-    // Initialize the editor
-    void Initialize();
-    
-    // Create a default scene with a point light and a cube
-    void CreateDefaultScene();
-    
-    // Update the editor
     void Update(float deltaTime);
-    
-    // Render the editor
     void Render();
+    void Resize(int newWidth, int newHeight);
     
-    // Handle input
-    void HandleInput(int x, int y, bool clicked);
+    Camera* GetEditorCamera() const { return editorCamera; }
+    Scene* GetScene() const { return scene; }
     
-    // Handle drag and drop
-    void HandleDragAndDrop(const std::string& filePath);
+    void SetSelectedGameObject(GameObject* gameObject);
+    GameObject* GetSelectedGameObject() const { return selectedGameObject; }
     
-    // Load an OBJ file
-    GameObject* LoadObjFile(const std::string& filePath);
+private:
+    int width;
+    int height;
     
-    // Select an object in the scene
-    void SelectObject(GameObject* object);
+    Camera* editorCamera;
+    Scene* scene;
     
-    // Get the selected object
-    GameObject* GetSelectedObject() const;
+    HierarchyPanel* hierarchyPanel;
+    InspectorPanel* inspectorPanel;
+    ProjectPanel* projectPanel;
+    SceneViewPanel* sceneViewPanel;
     
-    // Get the editor camera
-    Camera* GetEditorCamera() const;
-    
-    // Get the scene
-    Scene* GetScene() const;
-    
-    // Play/pause the scene
-    void TogglePlay();
-    
-    // Check if the scene is playing
-    bool IsPlaying() const;
-    
-    // Capture a screenshot of the editor view
-    bool CaptureScreenshot(const std::string& filename);
+    GameObject* selectedGameObject;
 };
-
-#endif // EDITOR_H

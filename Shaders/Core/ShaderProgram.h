@@ -1,53 +1,44 @@
-#ifndef SHADER_PROGRAM_H
-#define SHADER_PROGRAM_H
+#pragma once
 
-#include "Shader.h"
 #include <string>
-#include <vector>
-#include <map>
+#include <unordered_map>
+#include "../../ThirdParty/OpenGL/include/GL/platform_gl.h"
+#include "../../Vector3.h"
+#include "../../Matrix4x4.h"
+
+class Shader;
 
 class ShaderProgram {
-private:
-    GLuint programID;
-    std::vector<Shader> shaders;
-    std::map<std::string, GLint> uniformLocations;
-    
-    bool isLinked;
-    
-    // Private methods
-    void DetachShaders();
-    void LinkProgram();
-    
 public:
     ShaderProgram();
     ~ShaderProgram();
     
-    // Add a shader to the program
-    void AddShader(const Shader& shader);
-    
-    // Link the program
+    bool AttachShader(Shader* shader);
     bool Link();
-    
-    // Use the program
     void Use() const;
     
-    // Get the program ID
-    GLuint GetProgramID() const;
+    GLuint GetHandle() const { return handle; }
     
-    // Check if the program is linked
-    bool IsLinked() const;
-    
-    // Get the location of a uniform variable
+    // Uniform setters
     GLint GetUniformLocation(const std::string& name);
     
-    // Set uniform variables
     void SetUniform(const std::string& name, float value);
     void SetUniform(const std::string& name, int value);
     void SetUniform(const std::string& name, bool value);
-    void SetUniform(const std::string& name, const Vector3& value);
     void SetUniform(const std::string& name, float x, float y, float z);
     void SetUniform(const std::string& name, float x, float y, float z, float w);
+    void SetUniform(const std::string& name, const Vector3& value);
+    void SetUniform(const std::string& name, const Matrix4x4& value);
     void SetUniform(const std::string& name, const float* matrix, bool transpose = false);
+    void SetUniform(const std::string& name, GLuint textureID, GLuint textureUnit);
+    
+    // Array uniform setters
+    void SetUniformArray(const std::string& name, const float* values, int count);
+    void SetUniformArray(const std::string& name, const int* values, int count);
+    void SetUniformArray(const std::string& name, const Vector3* values, int count);
+    void SetUniformArray(const std::string& name, const Matrix4x4* values, int count);
+    
+private:
+    GLuint handle;
+    std::unordered_map<std::string, GLint> uniformLocations;
 };
-
-#endif // SHADER_PROGRAM_H
