@@ -1,7 +1,7 @@
 #include "Editor.h"
 #include "../EngineCondition.h"
 #include "../platform.h"
-#include "../EngineTime.h"
+#include "../TimeManager.h"
 #include "ThirdParty/OpenGL/include/GL/gl_types.h"
 #include "../FrameCapture.h"
 #include <iostream>

@@ -4,7 +4,7 @@
 #include <memory>
 #include <atomic>
 #include "HeadlessGameObject.h"
-#include "../EngineTime.h"
+#include "../TimeManager.h"
 #include "HeadlessPhysicsSystem.h"
 
 class HeadlessScene {
