@@ -24,6 +24,7 @@ public:
     
     void AddGameObject(GameObject* gameObject);
     void RemoveGameObject(GameObject* gameObject);
+    GameObject* FindGameObject(const std::string& name) const;
     
     void Update(float deltaTime);
     
