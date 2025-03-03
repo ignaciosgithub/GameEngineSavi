@@ -22,9 +22,11 @@ public:
     void CreateDefaultObjects();
     void Render();
     
-    void AddGameObject(GameObject* gameObject);
+    void AddGameObject(GameObject gameObject);
     void RemoveGameObject(GameObject* gameObject);
     GameObject* FindGameObject(const std::string& name) const;
+    void AddCamera(Camera* camera);
+    void AddCamera(std::unique_ptr<Camera> camera);
     
     void Update(float deltaTime);
     
