@@ -19,7 +19,7 @@ private:
             : message(msg), scriptName(script), functionName(func), lineNumber(line) {}
     };
     
-    // New structure for tracking redundant declarations
+    // Structure for tracking redundant declarations
     struct RedundancyInfo {
         std::string fileName;
         std::string symbolName;
@@ -31,10 +31,22 @@ private:
             : fileName(file), symbolName(symbol), type(t), lineNumber(line) {}
     };
     
+    // Structure for tracking import errors
+    struct ImportError {
+        std::string message;
+        std::string filePath;
+        std::string importType;  // "shader", "texture", "model", etc.
+        
+        ImportError(const std::string& msg, const std::string& path, const std::string& type)
+            : message(msg), filePath(path), importType(type) {}
+    };
+    
     std::vector<ScriptError> errors;
     std::vector<RedundancyInfo> redundancies;  // Track redundant declarations
+    std::vector<ImportError> importErrors;     // Track import errors
     bool showErrorPanel;
     bool showRedundancyPanel;  // New flag for redundancy panel
+    bool showImportErrorPanel;  // New flag for import error panel
     static Debugger* instance;
     
     Debugger();  // Private constructor for singleton
@@ -49,9 +61,13 @@ public:
     // Log a simple error message
     void LogError(const std::string& message);
     
-    // New method to log redundant declarations
+    // Method to log redundant declarations
     void LogRedundancy(const std::string& fileName, const std::string& symbolName,
                       const std::string& type, int lineNumber);
+    
+    // Method to log import errors
+    void LogImportError(const std::string& message, const std::string& filePath,
+                       const std::string& importType);
     
     // Clear all logged errors
     void ClearErrors();
@@ -59,17 +75,28 @@ public:
     // Clear all logged redundancies
     void ClearRedundancies();
     
+    // Clear all logged import errors
+    void ClearImportErrors();
+    
     // Get all current errors
     const std::vector<ScriptError>& GetErrors() const;
     
     // Get all current redundancies
     const std::vector<RedundancyInfo>& GetRedundancies() const;
     
+    // Get all current import errors
+    const std::vector<ImportError>& GetImportErrors() const;
+    
     // Update error display
     void Update();
     
     // New method to check for redundant declarations in the codebase
     void CheckForRedundancies();
+    
+    // Methods to control display panels
+    void ShowErrorPanel(bool show) { showErrorPanel = show; }
+    void ShowRedundancyPanel(bool show) { showRedundancyPanel = show; }
+    void ShowImportErrorPanel(bool show) { showImportErrorPanel = show; }
     
     // Try-catch wrapper for script execution
     template<typename Func>
@@ -83,6 +110,21 @@ public:
             return false;
         } catch (...) {
             LogError("Unknown error occurred", scriptName, functionName, -1);
+            return false;
+        }
+    }
+    
+    // Try-catch wrapper for import operations
+    template<typename Func>
+    bool TryImport(Func&& func, const std::string& filePath, 
+                  const std::string& importType) {
+        try {
+            return func();
+        } catch (const std::exception& e) {
+            LogImportError(e.what(), filePath, importType);
+            return false;
+        } catch (...) {
+            LogImportError("Unknown error occurred during import", filePath, importType);
             return false;
         }
     }

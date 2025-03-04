@@ -4,7 +4,8 @@
 
 Debugger* Debugger::instance = nullptr;
 
-Debugger::Debugger() : showErrorPanel(false), showRedundancyPanel(false) {
+Debugger::Debugger() : showErrorPanel(false), showRedundancyPanel(false), 
+                              showImportErrorPanel(false) {
     // Initialize debugger
 }
 
@@ -47,6 +48,16 @@ void Debugger::LogRedundancy(const std::string& fileName, const std::string& sym
     Update();
 }
 
+void Debugger::LogImportError(const std::string& message, const std::string& filePath,
+                           const std::string& importType) {
+    importErrors.emplace_back(message, filePath, importType);
+    
+    // Always print to console for now
+    std::cout << "Import Error: " << importType << " '" << filePath << "': " << message << std::endl;
+    
+    Update();
+}
+
 void Debugger::ClearErrors() {
     errors.clear();
     Update();
@@ -57,12 +68,21 @@ void Debugger::ClearRedundancies() {
     Update();
 }
 
+void Debugger::ClearImportErrors() {
+    importErrors.clear();
+    Update();
+}
+
 const std::vector<Debugger::ScriptError>& Debugger::GetErrors() const {
     return errors;
 }
 
 const std::vector<Debugger::RedundancyInfo>& Debugger::GetRedundancies() const {
     return redundancies;
+}
+
+const std::vector<Debugger::ImportError>& Debugger::GetImportErrors() const {
+    return importErrors;
 }
 
 void Debugger::Update() {
@@ -89,6 +109,16 @@ void Debugger::Update() {
                 std::cout << " (line " << redundancy.lineNumber << ")";
             }
             std::cout << std::endl;
+        }
+        std::cout << "========================\n";
+    }
+    
+    // Display import error panel
+    if (showImportErrorPanel && !importErrors.empty()) {
+        std::cout << "\n=== IMPORT ERROR PANEL ===\n";
+        for (const auto& error : importErrors) {
+            std::cout << error.importType << " '" << error.filePath << "': " 
+                      << error.message << std::endl;
         }
         std::cout << "========================\n";
     }
