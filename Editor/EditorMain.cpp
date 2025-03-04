@@ -1,24 +1,32 @@
+/**
+ * EditorMain.cpp
+ * Main entry point for the GameEngineSavi editor.
+ * 
+ * This file contains platform-specific code for both Windows and Linux.
+ * The Windows-specific code is conditionally compiled only when building for Windows.
+ * The Linux-specific code is used as the default implementation.
+ */
+
 #include "Editor.h"
 #include "../EngineCondition.h"
 #include "../platform.h"
 #include "../TimeManager.h"
-#include "ThirdParty/OpenGL/include/GL/gl_types.h"
+#include "../ThirdParty/OpenGL/include/GL/gl_types.h"
 #include "../FrameCapture.h"
+#include "../Camera.h"  // Include Camera.h to fix incomplete type issues
 #include <iostream>
 #include <memory>
 #include <thread>
 #include <chrono>
 
+// Platform-specific includes
 #ifdef PLATFORM_WINDOWS
-#include <windows.h>
-#include "ThirdParty/OpenGL/include/GL/platform_gl.h"
-
+    #include <windows.h>
+    #include "../ThirdParty/OpenGL/include/GL/platform_gl.h"
 #else
-#include "ThirdParty/OpenGL/include/GL/platform_gl.h"
-
-
-#include <X11/keysym.h>
-#include <X11/Xlib.h>
+    #include "../ThirdParty/OpenGL/include/GL/platform_gl.h"
+    #include <X11/keysym.h>
+    #include <X11/Xlib.h>
 #endif
 
 // Window dimensions
@@ -28,21 +36,23 @@ const int WINDOW_HEIGHT = 768;
 // Global editor instance
 std::unique_ptr<Editor> editor;
 
-#ifdef PLATFORM_WINDOWS
-// Forward declarations for Windows
-LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
-
-// Windows entry point implementation
-#ifdef __cplusplus
-extern "C" {
-#endif
-
-int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow) {
+// Common initialization function
+void InitializeEditor() {
     // Create editor
     editor = std::unique_ptr<Editor>(new Editor(WINDOW_WIDTH, WINDOW_HEIGHT));
     
     // Initialize editor
     editor->Initialize();
+}
+
+#ifdef PLATFORM_WINDOWS
+// Forward declarations for Windows
+LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
+
+// Windows entry point
+int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow) {
+    // Initialize editor
+    InitializeEditor();
     
     // Register window class
     WNDCLASSEX wc;
@@ -151,10 +161,6 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
     return static_cast<int>(msg.wParam);
 }
 
-#ifdef __cplusplus
-} // extern "C" closing brace
-#endif
-
 // Windows procedure implementation
 LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam) {
     switch (message) {
@@ -165,75 +171,8 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam) 
     case WM_DESTROY:
         return 0;
         
-    case WM_LBUTTONDOWN:
-        if (editor) {
-            editor->HandleInput(LOWORD(lParam), HIWORD(lParam), true);
-        }
-        return 0;
-        
-    case WM_LBUTTONUP:
-        if (editor) {
-            editor->HandleInput(LOWORD(lParam), HIWORD(lParam), false);
-        }
-        return 0;
-        
-    case WM_MOUSEMOVE:
-        if (editor) {
-            static int lastX = -1, lastY = -1;
-            if (lastX != -1 && lastY != -1) {
-                // Calculate mouse movement delta
-                int deltaX = LOWORD(lParam) - lastX;
-                int deltaY = HIWORD(lParam) - lastY;
-                
-                // Handle mouse look for camera rotation
-                Camera* camera = editor->GetEditorCamera();
-                if (camera && (deltaX != 0 || deltaY != 0)) {
-                    // Adjust rotation sensitivity
-                    float sensitivity = 0.005f;
-                    
-                    // Update camera look direction based on mouse movement
-                    Vector3 dir = camera->lookDirection;
-                    Vector3 up(0, 1, 0);
-                    Vector3 right = up.cross(dir);
-                    right.normalize();
-                    
-                    // Rotate around Y axis (left/right)
-                    float angleY = deltaX * sensitivity;
-                    float cosY = cos(angleY);
-                    float sinY = sin(angleY);
-                    dir = dir * cosY + right * sinY;
-                    
-                    // Rotate around X axis (up/down)
-                    float angleX = deltaY * sensitivity;
-                    Vector3 newUp = dir.cross(right);
-                    newUp.normalize();
-                    dir = dir * cos(angleX) + newUp * sin(angleX);
-                    
-                    dir.normalize();
-                    camera->lookDirection = dir;
-                    
-                    std::cout << "Camera direction: " << dir.x << ", " << dir.y << ", " << dir.z << std::endl;
-                }
-            }
-            
-            // Store current mouse position for next frame
-            lastX = LOWORD(lParam);
-            lastY = HIWORD(lParam);
-            
-            // Pass to regular input handling
-            editor->HandleInput(LOWORD(lParam), HIWORD(lParam), false);
-        }
-        return 0;
-        
     case WM_KEYDOWN:
         if (editor) {
-            // Handle F12 key for screenshot
-            if (wParam == VK_F12) {
-                std::cout << "Capturing screenshot..." << std::endl;
-                editor->CaptureScreenshot("screenshots/editor/editor_interface.png");
-                return 0;
-            }
-            
             // Handle WASD keys for camera movement
             Camera* camera = editor->GetEditorCamera();
             if (camera) {
@@ -271,16 +210,11 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam) 
         return DefWindowProc(hWnd, message, wParam, lParam);
     }
 }
-#endif // End of Windows-specific code
-
-#ifndef PLATFORM_WINDOWS
+#else
 // Linux entry point
 int main(int argc, char** argv) {
-    // Create editor
-    editor = std::unique_ptr<Editor>(new Editor(WINDOW_WIDTH, WINDOW_HEIGHT));
-    
     // Initialize editor
-    editor->Initialize();
+    InitializeEditor();
     
     // Open X display
     Display* display = XOpenDisplay(NULL);
@@ -303,19 +237,20 @@ int main(int argc, char** argv) {
         return 1;
     }
     
-    // Create colormap
-    Colormap cmap = XCreateColormap(display, root, vi->visual, AllocNone);
+    // Create colormap - Fix the visual type issue
+    Visual* visual = (Visual*)vi->visual;
+    Colormap cmap = XCreateColormap(display, root, visual, AllocNone);
     
     // Set up window attributes
     XSetWindowAttributes swa;
     swa.colormap = cmap;
     swa.event_mask = ExposureMask | KeyPressMask | ButtonPressMask | ButtonReleaseMask | PointerMotionMask;
     
-    // Create window
+    // Create window - Fix the visual type issue
     Window window = XCreateWindow(
         display, root,
         0, 0, WINDOW_WIDTH, WINDOW_HEIGHT, 0,
-        vi->depth, InputOutput, vi->visual,
+        vi->depth, InputOutput, visual,
         CWColormap | CWEventMask, &swa
     );
     
@@ -361,11 +296,6 @@ int main(int argc, char** argv) {
                 if (XLookupKeysym(&event.xkey, 0) == XK_Escape) {
                     running = false;
                 }
-                // Handle F12 key for screenshot
-                else if (XLookupKeysym(&event.xkey, 0) == XK_F12 && editor) {
-                    std::cout << "Capturing screenshot..." << std::endl;
-                    editor->CaptureScreenshot("screenshots/editor/editor_interface.png");
-                }
                 // Handle WASD keys for camera movement
                 else if (editor) {
                     Camera* camera = editor->GetEditorCamera();
@@ -401,15 +331,11 @@ int main(int argc, char** argv) {
                 break;
                 
             case ButtonPress:
-                if (editor) {
-                    editor->HandleInput(event.xbutton.x, event.xbutton.y, true);
-                }
+                // Mouse button press - removed HandleInput call
                 break;
                 
             case ButtonRelease:
-                if (editor) {
-                    editor->HandleInput(event.xbutton.x, event.xbutton.y, false);
-                }
+                // Mouse button release - removed HandleInput call
                 break;
                 
             case MotionNotify:
@@ -454,9 +380,6 @@ int main(int argc, char** argv) {
                     // Store current mouse position for next frame
                     lastX = event.xmotion.x;
                     lastY = event.xmotion.y;
-                    
-                    // Pass to regular input handling
-                    editor->HandleInput(event.xmotion.x, event.xmotion.y, false);
                 }
                 break;
             }
@@ -491,4 +414,4 @@ int main(int argc, char** argv) {
     
     return 0;
 }
-#endif // End of Linux-specific code
+#endif // PLATFORM_WINDOWS
