@@ -25,9 +25,15 @@ public:
     void SetSelectedGameObject(GameObject* gameObject);
     GameObject* GetSelectedGameObject() const { return selectedGameObject; }
     
+    static Editor* GetInstance() { return instance; }
+    
+    void Initialize();
+    
 private:
     int width;
     int height;
+    
+    static Editor* instance;
     
     Camera* editorCamera;
     Scene* scene;

@@ -335,15 +335,15 @@ void Scene::SetGlobalShaderUniforms(ShaderProgram* program) {
 
     // Set time uniforms
     if (time) {
-        ShaderProgram::SetUniform("time", time->GetTime());
-        ShaderProgram::SetUniform("deltaTime", time->GetDeltaTime());
+        program->SetUniform("time", time->GetTime());
+        program->SetUniform("deltaTime", time->GetDeltaTime());
     }
 
     // Set camera uniforms
     if (mainCamera) {
-         program::SetUniform("viewMatrix", mainCamera->GetViewMatrix());
-         program::SetUniform("projectionMatrix", mainCamera->GetProjectionMatrix());
-         program::SetUniform("cameraPosition", mainCamera->GetPosition());
+         program->SetUniform("viewMatrix", mainCamera->GetViewMatrix());
+         program->SetUniform("projectionMatrix", mainCamera->GetProjectionMatrix());
+         program->SetUniform("cameraPosition", mainCamera->GetPosition());
     }
 
     // Set light uniforms
@@ -367,14 +367,14 @@ void Scene::UpdateLightUniforms(ShaderProgram* program) {
 
     // Set point light uniforms
     int pointLightCount = std::min((int)pointLights.size(), 8); // Limit to 8 point lights
-     program::SetUniform("pointLightCount", pointLightCount);
+     program->SetUniform("pointLightCount", pointLightCount);
 
     for (int i = 0; i < pointLightCount; i++) {
         std::string prefix = "pointLights[" + std::to_string(i) + "].";
-         program::SetUniform(prefix + "position", pointLights[i].position);
-         program::SetUniform(prefix + "color", pointLights[i].color);
-         program::SetUniform(prefix + "intensity", pointLights[i].intensity);
-         program::SetUniform(prefix + "range", pointLights[i].range);
+         program->SetUniform(prefix + "position", pointLights[i].position);
+         program->SetUniform(prefix + "color", pointLights[i].color);
+         program->SetUniform(prefix + "intensity", pointLights[i].intensity);
+         program->SetUniform(prefix + "range", pointLights[i].range);
     }
 }
 

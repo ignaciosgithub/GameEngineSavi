@@ -1,6 +1,7 @@
 #pragma once
 
 #include "../Vector3.h"
+#include "ThirdParty/OpenGL/include/GL/platform_gl.h"
 
 class SceneViewPanel {
 public:

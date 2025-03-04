@@ -1,4 +1,5 @@
 #include "Model.h"
+#include "PointLight.h"
 #include <iostream>
 #include <fstream>
 #include <sstream>
@@ -88,8 +89,8 @@ void Model::Render(const std::vector<PointLight>& lights) {
     // Use shader program
     shaderProgram->Use();
     
-    // Set number of lights (avoid using lights.size() directly)
-    int numLights = 0; // Default to 0 lights
+    // Set number of lights
+    int numLights = lights.size(); // Use actual light count
     shaderProgram->SetUniform("numLights", numLights);
     
     // Bind textures if available
