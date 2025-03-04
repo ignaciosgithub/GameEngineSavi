@@ -1,8 +1,10 @@
 #include "Shader.h"
 #include "ShaderError.h"
+#include "../../Debugger.h"
 #include <iostream>
 #include <fstream>
 #include <sstream>
+#include <stdexcept>
 
 // Constructor
 Shader::Shader(Type type) : type(type), handle(0) {
@@ -20,22 +22,23 @@ Shader::~Shader() {
 
 // Load shader from file
 bool Shader::LoadFromFile(const std::string& filename) {
-    // Open the file
-    std::ifstream file(filename);
-    if (!file.is_open()) {
-        std::cerr << "Error: Could not open shader file: " << filename << std::endl;
-        return false;
-    }
-    
-    // Read the file contents
-    std::stringstream buffer;
-    buffer << file.rdbuf();
-    
-    // Close the file
-    file.close();
-    
-    // Load the shader from the string
-    return LoadFromString(buffer.str());
+    return Debugger::GetInstance().TryImport([&]() -> bool {
+        // Open the file
+        std::ifstream file(filename);
+        if (!file.is_open()) {
+            throw std::runtime_error("Could not open shader file: " + filename);
+        }
+        
+        // Read the file contents
+        std::stringstream buffer;
+        buffer << file.rdbuf();
+        
+        // Close the file
+        file.close();
+        
+        // Load the shader from the string
+        return LoadFromString(buffer.str());
+    }, filename, "shader");
 }
 
 // Load shader from string

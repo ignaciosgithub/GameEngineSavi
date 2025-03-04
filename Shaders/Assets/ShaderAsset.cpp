@@ -1,6 +1,8 @@
 #include "ShaderAsset.h"
 #include "../Core/ShaderError.h"
+#include "../../Debugger.h"
 #include <iostream>
+#include <stdexcept>
 
 namespace Shaders {
 
@@ -22,89 +24,73 @@ ShaderProgram* ShaderAsset::LoadProgram(const std::string& vertPath,
         return it->second;
     }
     
-    // Create new shader program
-    ShaderProgram* program = new ShaderProgram();
-    
-    // Create and compile vertex shader
-    Shader* vertexShader = new Shader(Shader::VERTEX);
-    if (!vertexShader->LoadFromFile(vertPath)) {
-        std::cerr << "Failed to load vertex shader from " << vertPath << std::endl;
-        delete vertexShader;
-        delete program;
-        return nullptr;
-    }
-    
-    if (!vertexShader->Compile()) {
-        std::cerr << "Failed to compile vertex shader: " << vertexShader->GetError() << std::endl;
-        delete vertexShader;
-        delete program;
-        return nullptr;
-    }
-    
-    // Create and compile fragment shader
-    Shader* fragmentShader = new Shader(Shader::FRAGMENT);
-    if (!fragmentShader->LoadFromFile(fragPath)) {
-        std::cerr << "Failed to load fragment shader from " << fragPath << std::endl;
-        delete vertexShader;
-        delete fragmentShader;
-        delete program;
-        return nullptr;
-    }
-    
-    if (!fragmentShader->Compile()) {
-        std::cerr << "Failed to compile fragment shader: " << fragmentShader->GetError() << std::endl;
-        delete vertexShader;
-        delete fragmentShader;
-        delete program;
-        return nullptr;
-    }
-    
-    // Attach shaders to program
-    program->AttachShader(vertexShader);
-    program->AttachShader(fragmentShader);
-    
-    // Create and compile geometry shader if provided
-    Shader* geometryShader = nullptr;
-    if (!geomPath.empty()) {
-        geometryShader = new Shader(Shader::GEOMETRY);
-        if (!geometryShader->LoadFromFile(geomPath)) {
-            std::cerr << "Failed to load geometry shader from " << geomPath << std::endl;
-            delete vertexShader;
-            delete fragmentShader;
-            delete geometryShader;
-            delete program;
-            return nullptr;
+    // Use TryImport to handle errors
+    ShaderProgram* program = nullptr;
+    bool success = Debugger::GetInstance().TryImport([&]() -> bool {
+        // Create new shader program
+        program = new ShaderProgram();
+        
+        // Create and compile vertex shader
+        Shader* vertexShader = new Shader(Shader::VERTEX);
+        if (!vertexShader->LoadFromFile(vertPath)) {
+            throw std::runtime_error("Failed to load vertex shader from " + vertPath);
         }
         
-        if (!geometryShader->Compile()) {
-            std::cerr << "Failed to compile geometry shader: " << geometryShader->GetError() << std::endl;
-            delete vertexShader;
-            delete fragmentShader;
-            delete geometryShader;
-            delete program;
-            return nullptr;
+        if (!vertexShader->Compile()) {
+            throw std::runtime_error("Failed to compile vertex shader: " + vertexShader->GetError());
         }
         
-        program->AttachShader(geometryShader);
-    }
+        // Create and compile fragment shader
+        Shader* fragmentShader = new Shader(Shader::FRAGMENT);
+        if (!fragmentShader->LoadFromFile(fragPath)) {
+            delete vertexShader;
+            throw std::runtime_error("Failed to load fragment shader from " + fragPath);
+        }
+        
+        if (!fragmentShader->Compile()) {
+            delete vertexShader;
+            throw std::runtime_error("Failed to compile fragment shader: " + fragmentShader->GetError());
+        }
+        
+        // Attach shaders to program
+        program->AttachShader(vertexShader);
+        program->AttachShader(fragmentShader);
+        
+        // Create and compile geometry shader if provided
+        Shader* geometryShader = nullptr;
+        if (!geomPath.empty()) {
+            geometryShader = new Shader(Shader::GEOMETRY);
+            if (!geometryShader->LoadFromFile(geomPath)) {
+                throw std::runtime_error("Failed to load geometry shader from " + geomPath);
+            }
+            
+            if (!geometryShader->Compile()) {
+                throw std::runtime_error("Failed to compile geometry shader: " + geometryShader->GetError());
+            }
+            
+            program->AttachShader(geometryShader);
+        }
+        
+        // Link program
+        if (!program->Link()) {
+            throw std::runtime_error("Failed to link shader program: " + program->GetError());
+        }
+        
+        // Store in cache
+        shaderPrograms[key] = program;
+        
+        // Log success
+        std::cout << "Shader program loaded successfully: " << key << std::endl;
+        
+        return true;
+    }, key, "shader program");
     
-    // Link program
-    if (!program->Link()) {
-        std::cerr << "Failed to link shader program: " << program->GetError() << std::endl;
-        delete vertexShader;
-        delete fragmentShader;
-        if (geometryShader) delete geometryShader;
+    if (!success && program != nullptr) {
         delete program;
-        return nullptr;
+        program = nullptr;
     }
     
-    // Store in cache
-    shaderPrograms[key] = program;
-    
-    // Log success
-    std::cout << "Shader program loaded successfully: " << key << std::endl;
-    
-    return program;
+    return success ? shaderPrograms[key] : nullptr;
 }
 
 ShaderProgram* ShaderAsset::GetProgram(const std::string& name) {
