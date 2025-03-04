@@ -21,7 +21,7 @@ public:
      * @brief Reads the current frame buffer
      * @param width Output parameter for the width of the frame buffer
      * @param height Output parameter for the height of the frame buffer
-     * @return The pixel data as a vector of unsigned chars (RGBA format)
+     * @return The pixel data as a vector of unsigned chars (RGB format)
      */
     static std::vector<unsigned char> ReadFrameBuffer(int& width, int& height);
 };
