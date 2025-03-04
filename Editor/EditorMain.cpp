@@ -27,6 +27,57 @@
     #include "../ThirdParty/OpenGL/include/GL/platform_gl.h"
     #include <X11/keysym.h>
     #include <X11/Xlib.h>
+    
+    // Define Windows types for Linux compilation
+    #ifndef WINAPI
+    #define WINAPI
+    #endif
+    
+    #ifndef CALLBACK
+    #define CALLBACK
+    #endif
+    
+    // Define Windows types and constants for Linux compilation
+    #ifndef HWND
+    typedef void* HWND;
+    #endif
+    
+    #ifndef UINT
+    typedef unsigned int UINT;
+    #endif
+    
+    #ifndef WPARAM
+    typedef unsigned int WPARAM;
+    #endif
+    
+    #ifndef LPARAM
+    typedef void* LPARAM;
+    #endif
+    
+    #ifndef LRESULT
+    typedef long LRESULT;
+    #endif
+    
+    #ifndef HINSTANCE
+    typedef void* HINSTANCE;
+    #endif
+    
+    #ifndef LPSTR
+    typedef char* LPSTR;
+    #endif
+    
+    // Define Windows message constants
+    #ifndef WM_CLOSE
+    #define WM_CLOSE 0x0010
+    #endif
+    
+    #ifndef WM_DESTROY
+    #define WM_DESTROY 0x0002
+    #endif
+    
+    #ifndef WM_KEYDOWN
+    #define WM_KEYDOWN 0x0100
+    #endif
 #endif
 
 // Window dimensions
