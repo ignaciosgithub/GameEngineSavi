@@ -40,6 +40,7 @@ g++ -std=c++11 -o bin/linux/Editor_emergency_png \
     RedundancyDetector.cpp \
     -I. \
     -IThirdParty/OpenGL/include \
+    -IThirdParty/stb \
     -DGL_GLEXT_PROTOTYPES \
     -lGL -lGLU -lglut -lX11
 
