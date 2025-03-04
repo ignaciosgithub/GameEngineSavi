@@ -19,8 +19,22 @@ private:
             : message(msg), scriptName(script), functionName(func), lineNumber(line) {}
     };
     
+    // New structure for tracking redundant declarations
+    struct RedundancyInfo {
+        std::string fileName;
+        std::string symbolName;
+        std::string type;  // "class", "method", "type", "include"
+        int lineNumber;
+        
+        RedundancyInfo(const std::string& file, const std::string& symbol, 
+                      const std::string& t, int line)
+            : fileName(file), symbolName(symbol), type(t), lineNumber(line) {}
+    };
+    
     std::vector<ScriptError> errors;
+    std::vector<RedundancyInfo> redundancies;  // Track redundant declarations
     bool showErrorPanel;
+    bool showRedundancyPanel;  // New flag for redundancy panel
     static Debugger* instance;
     
     Debugger();  // Private constructor for singleton
@@ -35,14 +49,27 @@ public:
     // Log a simple error message
     void LogError(const std::string& message);
     
+    // New method to log redundant declarations
+    void LogRedundancy(const std::string& fileName, const std::string& symbolName,
+                      const std::string& type, int lineNumber);
+    
     // Clear all logged errors
     void ClearErrors();
+    
+    // Clear all logged redundancies
+    void ClearRedundancies();
     
     // Get all current errors
     const std::vector<ScriptError>& GetErrors() const;
     
+    // Get all current redundancies
+    const std::vector<RedundancyInfo>& GetRedundancies() const;
+    
     // Update error display
     void Update();
+    
+    // New method to check for redundant declarations in the codebase
+    void CheckForRedundancies();
     
     // Try-catch wrapper for script execution
     template<typename Func>
