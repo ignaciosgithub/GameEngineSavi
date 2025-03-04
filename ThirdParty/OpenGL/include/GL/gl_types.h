@@ -121,7 +121,7 @@ typedef void GLvoid;
     inline LRESULT DispatchMessage(void*) { return 0; }
     inline BOOL PeekMessage(void*, HWND, UINT, UINT, UINT) { return FALSE; }
     inline HWND CreateWindow(const char*, const char*, DWORD, int, int, int, int, HWND, void*, HINSTANCE, void*) { return nullptr; }
-    inline BOOL ShowWindow(HWND, int) { return TRUE; }
+    // Removed ShowWindow to avoid linkage conflicts with Windows API
     inline BOOL UpdateWindow(HWND) { return TRUE; }
     inline HDC GetDC(HWND) { return nullptr; }
     inline BOOL RegisterClassEx(void*) { return TRUE; }
