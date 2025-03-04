@@ -126,3 +126,15 @@ void Model::Render(const std::vector<PointLight>& lights) {
         opacityTexture->unbind();
     }
 }
+
+// Draw model (compatibility method)
+void Model::draw(const std::vector<PointLight>& pointLights) {
+    // Call the Render method for compatibility
+    Render(pointLights);
+}
+
+// Draw model (compatibility method)
+void Model::drawcomp(const std::vector<PointLight>& pointLights) {
+    // Call the Render method for compatibility
+    Render(pointLights);
+}

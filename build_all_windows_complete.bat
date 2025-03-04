@@ -191,6 +191,48 @@ if exist build_tilted_navmesh_demo.bat (
     )
 )
 
+REM Build the editor
+echo Building Editor...
+g++ %CFLAGS% %INCLUDES% -o bin\windows\editor.exe ^
+    Editor\EditorMain.cpp ^
+    Editor\Editor.cpp ^
+    Editor\HierarchyPanel.cpp ^
+    Editor\InspectorPanel.cpp ^
+    Editor\ProjectPanel.cpp ^
+    Editor\SceneViewPanel.cpp ^
+    Editor\Vector3Field.cpp ^
+    Editor\TextField.cpp ^
+    GameObject.cpp ^
+    Vector3.cpp ^
+    Matrix4x4.cpp ^
+    Camera.cpp ^
+    Model.cpp ^
+    MonoBehaviourLike.cpp ^
+    TimeManager.cpp ^
+    Raycast.cpp ^
+    RigidBody.cpp ^
+    CollisionSystem.cpp ^
+    PhysicsSystem.cpp ^
+    Scene.cpp ^
+    PointLight.cpp ^
+    CameraManager.cpp ^
+    Shaders\Core\ShaderProgram.cpp ^
+    Shaders\Core\Shader.cpp ^
+    Shaders\Core\ShaderError.cpp ^
+    Texture.cpp ^
+    EngineCondition.cpp ^
+    FrameCapture.cpp ^
+    ProjectSettings\ProjectSettings.cpp ^
+    ProjectSettings\ProjectManager.cpp ^
+    Profiler.cpp ^
+    -DGL_GLEXT_PROTOTYPES ^
+    -lopengl32 -lglu32 -lglut32
+if %ERRORLEVEL% NEQ 0 (
+    echo Warning: Editor build failed, but continuing...
+) else (
+    echo Editor build successful.
+)
+
 echo Build process completed.
 echo Note: Some components may have failed to compile, but the build process continued.
 echo Check the output above for any warnings or errors.
