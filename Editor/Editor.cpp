@@ -9,16 +9,22 @@
 #include "../EngineCondition.h"
 #include <iostream>
 
+// Initialize static instance
+Editor* Editor::instance = nullptr;
+
 Editor::Editor(int width, int height) : width(width), height(height), selectedGameObject(nullptr) {
     std::cout << "Creating editor..." << std::endl;
+    
+    // Set instance
+    instance = this;
     
     // Set engine condition to editor mode
     EngineCondition::SetInEditor(true);
     
     // Create editor camera
     editorCamera = new Camera();
-    editorCamera->SetPosition(Vector3(0, 2, -5));
-    editorCamera->SetRotation(Vector3(15, 0, 0));
+    editorCamera->SetPosition(Vector3(0, 2, 5));
+    editorCamera->LookAt(Vector3(0, 0, 0));
     
     // Create panels
     hierarchyPanel = new HierarchyPanel(0, 0, 200, height);
@@ -76,6 +82,13 @@ Editor::~Editor() {
     EngineCondition::SetInEditor(false);
     
     std::cout << "Editor destroyed successfully." << std::endl;
+}
+
+void Editor::Initialize() {
+    // Create default objects in the scene
+    if (scene) {
+        scene->CreateDefaultObjects();
+    }
 }
 
 void Editor::Update(float deltaTime) {
