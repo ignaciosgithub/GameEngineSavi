@@ -20,7 +20,8 @@
 #include <chrono>
 
 // Platform-specific includes
-#ifdef PLATFORM_WINDOWS
+#ifdef _WIN32
+    #define PLATFORM_WINDOWS
     #include <windows.h>
     #include "../ThirdParty/OpenGL/include/GL/platform_gl.h"
 #else
