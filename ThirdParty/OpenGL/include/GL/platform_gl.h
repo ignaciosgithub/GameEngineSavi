@@ -1,8 +1,16 @@
 #pragma once
 
-#include "gl_types.h"
+// Define WIN32_LEAN_AND_MEAN and NOMINMAX before including any Windows headers
+#ifndef WIN32_LEAN_AND_MEAN
+    #define WIN32_LEAN_AND_MEAN
+#endif
 
-#ifdef PLATFORM_WINDOWS
+#ifndef NOMINMAX
+    #define NOMINMAX
+#endif
+
+// Include Windows headers first on Windows platforms
+#ifdef _WIN32
     #include <windows.h>
     #include <gl/gl.h>
     #include <gl/glu.h>
@@ -12,6 +20,9 @@
     #include <GL/glu.h>
     #include <GL/glext.h>
 #endif
+
+// Then include gl_types.h
+#include "gl_types.h"
 
 // OpenGL function declarations
 // These are defined here to ensure they're available across the codebase
