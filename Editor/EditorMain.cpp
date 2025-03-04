@@ -264,6 +264,10 @@ int main(int argc, char** argv) {
     GLXContext context = glXCreateContext(display, vi, NULL, GL_TRUE);
     glXMakeCurrent(display, window, context);
     
+    // Force software rendering
+    putenv((char*)"LIBGL_ALWAYS_SOFTWARE=1");
+    std::cout << "Forcing software rendering" << std::endl;
+    
     // Set up OpenGL for 3D rendering
     glEnable(GL_DEPTH_TEST);
     glEnable(GL_CULL_FACE);
