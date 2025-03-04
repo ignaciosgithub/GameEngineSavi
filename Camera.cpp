@@ -1,12 +1,4 @@
-#include"Vector3.h"
-class Camera
-{
-public:
-    Vector3 position;
-    Vector3 lookDirection;
-    float fieldOfView;
-   
-    Camera() : position(0, 0, 0), lookDirection(0, 1, -1), fieldOfView(90){}
-   
-    Camera(Vector3 pos, Vector3 dir, float fov) : position(pos), lookDirection(dir), fieldOfView(fov) {}
-};
+#include "Camera.h"
+
+// Implementation of Camera methods that need implementation
+// No class redefinition needed as it's already defined in Camera.h

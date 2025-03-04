@@ -6,9 +6,14 @@
 class Camera {
 public:
     Camera() : position(0, 0, 0), rotation(0, 0, 0), scale(1, 1, 1), 
-               fieldOfView(60.0f), aspectRatio(16.0f / 9.0f), nearPlane(0.1f), farPlane(1000.0f),
-               viewportX(0.0f), viewportY(0.0f), viewportWidth(1.0f), viewportHeight(1.0f),
-               enabled(true) {}
+               lookDirection(0, 0, -1), fieldOfView(60.0f), aspectRatio(16.0f / 9.0f), 
+               nearPlane(0.1f), farPlane(1000.0f), viewportX(0.0f), viewportY(0.0f), 
+               viewportWidth(1.0f), viewportHeight(1.0f), enabled(true) {}
+               
+    // Constructor for compatibility with previous Camera.cpp definition
+    Camera(Vector3 pos, Vector3 dir, float fov) : position(pos), lookDirection(dir), fieldOfView(fov),
+               rotation(0, 0, 0), scale(1, 1, 1), aspectRatio(16.0f / 9.0f), nearPlane(0.1f), farPlane(1000.0f),
+               viewportX(0.0f), viewportY(0.0f), viewportWidth(1.0f), viewportHeight(1.0f), enabled(true) {}
     
     // Position
     void SetPosition(const Vector3& position) { this->position = position; }
