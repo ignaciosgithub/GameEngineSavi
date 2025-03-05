@@ -306,21 +306,19 @@ typedef unsigned long long UINT_PTR;
 #ifndef __stdcall
 #define __stdcall
 #endif
-#endif // End of PLATFORM_WINDOWS block for Windows types
 
-#ifdef PLATFORM_WINDOWS
 // Forward declarations for Windows-specific functions
 LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
 void EnableOpenGL(HWND hWnd, HDC* hDC, HGLRC* hRC);
 void DisableOpenGL(HWND hWnd, HDC hDC, HGLRC hRC);
-#endif
+#endif // End of PLATFORM_WINDOWS block for Windows types
 
 /**************************
  * Main Entry Point
  **************************/
 
-#ifdef PLATFORM_WINDOWS
 // Platform-specific main function declarations
+#ifdef PLATFORM_WINDOWS
 int WinMain(void* hInstance, void* hPrevInstance, char* lpCmdLine, int iCmdShow)
 #else
 int main(int argc, char** argv)
