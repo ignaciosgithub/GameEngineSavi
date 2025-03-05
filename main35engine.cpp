@@ -51,7 +51,6 @@ inline float toRadians(float degrees) {
 // Global GUI instance
 std::unique_ptr<GUI> gui;
 
-// Forward declarations for Windows-specific types and functions
 #ifdef PLATFORM_WINDOWS
 // Define Windows types if not already defined
 #ifndef HWND
@@ -307,10 +306,11 @@ int WinMain(void* hInstance,
             void* hPrevInstance,
             char* lpCmdLine,
             int iCmdShow)
+{
 #else
 int main(int argc, char** argv)
-#endif
 {
+#endif
     // Set the initial engine condition based on command line arguments
     // This would normally be set by the editor or build system
     #ifdef DEBUG_BUILD
