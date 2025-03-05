@@ -5,6 +5,16 @@
 #include <chrono>
 #include "EngineCondition.h"
 #include "Scene_includes.h"
+#include "platform.h"
+
+// Platform-specific OpenGL includes
+#ifdef PLATFORM_WINDOWS
+#include <windows.h>
+#include <gl/gl.h>
+#else
+#include <GL/gl.h>
+#endif
+
 // GameObject extensions included via GameObject.h
 
 void Scene::Initialize() {

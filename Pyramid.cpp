@@ -1,12 +1,20 @@
-#include <gl/gl.h>
-#include <GL/glu.h>
+#include "platform.h"
+
+// Platform-specific OpenGL includes
+#ifdef PLATFORM_WINDOWS
 #include <windows.h>
 #include <gl/gl.h>
+#include <gl/glu.h>
+#else
+#include <GL/gl.h>
+#include <GL/glu.h>
+#endif
+
 #include "Vector3.h"
-#include"Matrix4x4.h"
-#include<vector>
-#include"Triangle.h"
-#include"Face.h"
+#include "Matrix4x4.h"
+#include <vector>
+#include "Triangle.h"
+#include "Face.h"
 
 class Pyramid
 {
