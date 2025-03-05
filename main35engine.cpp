@@ -318,10 +318,11 @@ void DisableOpenGL(HWND hWnd, HDC hDC, HGLRC hRC);
  **************************/
 
 // Platform-specific main function declarations
+int 
 #ifdef PLATFORM_WINDOWS
-int WinMain(void* hInstance, void* hPrevInstance, char* lpCmdLine, int iCmdShow)
+WinMain(void* hInstance, void* hPrevInstance, char* lpCmdLine, int iCmdShow)
 #else
-int main(int argc, char** argv)
+main(int argc, char** argv)
 #endif
 {
     // Set the initial engine condition based on command line arguments
