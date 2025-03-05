@@ -1449,6 +1449,84 @@ The frame viewer provides the following features:
 
 This on-disk rendering flow is ideal for virtual machines and remote development environments where direct display access is limited or unavailable.
 
+## Running in Headless Environments
+
+GameEngineSavi includes support for running in headless environments (without a display) using the Enhanced Emergency Editor. This is useful for virtual machines, remote servers, or CI/CD pipelines.
+
+### Checking for Headless Environment
+
+Before attempting to run the engine in a headless environment, you can check if your environment is headless:
+
+```bash
+# Check if you're in a headless environment
+./check_headless_environment.sh
+```
+
+This script will:
+- Check if the DISPLAY environment variable is set
+- Verify that required OpenGL libraries are installed
+- Provide guidance on how to run in headless mode if needed
+
+### Building and Running in Headless Mode
+
+To build and run the engine in a headless environment:
+
+```bash
+# Build the enhanced emergency editor
+./build_enhanced_emergency_editor.sh
+
+# Run the enhanced emergency editor in headless mode
+./run_enhanced_emergency_editor_headless.sh
+```
+
+The `run_enhanced_emergency_editor_headless.sh` script:
+- Automatically installs Xvfb if not already installed
+- Creates a virtual framebuffer
+- Runs the enhanced emergency editor with the virtual display
+- Generates frames in the `frames` directory
+
+### Viewing Generated Frames
+
+After running the enhanced emergency editor in headless mode, you can view the generated frames using:
+
+```bash
+# Install pygame if not already installed
+pip install pygame
+
+# Run the frame viewer
+python frame_reader.py
+```
+
+### Troubleshooting Headless Environments
+
+If you encounter issues running the engine in a headless environment, try the following:
+
+1. Install Xvfb (virtual framebuffer):
+   ```bash
+   sudo apt-get install xvfb
+   ```
+
+2. Run applications with Xvfb manually:
+   ```bash
+   Xvfb :1 -screen 0 1024x768x24 &
+   DISPLAY=:1 ./bin/linux/EnhancedEmergencyEditor
+   ```
+
+3. Use X11 forwarding if connecting via SSH:
+   ```bash
+   ssh -X user@host
+   ```
+
+4. Set up a remote display:
+   ```bash
+   export DISPLAY=remote_host:0.0
+   ```
+
+5. Check OpenGL library installation:
+   ```bash
+   sudo apt-get install libglew-dev libglut3-dev libgl1-mesa-dev libglu1-mesa-dev libx11-dev
+   ```
+
 ## DirectX Implementation
 
 The GameEngineSavi engine now includes a DirectX implementation for Windows builds. This allows the engine to use DirectX for rendering on Windows platforms while still using OpenGL on Linux platforms.

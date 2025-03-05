@@ -52,16 +52,13 @@ if [ $? -eq 0 ]; then
     echo "Enhanced emergency editor build successful."
     chmod +x bin/linux/EnhancedEmergencyEditor
     
-    # Run the enhanced emergency editor to generate frames
-    echo "Running enhanced emergency editor to generate frames..."
-    ./bin/linux/EnhancedEmergencyEditor
-    
-    # Check if frames were generated
-    if [ -d "frames" ] && [ "$(ls -A frames)" ]; then
-        echo "Frames generated successfully."
-        echo "You can view the frames using the pygame frame reader."
+    # Check if we're in a headless environment
+    if [ -z "$DISPLAY" ]; then
+        echo "Warning: No display detected. Running the editor may fail in a headless environment."
+        echo "You can still run the editor manually with: ./bin/linux/EnhancedEmergencyEditor"
     else
-        echo "No frames were generated. Check the enhanced emergency editor output for errors."
+        echo "To run the enhanced emergency editor and generate frames, use:"
+        echo "./bin/linux/EnhancedEmergencyEditor"
     fi
 else
     echo "Enhanced emergency editor build failed."
