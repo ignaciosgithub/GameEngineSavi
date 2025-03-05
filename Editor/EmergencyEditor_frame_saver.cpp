@@ -61,12 +61,12 @@ void InitializeEditor() {
     system("mkdir -p frames");
     
     // Set engine condition to editor mode
-    EngineCondition::SetInEditor(true);
+    EngineCondition::isInEditor = true;
 }
 
 #ifdef PLATFORM_WINDOWS
 // Windows entry point
-int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow) {
+int WinMain(void* hInstance, void* hPrevInstance, char* lpCmdLine, int nCmdShow) {
     std::cout << "Starting emergency editor frame saver on Windows..." << std::endl;
     
     // Initialize editor

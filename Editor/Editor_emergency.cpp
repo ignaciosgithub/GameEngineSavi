@@ -67,7 +67,7 @@ void InitializeEditor() {
 
 #ifdef PLATFORM_WINDOWS
 // Windows entry point
-int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow) {
+int WinMain(void* hInstance, void* hPrevInstance, char* lpCmdLine, int nCmdShow) {
     std::cout << "Starting emergency renderer on Windows..." << std::endl;
     
     // Initialize editor
