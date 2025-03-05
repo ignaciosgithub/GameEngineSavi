@@ -30,10 +30,11 @@ echo "Building editor..."
 g++ -o build/editor \
     $EXISTING_CPP_FILES \
     -std=c++11 \
+    -DGLEW_STATIC \
     -I. \
     -IThirdParty/OpenGL/include \
     -DGL_GLEXT_PROTOTYPES \
-    -lGL -lGLU -lglut -lX11
+    -lGLEW -lGL -lGLU -lglut -lX11
 
 # Check if build was successful
 if [ $? -eq 0 ]; then

@@ -1,8 +1,19 @@
 #include "Model.h"
 #include "platform.h"
 
+// Define GLEW_STATIC before including glew.h
+#define GLEW_STATIC
+
 // Include OpenGL headers in the correct order
-#include "ThirdParty/OpenGL/include/GL/platform_gl.h"
+#include <GL/glew.h>
+
+// Platform-specific OpenGL includes
+#ifdef PLATFORM_WINDOWS
+#include <windows.h>
+#include <gl/gl.h>
+#else
+#include <GL/gl.h>
+#endif
 
 #include <iostream>
 #include <fstream>

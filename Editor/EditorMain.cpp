@@ -1,19 +1,29 @@
+// Define GLEW_STATIC before including glew.h
+#define GLEW_STATIC
+
+// Include GLEW first
+#include <GL/glew.h>
+
 #include <iostream>
 #include <string>
 #include <vector>
 #include <GL/gl.h>
 
 #include "EditorMain.h"
-#ifdef USE_MINIMAL_SCENE
-#include "../Scene_minimal.h"
-#else
 #include "../Scene.h"
-#endif
 #include "../GameObject.h"
 #include "../Debugger.h"
 
 int main(int argc, char** argv) {
     std::cout << "Starting Game Engine Editor..." << std::endl;
+    
+    // Initialize GLEW
+    GLenum err = glewInit();
+    if (err != GLEW_OK) {
+        std::cerr << "Error initializing GLEW: " << glewGetErrorString(err) << std::endl;
+        return 1;
+    }
+    std::cout << "GLEW initialized successfully" << std::endl;
     
     // Initialize editor
     InitializeEditor();
