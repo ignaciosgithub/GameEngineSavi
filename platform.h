@@ -8,7 +8,9 @@
     #endif
     
     #define WIN32_LEAN_AND_MEAN
+    #ifndef NOMINMAX
     #define NOMINMAX
+    #endif
     
     // Windows-specific includes
     #include <winsock2.h>
