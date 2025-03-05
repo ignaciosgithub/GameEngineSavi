@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GameEngineSavi Frame Viewer</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #222;
+            color: #fff;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        h1 {
+            margin-bottom: 20px;
+        }
+        .viewer-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            width: 100%;
+            max-width: 1000px;
+        }
+        .frame-container {
+            position: relative;
+            margin-bottom: 20px;
+            border: 2px solid #444;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+        }
+        .frame-image {
+            display: block;
+            max-width: 100%;
+        }
+        .controls {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 20px;
+            width: 100%;
+        }
+        button {
+            background-color: #3498db;
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            margin: 0 5px;
+            cursor: pointer;
+            border-radius: 4px;
+            font-size: 16px;
+        }
+        button:hover {
+            background-color: #2980b9;
+        }
+        button:disabled {
+            background-color: #95a5a6;
+            cursor: not-allowed;
+        }
+        .frame-info {
+            display: flex;
+            justify-content: space-between;
+            width: 100%;
+            margin-bottom: 20px;
+        }
+        .panel-info, .hotkey-info {
+            background-color: #333;
+            padding: 15px;
+            border-radius: 5px;
+            width: 48%;
+        }
+        .panel-info h3, .hotkey-info h3 {
+            margin-top: 0;
+            border-bottom: 1px solid #555;
+            padding-bottom: 5px;
+        }
+        .frame-counter {
+            font-size: 18px;
+            margin-bottom: 10px;
+        }
+        .play-pause {
+            display: flex;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        .play-pause button {
+            margin-right: 10px;
+        }
+        .status {
+            font-weight: bold;
+        }
+        .status.playing {
+            color: #2ecc71;
+        }
+        .status.paused {
+            color: #e74c3c;
+        }
+        pre {
+            background-color: #444;
+            padding: 10px;
+            border-radius: 4px;
+            overflow-x: auto;
+            margin: 0;
+        }
+    </style>
+</head>
+<body>
+    <h1>GameEngineSavi Frame Viewer</h1>
+    
+    <div class="viewer-container">
+        <div class="frame-container">
+            <img id="frameImage" class="frame-image" src="" alt="Frame">
+        </div>
+        
+        <div class="play-pause">
+            <button id="playPauseBtn">Pause</button>
+            <span>Status: <span id="playStatus" class="status playing">Playing</span></span>
+        </div>
+        
+        <div class="frame-counter">
+            Frame: <span id="currentFrame">0</span>/<span id="totalFrames">0</span>
+        </div>
+        
+        <div class="controls">
+            <button id="prevBtn">Previous Frame</button>
+            <button id="nextBtn">Next Frame</button>
+        </div>
+        
+        <div class="frame-info">
+            <div class="panel-info">
+                <h3>Panel Information</h3>
+                <pre id="panelInfo">Loading panel information...</pre>
+            </div>
+            
+            <div class="hotkey-info">
+                <h3>Hotkey State</h3>
+                <pre id="hotkeyInfo">Loading hotkey information...</pre>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // Configuration
+        const frameCount = 10;
+        const frameDelay = 200; // milliseconds between frames
+        
+        // State
+        let currentFrame = 0;
+        let isPlaying = true;
+        let playInterval = null;
+        
+        // DOM Elements
+        const frameImage = document.getElementById('frameImage');
+        const currentFrameEl = document.getElementById('currentFrame');
+        const totalFramesEl = document.getElementById('totalFrames');
+        const playPauseBtn = document.getElementById('playPauseBtn');
+        const playStatus = document.getElementById('playStatus');
+        const prevBtn = document.getElementById('prevBtn');
+        const nextBtn = document.getElementById('nextBtn');
+        const panelInfo = document.getElementById('panelInfo');
+        const hotkeyInfo = document.getElementById('hotkeyInfo');
+        
+        // Initialize
+        function init() {
+            totalFramesEl.textContent = frameCount;
+            loadFrame(0);
+            startPlayback();
+            
+            // Load panel and hotkey info
+            fetch('frames/panel_info.txt')
+                .then(response => response.text())
+                .then(text => {
+                    panelInfo.textContent = text;
+                })
+                .catch(error => {
+                    panelInfo.textContent = 'Error loading panel information: ' + error;
+                });
+            
+            fetch('frames/hotkey_state.txt')
+                .then(response => response.text())
+                .then(text => {
+                    hotkeyInfo.textContent = text;
+                })
+                .catch(error => {
+                    hotkeyInfo.textContent = 'Error loading hotkey information: ' + error;
+                });
+        }
+        
+        // Load a specific frame
+        function loadFrame(frameNumber) {
+            frameImage.src = `frames/frame${frameNumber}.png`;
+            currentFrameEl.textContent = frameNumber;
+            currentFrame = frameNumber;
+            
+            // Update button states
+            prevBtn.disabled = (frameNumber === 0);
+            nextBtn.disabled = (frameNumber === frameCount - 1);
+        }
+        
+        // Start playback
+        function startPlayback() {
+            if (!isPlaying) {
+                isPlaying = true;
+                playStatus.textContent = 'Playing';
+                playStatus.className = 'status playing';
+                playPauseBtn.textContent = 'Pause';
+                
+                playInterval = setInterval(() => {
+                    currentFrame = (currentFrame + 1) % frameCount;
+                    loadFrame(currentFrame);
+                }, frameDelay);
+            }
+        }
+        
+        // Pause playback
+        function pausePlayback() {
+            if (isPlaying) {
+                isPlaying = false;
+                playStatus.textContent = 'Paused';
+                playStatus.className = 'status paused';
+                playPauseBtn.textContent = 'Play';
+                
+                clearInterval(playInterval);
+                playInterval = null;
+            }
+        }
+        
+        // Event Listeners
+        playPauseBtn.addEventListener('click', () => {
+            if (isPlaying) {
+                pausePlayback();
+            } else {
+                startPlayback();
+            }
+        });
+        
+        prevBtn.addEventListener('click', () => {
+            pausePlayback();
+            loadFrame(Math.max(0, currentFrame - 1));
+        });
+        
+        nextBtn.addEventListener('click', () => {
+            pausePlayback();
+            loadFrame(Math.min(frameCount - 1, currentFrame + 1));
+        });
+        
+        // Keyboard controls
+        document.addEventListener('keydown', (event) => {
+            switch (event.key) {
+                case ' ':
+                    if (isPlaying) {
+                        pausePlayback();
+                    } else {
+                        startPlayback();
+                    }
+                    break;
+                case 'ArrowLeft':
+                    pausePlayback();
+                    loadFrame(Math.max(0, currentFrame - 1));
+                    break;
+                case 'ArrowRight':
+                    pausePlayback();
+                    loadFrame(Math.min(frameCount - 1, currentFrame + 1));
+                    break;
+            }
+        });
+        
+        // Initialize on load
+        window.addEventListener('load', init);
+    </script>
+</body>
+</html>
