@@ -4,7 +4,11 @@
 #include <GL/gl.h>
 
 #include "EditorMain.h"
+#ifdef USE_MINIMAL_SCENE
+#include "../Scene_minimal.h"
+#else
 #include "../Scene.h"
+#endif
 #include "../GameObject.h"
 #include "../Debugger.h"
 

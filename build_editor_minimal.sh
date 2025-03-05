@@ -16,6 +16,7 @@ g++ -o build/editor_minimal \
     -std=c++11 \
     -I. \
     -IThirdParty/OpenGL/include \
+    -DUSE_MINIMAL_SCENE \
     -lGL -lX11
 
 # Check if build was successful
