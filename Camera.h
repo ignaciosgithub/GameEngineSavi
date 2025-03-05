@@ -75,6 +75,8 @@ public:
     
     // Update the camera
     void Update(float deltaTime) {
+        // Prevent unused parameter warning
+        (void)deltaTime;
         // Update camera logic here
     }
     
@@ -137,11 +139,12 @@ public:
     }
     
 private:
+    // Reordered to match constructor initialization order
+    Vector3 position;
     Vector3 rotation;
     Vector3 scale;
     
 public:
-    Vector3 position;
     Vector3 lookDirection;
     float fieldOfView;
     float aspectRatio;

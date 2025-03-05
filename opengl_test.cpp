@@ -1,4 +1,9 @@
+// Use system GLUT instead of local GLUT
+#ifdef PLATFORM_WINDOWS
 #include <GL/glut.h>
+#else
+#include <GL/glut.h>
+#endif
 #include <iostream>
 
 void display() {
