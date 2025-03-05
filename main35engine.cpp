@@ -55,9 +55,6 @@ inline float toRadians(float degrees) {
 std::unique_ptr<GUI> gui;
 
 #ifdef PLATFORM_WINDOWS
-#ifndef CALLBACK
-#define CALLBACK __stdcall
-#endif
 // Forward declarations for Windows-specific functions
 LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
 void EnableOpenGL(HWND hWnd, HDC* hDC, HGLRC* hRC);
@@ -70,9 +67,6 @@ void DisableOpenGL(HWND hWnd, HDC hDC, HGLRC hRC);
  **************************/
 
 #ifdef PLATFORM_WINDOWS
-#ifndef CALLBACK
-#define CALLBACK __stdcall
-#endif
 int WINAPI WinMain(HINSTANCE hInstance,
             HINSTANCE hPrevInstance,
             LPSTR lpCmdLine,
@@ -96,9 +90,6 @@ int main(int argc, char** argv)
     // Check for editor mode command line arguments
     // In a real implementation, this would be handled by the editor
     #ifdef PLATFORM_WINDOWS
-#ifndef CALLBACK
-#define CALLBACK __stdcall
-#endif
     if (lpCmdLine && strstr(lpCmdLine, "-editor")) {
         EngineCondition::isInEditor = true;
         std::cout << "Starting in editor mode" << std::endl;
@@ -136,9 +127,6 @@ int main(int argc, char** argv)
     gui->AddElement(std::move(editorPanel));
 
     #ifdef PLATFORM_WINDOWS
-#ifndef CALLBACK
-#define CALLBACK __stdcall
-#endif
     WNDCLASS wc = {};
     HWND hWnd;
     HDC hDC;
@@ -241,9 +229,6 @@ int main(int argc, char** argv)
 }
 
 #ifdef PLATFORM_WINDOWS
-#ifndef CALLBACK
-#define CALLBACK __stdcall
-#endif
 /********************
  * Window Procedure
  *
