@@ -4,34 +4,46 @@
 #include "Vector3.h"
 
 class PointLight {
-public:
+private:
     Vector3 position;
     Vector3 color;
     float intensity;
     float range;
     
-    PointLight() : position(0, 0, 0), color(1, 1, 1), intensity(1.0f), range(10.0f) {}
+public:
+    // Constructor
+    PointLight() : position(0.0f, 0.0f, 0.0f), color(1.0f, 1.0f, 1.0f), intensity(1.0f), range(10.0f) {}
     
-    PointLight(const Vector3& pos, const Vector3& col, float intens = 1.0f, float rng = 10.0f)
+    // Constructor with parameters
+    PointLight(const Vector3& pos, const Vector3& col, float intens, float rng)
         : position(pos), color(col), intensity(intens), range(rng) {}
     
-    // Calculate intensity at a given squared distance
-    float SQIntensity(float sqDistance) const {
-        // Prevent division by zero
-        if (sqDistance < 0.0001f) {
-            return intensity;
+    // Copy constructor
+    PointLight(const PointLight& other)
+        : position(other.position), color(other.color), intensity(other.intensity), range(other.range) {}
+    
+    // Assignment operator
+    PointLight& operator=(const PointLight& other) {
+        if (this != &other) {
+            position = other.position;
+            color = other.color;
+            intensity = other.intensity;
+            range = other.range;
         }
-        
-        // Calculate attenuation based on squared distance
-        float attenuation = 1.0f / (1.0f + 0.09f * sqDistance + 0.032f * sqDistance * sqDistance);
-        return intensity * attenuation;
+        return *this;
     }
     
-    // Editor support methods
+    // Setter methods
     void SetColor(const Vector3& col) { color = col; }
     void SetIntensity(float intens) { intensity = intens; }
     void SetRange(float rng) { range = rng; }
     void SetPosition(const Vector3& pos) { position = pos; }
+    
+    // Getter methods
+    Vector3 GetPosition() const { return position; }
+    Vector3 GetColor() const { return color; }
+    float GetIntensity() const { return intensity; }
+    float GetRange() const { return range; }
 };
 
 #endif // POINTLIGHT_H

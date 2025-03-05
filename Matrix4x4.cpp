@@ -1,56 +1,140 @@
 #include "Matrix4x4.h"
 #include <cmath>
 
-Matrix4x4::Matrix4x4()
-{
+// Constructor
+Matrix4x4::Matrix4x4() {
+    // Initialize to identity matrix
     identity();
 }
 
-void Matrix4x4::identity()
-{
-    for(int i = 0; i<4; ++i)
-        for(int j = 0; j<4; ++j)
-            elements[i][j] = (i==j) ? 1.0f : 0.0f;
+// Initialize an identity matrix
+void Matrix4x4::identity() {
+    // Set all elements to 0
+    for (int i = 0; i < 4; i++) {
+        for (int j = 0; j < 4; j++) {
+            elements[i][j] = 0.0f;
+        }
+    }
+    
+    // Set diagonal elements to 1
+    elements[0][0] = 1.0f;
+    elements[1][1] = 1.0f;
+    elements[2][2] = 1.0f;
+    elements[3][3] = 1.0f;
 }
 
-Matrix4x4 Matrix4x4::createRotation(float x, float y, float z)
-{
-    Matrix4x4 rx, ry, rz;
-    const float xRad = x * 3.14159265358979323846f / 180.0f;
-    const float yRad = y * 3.14159265358979323846f / 180.0f;
-    const float zRad = z * 3.14159265358979323846f / 180.0f;
-
-    rx.identity();
-    ry.identity();
-    rz.identity();
-
-    rx.elements[1][1] = cos(xRad); rx.elements[1][2] = -sin(xRad);
-    rx.elements[2][1] = sin(xRad); rx.elements[2][2] = cos(xRad);
-
-    ry.elements[0][0] = cos(yRad); ry.elements[0][2] = sin(yRad);
-    ry.elements[2][0] = -sin(yRad); ry.elements[2][2] = cos(yRad);
-
-    rz.elements[0][0] = cos(zRad); rz.elements[0][1] = -sin(zRad);
-    rz.elements[1][0] = sin(zRad); rz.elements[1][1] = cos(zRad);
-
-    // Now we multiply the three matrices
-    Matrix4x4 result = rz * ry * rx;
+// Create a rotation matrix
+Matrix4x4 Matrix4x4::createRotation(float x, float y, float z) {
+    Matrix4x4 result;
+    result.identity();
+    
+    // Convert angles from degrees to radians
+    float radX = x * 3.14159f / 180.0f;
+    float radY = y * 3.14159f / 180.0f;
+    float radZ = z * 3.14159f / 180.0f;
+    
+    // Calculate sine and cosine values
+    float sinX = sin(radX);
+    float cosX = cos(radX);
+    float sinY = sin(radY);
+    float cosY = cos(radY);
+    float sinZ = sin(radZ);
+    float cosZ = cos(radZ);
+    
+    // Apply rotations (order: Z, Y, X)
+    // Rotation around Z
+    result.elements[0][0] = cosZ;
+    result.elements[0][1] = -sinZ;
+    result.elements[1][0] = sinZ;
+    result.elements[1][1] = cosZ;
+    
+    // Rotation around Y
+    Matrix4x4 rotY;
+    rotY.identity();
+    rotY.elements[0][0] = cosY;
+    rotY.elements[0][2] = sinY;
+    rotY.elements[2][0] = -sinY;
+    rotY.elements[2][2] = cosY;
+    
+    // Rotation around X
+    Matrix4x4 rotX;
+    rotX.identity();
+    rotX.elements[1][1] = cosX;
+    rotX.elements[1][2] = -sinX;
+    rotX.elements[2][1] = sinX;
+    rotX.elements[2][2] = cosX;
+    
+    // Combine rotations
+    result = rotX * rotY * result;
+    
     return result;
 }
 
-Matrix4x4 operator*(const Matrix4x4 &m1, const Matrix4x4 &m2)
-{
+// Matrix multiplication
+Matrix4x4 operator*(const Matrix4x4 &m1, const Matrix4x4 &m2) {
     Matrix4x4 result;
-    for (int i = 0; i < 4; i++)
-    {
-        for (int j = 0; j < 4; j++)
-        {
-            result.elements[i][j] = 0;
-            for (int k = 0; k < 4; k++)
-            {
+    
+    for (int i = 0; i < 4; i++) {
+        for (int j = 0; j < 4; j++) {
+            result.elements[i][j] = 0.0f;
+            for (int k = 0; k < 4; k++) {
                 result.elements[i][j] += m1.elements[i][k] * m2.elements[k][j];
             }
         }
     }
     return result;
+}
+
+void Matrix4x4::translate(float x, float y, float z)
+{
+    Matrix4x4 translationMatrix;
+    translationMatrix.identity();
+    
+    translationMatrix.elements[0][3] = x;
+    translationMatrix.elements[1][3] = y;
+    translationMatrix.elements[2][3] = z;
+    
+    *this = translationMatrix * (*this);
+}
+
+void Matrix4x4::rotateX(float angle)
+{
+    const float rad = angle * 3.14159265358979323846f / 180.0f;
+    Matrix4x4 rotationMatrix;
+    rotationMatrix.identity();
+    
+    rotationMatrix.elements[1][1] = cos(rad);
+    rotationMatrix.elements[1][2] = -sin(rad);
+    rotationMatrix.elements[2][1] = sin(rad);
+    rotationMatrix.elements[2][2] = cos(rad);
+    
+    *this = rotationMatrix * (*this);
+}
+
+void Matrix4x4::rotateY(float angle)
+{
+    const float rad = angle * 3.14159265358979323846f / 180.0f;
+    Matrix4x4 rotationMatrix;
+    rotationMatrix.identity();
+    
+    rotationMatrix.elements[0][0] = cos(rad);
+    rotationMatrix.elements[0][2] = sin(rad);
+    rotationMatrix.elements[2][0] = -sin(rad);
+    rotationMatrix.elements[2][2] = cos(rad);
+    
+    *this = rotationMatrix * (*this);
+}
+
+void Matrix4x4::rotateZ(float angle)
+{
+    const float rad = angle * 3.14159265358979323846f / 180.0f;
+    Matrix4x4 rotationMatrix;
+    rotationMatrix.identity();
+    
+    rotationMatrix.elements[0][0] = cos(rad);
+    rotationMatrix.elements[0][1] = -sin(rad);
+    rotationMatrix.elements[1][0] = sin(rad);
+    rotationMatrix.elements[1][1] = cos(rad);
+    
+    *this = rotationMatrix * (*this);
 }

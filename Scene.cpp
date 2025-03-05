@@ -50,10 +50,10 @@ void Scene::CreateDefaultObjects() {
     if (!hasPointLight) {
         // Create a point light
         PointLight light;
-        light.position = Vector3(0, 5, 0);
-        light.color = Vector3(1, 1, 1);
-        light.intensity = 1.0f;
-        light.range = 10.0f;
+        light.SetPosition(Vector3(0, 5, 0));
+        light.SetColor(Vector3(1, 1, 1));
+        light.SetIntensity(1.0f);
+        light.SetRange(10.0f);
 
         // Create a game object for the light
         GameObject* lightObj = new GameObject("Default Light");
@@ -381,10 +381,10 @@ void Scene::UpdateLightUniforms(ShaderProgram* program) {
 
     for (int i = 0; i < pointLightCount; i++) {
         std::string prefix = "pointLights[" + std::to_string(i) + "].";
-         program->SetUniform(prefix + "position", pointLights[i].position);
-         program->SetUniform(prefix + "color", pointLights[i].color);
-         program->SetUniform(prefix + "intensity", pointLights[i].intensity);
-         program->SetUniform(prefix + "range", pointLights[i].range);
+         program->SetUniform(prefix + "position", pointLights[i].GetPosition());
+         program->SetUniform(prefix + "color", pointLights[i].GetColor());
+         program->SetUniform(prefix + "intensity", pointLights[i].GetIntensity());
+         program->SetUniform(prefix + "range", pointLights[i].GetRange());
     }
 }
 

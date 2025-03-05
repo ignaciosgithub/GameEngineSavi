@@ -1,52 +1,58 @@
 #!/bin/bash
 
-# Create bin directory if it doesn't exist
-mkdir -p bin/linux
+# Check if GLEW is installed
+if ! dpkg -l | grep -q libglew-dev; then
+    echo "GLEW development package not found. Installing..."
+    sudo apt-get update
+    sudo apt-get install -y libglew-dev
+fi
 
-# Build the editor with all necessary files
-g++ -std=c++11 -o bin/linux/Editor \
+# Check if GLUT is installed
+if ! dpkg -l | grep -q freeglut3-dev; then
+    echo "GLUT development package not found. Installing..."
+    sudo apt-get update
+    sudo apt-get install -y freeglut3-dev
+fi
+
+# Create build directory if it doesn't exist
+mkdir -p build
+
+# Compile the editor
+echo "Building editor..."
+g++ -o build/editor \
     Editor/EditorMain.cpp \
-    Editor/Editor.cpp \
-    Editor/HierarchyPanel.cpp \
-    Editor/InspectorPanel.cpp \
-    Editor/ProjectPanel.cpp \
-    Editor/SceneViewPanel.cpp \
-    Editor/Vector3Field.cpp \
-    GameObject.cpp \
-    Vector3.cpp \
-    Matrix4x4.cpp \
-    Camera.cpp \
-    Model.cpp \
-    MonoBehaviourLike.cpp \
-    TimeManager.cpp \
-    Raycast.cpp \
-    RigidBody.cpp \
-    CollisionSystem.cpp \
-    PhysicsSystem.cpp \
     Scene.cpp \
-    PointLight.cpp \
+    GameObject.cpp \
+    Transform.cpp \
+    Vector3.cpp \
+    Vector2.cpp \
+    Matrix4x4.cpp \
+    Quaternion.cpp \
+    Camera.cpp \
     CameraManager.cpp \
-    Shaders/Core/ShaderProgram.cpp \
-    Shaders/Core/Shader.cpp \
-    Shaders/Core/ShaderError.cpp \
-    Editor/TextField.cpp \
+    Model.cpp \
     Texture.cpp \
-    EngineCondition.cpp \
+    Material.cpp \
+    Shader.cpp \
+    ShaderProgram.cpp \
+    Light.cpp \
+    PointLight.cpp \
+    DirectionalLight.cpp \
+    SpotLight.cpp \
     FrameCapture.cpp \
-    ProjectSettings/ProjectSettings.cpp \
-    ProjectSettings/ProjectManager.cpp \
-    Profiler.cpp \
+    FrameCapture_png.cpp \
     Debugger.cpp \
-    RedundancyDetector.cpp \
+    -std=c++11 \
+    -DGLEW_STATIC \
     -I. \
     -IThirdParty/OpenGL/include \
     -DGL_GLEXT_PROTOTYPES \
-    -lGL -lGLU -lglut -lX11
+    -lGLEW -lGL -lGLU -lglut -lX11
 
 # Check if build was successful
 if [ $? -eq 0 ]; then
     echo "Editor build successful."
-    chmod +x bin/linux/Editor
+    echo "Run the editor with: ./build/editor"
 else
     echo "Editor build failed."
 fi
