@@ -7,6 +7,7 @@ mkdir -p build
 echo "Building minimal editor..."
 g++ -o build/editor_minimal \
     Editor/EditorMain.cpp \
+    Scene_minimal.cpp \
     Vector3.cpp \
     Matrix4x4.cpp \
     Camera.cpp \
