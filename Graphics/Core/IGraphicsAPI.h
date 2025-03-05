@@ -61,6 +61,25 @@ public:
     
     // Shader management
     virtual void UseShaderProgram(ShaderProgram* program) = 0;
+    virtual unsigned int CreateShader(int shaderType) = 0;
+    virtual void DeleteShader(unsigned int shader) = 0;
+    virtual void ShaderSource(unsigned int shader, const std::string& source) = 0;
+    virtual void CompileShader(unsigned int shader) = 0;
+    virtual bool GetShaderCompileStatus(unsigned int shader) = 0;
+    virtual std::string GetShaderInfoLog(unsigned int shader) = 0;
+    virtual bool GetProgramLinkStatus(unsigned int program) = 0;
+    virtual std::string GetProgramInfoLog(unsigned int program) = 0;
+    virtual void AttachShader(unsigned int program, unsigned int shader) = 0;
+    virtual void LinkProgram(unsigned int program) = 0;
+    virtual unsigned int CreateProgram() = 0;
+    virtual void DeleteProgram(unsigned int program) = 0;
+    
+    // Uniform setters
+    virtual void SetUniform1f(unsigned int program, const std::string& name, float value) = 0;
+    virtual void SetUniform1i(unsigned int program, const std::string& name, int value) = 0;
+    virtual void SetUniform3f(unsigned int program, const std::string& name, float x, float y, float z) = 0;
+    virtual void SetUniform4f(unsigned int program, const std::string& name, float x, float y, float z, float w) = 0;
+    virtual void SetUniformMatrix4fv(unsigned int program, const std::string& name, const float* value, bool transpose = false) = 0;
     
     // Texture management
     virtual unsigned int CreateTexture() = 0;
@@ -71,6 +90,9 @@ public:
     // Debug utilities
     virtual void DrawDebugLine(const Vector3& start, const Vector3& end, const Vector3& color) = 0;
     virtual void DrawDebugAxes() = 0;
+    
+    // Platform-specific operations
+    virtual void SwapBuffers() = 0;
     
     // Get API name for debugging
     virtual const char* GetAPIName() const = 0;

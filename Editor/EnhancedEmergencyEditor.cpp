@@ -14,6 +14,7 @@
 #include "../ThirdParty/OpenGL/include/GL/gl_types.h"
 #include "../FrameCapture_png.h"
 #include "../Camera.h"
+#include "../Graphics/Core/GraphicsAPIFactory.h"
 #include <iostream>
 #include <memory>
 #include <thread>
@@ -333,11 +334,17 @@ int main(int argc, char** argv) {
     putenv((char*)"LIBGL_ALWAYS_SOFTWARE=1");
     std::cout << "Forcing software rendering" << std::endl;
     
+    // Initialize graphics API
+    GraphicsAPIFactory::GetInstance().Initialize();
+    
     // Set up OpenGL for 3D rendering
-    glEnable(GL_DEPTH_TEST);
-    glDepthFunc(GL_LEQUAL);
-    glEnable(GL_CULL_FACE);
-    glCullFace(GL_BACK);
+    auto graphics = GraphicsAPIFactory::GetInstance().GetGraphicsAPI();
+    if (graphics) {
+        graphics->SetDepthTest(true);
+        graphics->SetDepthFunc(GL_LEQUAL);
+        graphics->SetCullFace(true);
+        graphics->SetCullFaceMode(GL_BACK);
+    }
     
     // Main loop
     bool running = true;
@@ -421,7 +428,12 @@ int main(int argc, char** argv) {
         }
         
         // Swap buffers
-        glXSwapBuffers(display, window);
+        auto graphics = GraphicsAPIFactory::GetInstance().GetGraphicsAPI();
+        if (graphics) {
+            graphics->SwapBuffers();
+        } else {
+            glXSwapBuffers(display, window);
+        }
     }
     
     // Clean up

@@ -40,8 +40,33 @@ public:
     void Clear(bool colorBuffer, bool depthBuffer) override;
     void SetClearColor(float r, float g, float b, float a) override;
     
+    // Depth and culling
+    void SetDepthTest(bool enable) override;
+    void SetDepthFunc(int func) override;
+    void SetCullFace(bool enable) override;
+    void SetCullFaceMode(int mode) override;
+    
     // Shader management
     void UseShaderProgram(ShaderProgram* program) override;
+    unsigned int CreateShader(int shaderType) override;
+    void DeleteShader(unsigned int shader) override;
+    void ShaderSource(unsigned int shader, const std::string& source) override;
+    void CompileShader(unsigned int shader) override;
+    bool GetShaderCompileStatus(unsigned int shader) override;
+    std::string GetShaderInfoLog(unsigned int shader) override;
+    bool GetProgramLinkStatus(unsigned int program) override;
+    std::string GetProgramInfoLog(unsigned int program) override;
+    void AttachShader(unsigned int program, unsigned int shader) override;
+    void LinkProgram(unsigned int program) override;
+    unsigned int CreateProgram() override;
+    void DeleteProgram(unsigned int program) override;
+    
+    // Uniform setters
+    void SetUniform1f(unsigned int program, const std::string& name, float value) override;
+    void SetUniform1i(unsigned int program, const std::string& name, int value) override;
+    void SetUniform3f(unsigned int program, const std::string& name, float x, float y, float z) override;
+    void SetUniform4f(unsigned int program, const std::string& name, float x, float y, float z, float w) override;
+    void SetUniformMatrix4fv(unsigned int program, const std::string& name, const float* value, bool transpose = false) override;
     
     // Texture management
     unsigned int CreateTexture() override;
@@ -55,6 +80,9 @@ public:
     
     // Get API name for debugging
     const char* GetAPIName() const override { return "OpenGL"; }
+    
+    // Platform-specific operations
+    void SwapBuffers() override;
     
 private:
     // Convert enum values to OpenGL constants

@@ -117,6 +117,120 @@ void OpenGLGraphicsAPI::UseShaderProgram(ShaderProgram* program) {
     }
 }
 
+unsigned int OpenGLGraphicsAPI::CreateShader(int shaderType) {
+    return glCreateShader(shaderType);
+}
+
+void OpenGLGraphicsAPI::DeleteShader(unsigned int shader) {
+    glDeleteShader(shader);
+}
+
+void OpenGLGraphicsAPI::ShaderSource(unsigned int shader, const std::string& source) {
+    const GLchar* sourcePtr = source.c_str();
+    glShaderSource(shader, 1, &sourcePtr, NULL);
+}
+
+void OpenGLGraphicsAPI::CompileShader(unsigned int shader) {
+    glCompileShader(shader);
+}
+
+bool OpenGLGraphicsAPI::GetShaderCompileStatus(unsigned int shader) {
+    GLint success = 0;
+    glGetShaderiv(shader, GL_COMPILE_STATUS, &success);
+    return success == GL_TRUE;
+}
+
+std::string OpenGLGraphicsAPI::GetShaderInfoLog(unsigned int shader) {
+    GLint logLength = 0;
+    glGetShaderiv(shader, GL_INFO_LOG_LENGTH, &logLength);
+    
+    if (logLength > 0) {
+        GLchar* log = new GLchar[logLength];
+        glGetShaderInfoLog(shader, logLength, NULL, log);
+        
+        std::string errorLog = log;
+        delete[] log;
+        
+        return errorLog;
+    }
+    
+    return "";
+}
+
+bool OpenGLGraphicsAPI::GetProgramLinkStatus(unsigned int program) {
+    GLint success = 0;
+    glGetProgramiv(program, GL_LINK_STATUS, &success);
+    return success == GL_TRUE;
+}
+
+std::string OpenGLGraphicsAPI::GetProgramInfoLog(unsigned int program) {
+    GLint logLength = 0;
+    glGetProgramiv(program, GL_INFO_LOG_LENGTH, &logLength);
+    
+    if (logLength > 0) {
+        GLchar* log = new GLchar[logLength];
+        glGetProgramInfoLog(program, logLength, NULL, log);
+        
+        std::string errorLog = log;
+        delete[] log;
+        
+        return errorLog;
+    }
+    
+    return "";
+}
+
+void OpenGLGraphicsAPI::AttachShader(unsigned int program, unsigned int shader) {
+    glAttachShader(program, shader);
+}
+
+void OpenGLGraphicsAPI::LinkProgram(unsigned int program) {
+    glLinkProgram(program);
+}
+
+unsigned int OpenGLGraphicsAPI::CreateProgram() {
+    return glCreateProgram();
+}
+
+void OpenGLGraphicsAPI::DeleteProgram(unsigned int program) {
+    glDeleteProgram(program);
+}
+
+void OpenGLGraphicsAPI::SetUniform1f(unsigned int program, const std::string& name, float value) {
+    GLint location = glGetUniformLocation(program, name.c_str());
+    if (location != -1) {
+        glUniform1f(location, value);
+    }
+}
+
+void OpenGLGraphicsAPI::SetUniform1i(unsigned int program, const std::string& name, int value) {
+    GLint location = glGetUniformLocation(program, name.c_str());
+    if (location != -1) {
+        glUniform1i(location, value);
+    }
+}
+
+void OpenGLGraphicsAPI::SetUniform3f(unsigned int program, const std::string& name, float x, float y, float z) {
+    GLint location = glGetUniformLocation(program, name.c_str());
+    if (location != -1) {
+        glUniform3f(location, x, y, z);
+    }
+}
+
+void OpenGLGraphicsAPI::SetUniform4f(unsigned int program, const std::string& name, float x, float y, float z, float w) {
+    GLint location = glGetUniformLocation(program, name.c_str());
+    if (location != -1) {
+        glUniform4f(location, x, y, z, w);
+    }
+}
+
+void OpenGLGraphicsAPI::SetUniformMatrix4fv(unsigned int program, const std::string& name, const float* value, bool transpose) {
+    GLint location = glGetUniformLocation(program, name.c_str());
+    if (location != -1) {
+        glUniformMatrix4fv(location, 1, transpose ? GL_TRUE : GL_FALSE, value);
+    }
+}
+
 unsigned int OpenGLGraphicsAPI::CreateTexture() {
     GLuint texture;
     glGenTextures(1, &texture);
@@ -166,6 +280,41 @@ void OpenGLGraphicsAPI::DrawDebugAxes() {
     glVertex3f(0.0f, 0.0f, 1.0f);
     
     glEnd();
+}
+
+void OpenGLGraphicsAPI::SwapBuffers() {
+    // This is a platform-specific operation that needs to be handled by the window system
+    // For X11/GLX, this would be glXSwapBuffers(display, window)
+    // For GLFW, this would be glfwSwapBuffers(window)
+    // Since we don't have direct access to the window system here,
+    // this is a placeholder that should be overridden by the platform-specific code
+    
+    // In EnhancedEmergencyEditor.cpp, we'll still need to call glXSwapBuffers directly
+    // but we'll use this method when possible
+}
+
+void OpenGLGraphicsAPI::SetDepthTest(bool enable) {
+    if (enable) {
+        glEnable(GL_DEPTH_TEST);
+    } else {
+        glDisable(GL_DEPTH_TEST);
+    }
+}
+
+void OpenGLGraphicsAPI::SetDepthFunc(int func) {
+    glDepthFunc(func);
+}
+
+void OpenGLGraphicsAPI::SetCullFace(bool enable) {
+    if (enable) {
+        glEnable(GL_CULL_FACE);
+    } else {
+        glDisable(GL_CULL_FACE);
+    }
+}
+
+void OpenGLGraphicsAPI::SetCullFaceMode(int mode) {
+    glCullFace(mode);
 }
 
 GLenum OpenGLGraphicsAPI::ConvertBufferType(BufferType type) const {
