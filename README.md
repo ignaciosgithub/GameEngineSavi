@@ -1373,5 +1373,81 @@ When you create a new scene, it includes:
 
 Note: Many features shown in earlier documentation are still under development. This document reflects the current working state of the editor.
 
+## Enhanced Emergency Editor
+
+The GameEngineSavi engine includes an Enhanced Emergency Editor that provides a headless rendering solution for environments without display capabilities, such as virtual machines or remote servers. This specialized editor saves frames to disk as PNG files instead of displaying them on screen, allowing for remote visualization and debugging.
+
+### Features
+
+- **Frame Saving**: Renders frames to PNG files in a sequential format (frame0, frame1, frame2, etc.)
+- **Traversable Panels**: Navigate between different editor panels using keyboard shortcuts
+- **Hotkey Support**: Full keyboard shortcut support with state tracking
+- **Panel State Tracking**: Records the active panel for each frame
+- **Headless Operation**: Works in environments without display capabilities
+- **Cross-Platform**: Supports both Windows and Linux platforms
+- **Default Scene Panel**: Scene View panel is the default panel for 3D traversal
+
+### Using the Enhanced Emergency Editor
+
+#### Building and Running
+
+```bash
+# Linux
+./build_enhanced_emergency_editor.sh
+
+# Windows
+build_enhanced_emergency_editor.bat
+```
+
+#### Panel Navigation
+
+The Enhanced Emergency Editor supports navigation between panels using keyboard shortcuts:
+
+- **Ctrl+1**: Switch to Hierarchy Panel
+- **Ctrl+2**: Switch to Scene View Panel (default)
+- **Ctrl+3**: Switch to Inspector Panel
+- **Ctrl+4**: Switch to Project Panel
+
+#### 3D Scene Navigation
+
+When the Scene View panel is active (default), you can navigate the 3D scene using:
+
+- **W**: Move forward
+- **A**: Move left
+- **S**: Move backward
+- **D**: Move right
+- **Shift**: Hold to move faster
+- **Space**: Toggle play/pause mode
+
+#### Frame Output
+
+The Enhanced Emergency Editor saves frames to the `frames` directory with the following files:
+
+- `frame0.png`, `frame1.png`, `frame2.png`, etc.: Sequential frame images
+- `panel_info.txt`: Information about the active panel
+- `hotkey_state.txt`: Current state of hotkeys
+
+### Frame Viewer
+
+The engine includes a Python-based frame viewer that uses pygame to display the frames in sequence:
+
+```bash
+# Install pygame if not already installed
+pip install pygame
+
+# Run the frame viewer
+python frame_reader.py
+```
+
+The frame viewer provides the following features:
+
+- **Sequential Playback**: View frames in sequence
+- **Play/Pause**: Space key toggles playback
+- **Frame Navigation**: Left/right arrow keys to navigate between frames
+- **Panel Overlay**: Visual indication of panel layout and active panel
+- **Hotkey State Display**: Shows the current state of hotkeys
+
+This on-disk rendering flow is ideal for virtual machines and remote development environments where direct display access is limited or unavailable.
+
 ## JSON Serialization
 The engine uses nlohmann/json 3.11.3 for object serialization. See [JSON Library Notes](docs/json_library.md) for implementation details and guidelines.
