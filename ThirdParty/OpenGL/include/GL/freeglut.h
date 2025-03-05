@@ -13,6 +13,15 @@
 #define GLUT_DEPTH          16
 #define GLUT_STENCIL        32
 
+/* Mouse button definitions */
+#define GLUT_LEFT_BUTTON    0
+#define GLUT_MIDDLE_BUTTON  1
+#define GLUT_RIGHT_BUTTON   2
+
+/* Mouse button state definitions */
+#define GLUT_DOWN           0
+#define GLUT_UP             1
+
 /* GLUT API function declarations */
 void glutInit(int *argc, char **argv);
 void glutInitDisplayMode(unsigned int mode);
@@ -26,5 +35,13 @@ void glutMotionFunc(void (*func)(int x, int y));
 void glutMainLoop(void);
 void glutSwapBuffers(void);
 void glutPostRedisplay(void);
+
+/* Function to simulate gluPerspective since it's deprecated */
+void gluPerspective(GLdouble fovy, GLdouble aspect, GLdouble zNear, GLdouble zFar);
+
+/* Function to simulate gluLookAt since it's deprecated */
+void gluLookAt(GLdouble eyeX, GLdouble eyeY, GLdouble eyeZ,
+               GLdouble centerX, GLdouble centerY, GLdouble centerZ,
+               GLdouble upX, GLdouble upY, GLdouble upZ);
 
 #endif /* __freeglut_h__ */
