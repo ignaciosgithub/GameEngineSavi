@@ -33,6 +33,8 @@ g++ -o build/editor \
     Debugger.cpp \
     FrameCapture.cpp \
     FrameCapture_png.cpp \
+    ThirdParty/OpenGL/include/GL/glut_impl.cpp \
+    ThirdParty/OpenGL/include/GL/stubs.cpp \
     -std=c++11 \
     -DGLEW_STATIC \
     -I. \
