@@ -7,6 +7,7 @@
 
 // Only include OpenGL headers for non-Windows platforms
 #ifndef PLATFORM_WINDOWS
+
 // Define GLEW_STATIC before including glew.h
 #ifndef GLEW_STATIC
 #define GLEW_STATIC
@@ -16,7 +17,40 @@
 #ifndef __gl_glext_h_
 typedef int64_t GLint64;
 typedef uint64_t GLuint64;
+typedef int64_t GLint64EXT;
+typedef uint64_t GLuint64EXT;
 typedef struct __GLsync* GLsync;
+#endif
+
+// Define APIENTRY if not already defined
+#ifndef APIENTRY
+#ifdef _WIN32
+#define APIENTRY __stdcall
+#else
+#define APIENTRY
+#endif
+#endif
+
+// Define GL types needed before including glew.h
+#ifndef GL_FLOAT
+typedef float GLfloat;
+typedef double GLdouble;
+typedef int GLint;
+typedef unsigned int GLuint;
+typedef unsigned char GLboolean;
+typedef int GLenum;
+typedef unsigned int GLbitfield;
+typedef int GLsizei;
+typedef char GLchar;
+typedef void GLvoid;
+typedef ptrdiff_t GLsizeiptr;
+typedef ptrdiff_t GLintptr;
+typedef unsigned char GLubyte;
+typedef short GLshort;
+typedef unsigned short GLushort;
+typedef unsigned long GLulong;
+typedef float GLclampf;
+typedef double GLclampd;
 #endif
 
 // Include GLEW first
@@ -24,6 +58,95 @@ typedef struct __GLsync* GLsync;
 
 // Then include other OpenGL headers
 #include <GL/gl.h>
+#include <GL/glu.h>
+#include <GL/glut.h>
+
+// Define missing function pointer types with ARB/EXT suffixes
+// These are needed for compatibility with GLEW
+#ifndef PFNGLCLIENTACTIVETEXTUREARBPROC
+typedef void (APIENTRY * PFNGLCLIENTACTIVETEXTUREARBPROC) (GLenum texture);
+#endif
+
+#ifndef PFNGLLOADTRANSPOSEMATRIXDARBPROC
+typedef void (APIENTRY * PFNGLLOADTRANSPOSEMATRIXDARBPROC) (const GLdouble m[16]);
+#endif
+
+#ifndef PFNGLLOADTRANSPOSEMATRIXFARBPROC
+typedef void (APIENTRY * PFNGLLOADTRANSPOSEMATRIXFARBPROC) (const GLfloat m[16]);
+#endif
+
+#ifndef PFNGLMULTTRANSPOSEMATRIXDARBPROC
+typedef void (APIENTRY * PFNGLMULTTRANSPOSEMATRIXDARBPROC) (const GLdouble m[16]);
+#endif
+
+#ifndef PFNGLMULTTRANSPOSEMATRIXFARBPROC
+typedef void (APIENTRY * PFNGLMULTTRANSPOSEMATRIXFARBPROC) (const GLfloat m[16]);
+#endif
+
+#ifndef PFNGLCONVOLUTIONPARAMETERFEXTPROC
+typedef void (APIENTRY * PFNGLCONVOLUTIONPARAMETERFEXTPROC) (GLenum target, GLenum pname, GLfloat param);
+#endif
+
+#ifndef PFNGLCONVOLUTIONPARAMETERFVEXTPROC
+typedef void (APIENTRY * PFNGLCONVOLUTIONPARAMETERFVEXTPROC) (GLenum target, GLenum pname, const GLfloat *params);
+#endif
+
+#ifndef PFNGLCONVOLUTIONPARAMETERIEXTPROC
+typedef void (APIENTRY * PFNGLCONVOLUTIONPARAMETERIEXTPROC) (GLenum target, GLenum pname, GLint param);
+#endif
+
+#ifndef PFNGLCONVOLUTIONPARAMETERIVEXTPROC
+typedef void (APIENTRY * PFNGLCONVOLUTIONPARAMETERIVEXTPROC) (GLenum target, GLenum pname, const GLint *params);
+#endif
+
+#ifndef PFNGLGETHISTOGRAMPARAMETERFVEXTPROC
+typedef void (APIENTRY * PFNGLGETHISTOGRAMPARAMETERFVEXTPROC) (GLenum target, GLenum pname, GLfloat *params);
+#endif
+
+#ifndef PFNGLGETHISTOGRAMPARAMETERIVEXTPROC
+typedef void (APIENTRY * PFNGLGETHISTOGRAMPARAMETERIVEXTPROC) (GLenum target, GLenum pname, GLint *params);
+#endif
+
+#ifndef PFNGLGETMINMAXPARAMETERFVEXTPROC
+typedef void (APIENTRY * PFNGLGETMINMAXPARAMETERFVEXTPROC) (GLenum target, GLenum pname, GLfloat *params);
+#endif
+
+#ifndef PFNGLGETMINMAXPARAMETERIVEXTPROC
+typedef void (APIENTRY * PFNGLGETMINMAXPARAMETERIVEXTPROC) (GLenum target, GLenum pname, GLint *params);
+#endif
+
+#ifndef PFNGLHISTOGRAMEXTPROC
+typedef void (APIENTRY * PFNGLHISTOGRAMEXTPROC) (GLenum target, GLsizei width, GLenum internalformat, GLboolean sink);
+#endif
+
+#ifndef PFNGLMINMAXEXTPROC
+typedef void (APIENTRY * PFNGLMINMAXEXTPROC) (GLenum target, GLenum internalformat, GLboolean sink);
+#endif
+
+#ifndef PFNGLRESETHISTOGRAMEXTPROC
+typedef void (APIENTRY * PFNGLRESETHISTOGRAMEXTPROC) (GLenum target);
+#endif
+
+#ifndef PFNGLRESETMINMAXEXTPROC
+typedef void (APIENTRY * PFNGLRESETMINMAXEXTPROC) (GLenum target);
+#endif
+
+#ifndef PFNGLSEPARABLEFILTER2DEXTPROC
+typedef void (APIENTRY * PFNGLSEPARABLEFILTER2DEXTPROC) (GLenum target, GLenum internalformat, GLsizei width, GLsizei height, GLenum format, GLenum type, const void *row, const void *column);
+#endif
+
+#ifndef PFNGLGETMINMAXEXTPROC
+typedef void (APIENTRY * PFNGLGETMINMAXEXTPROC) (GLenum target, GLenum internalformat, GLboolean sink, GLvoid *values);
+#endif
+
+#ifndef PFNGLGETHISTOGRAMEXTPROC
+typedef void (APIENTRY * PFNGLGETHISTOGRAMEXTPROC) (GLenum target, GLboolean reset, GLenum format, GLenum type, GLvoid *values);
+#endif
+
+#ifndef PFNGLCOLORTABLEEXTPROC
+typedef void (APIENTRY * PFNGLCOLORTABLEEXTPROC) (GLenum target, GLenum internalFormat, GLsizei width, GLenum format, GLenum type, const GLvoid *table);
+#endif
+
 #else
 // Windows-specific DirectX headers are included in DirectXGraphicsAPI.h
 #endif
