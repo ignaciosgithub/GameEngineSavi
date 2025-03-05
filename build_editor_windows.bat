@@ -18,6 +18,12 @@ g++ -o build\editor.exe ^
     Debugger.cpp ^
     FrameCapture.cpp ^
     FrameCapture_png.cpp ^
+    Graphics\Core\OpenGLGraphicsAPI.cpp ^
+    Graphics\Core\DirectXGraphicsAPI.cpp ^
+    Graphics\Core\GraphicsAPIFactory.cpp ^
+    Shaders\Core\ShaderProgram.cpp ^
+    Shaders\Core\Shader.cpp ^
+    Shaders\Core\ShaderError.cpp ^
     -std=c++11 ^
     -I. ^
     -IThirdParty\OpenGL\include ^

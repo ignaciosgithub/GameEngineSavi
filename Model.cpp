@@ -1,8 +1,7 @@
 #include "Model.h"
 #include "platform.h"
-
-// Include our centralized OpenGL header
-#include "ThirdParty/OpenGL/include/GL/gl_definitions.h"
+#include "Graphics/Core/GraphicsAPIFactory.h"
+#include "PointLight.h"
 
 #include <iostream>
 #include <fstream>
@@ -11,13 +10,13 @@
 #include <string>
 
 // Constructor
-Model::Model() : vao(0), vbo(0), ebo(0), tbo(0), nbo(0) {
+Model::Model() : vao(0), vbo(0), ebo(0), tbo(0), nbo(0), size(1, 1, 1) {
     // Initialize model data
 }
 
 // Destructor
 Model::~Model() {
-    // Clean up OpenGL resources
+    // Clean up graphics resources
     CleanupGL();
 }
 
@@ -130,125 +129,157 @@ void Model::loadOBJ(std::string path) {
         }
     }
     
-    // Initialize OpenGL buffers
+    // Initialize graphics buffers
     InitializeBuffers();
 }
 
-// Initialize OpenGL buffers
+// Initialize buffers
 void Model::InitializeBuffers() {
     InitializeGL();
 }
 
-// Initialize OpenGL objects
+// Initialize graphics objects
 void Model::InitializeGL() {
+    auto graphics = GraphicsAPIFactory::GetInstance().GetGraphicsAPI();
+    if (!graphics) {
+        std::cerr << "Failed to get graphics API instance" << std::endl;
+        return;
+    }
+    
     // Generate VAO
-    glGenVertexArrays(1, &vao);
-    glBindVertexArray(vao);
+    vao = graphics->CreateVertexArray();
+    graphics->BindVertexArray(vao);
     
     // Generate VBO for vertices
-    glGenBuffers(1, &vbo);
-    glBindBuffer(GL_ARRAY_BUFFER, vbo);
-    glBufferData(GL_ARRAY_BUFFER, vertices.size() * sizeof(GLfloat), vertices.data(), GL_STATIC_DRAW);
+    vbo = graphics->CreateBuffer();
+    graphics->BindBuffer(BufferType::VERTEX_BUFFER, vbo);
+    graphics->BufferData(BufferType::VERTEX_BUFFER, vertices.data(), vertices.size() * sizeof(float));
     
     // Set vertex attributes
-    glEnableVertexAttribArray(0);
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, (void*)0);
+    graphics->EnableVertexAttrib(0);
+    graphics->VertexAttribPointer(0, 3, false, 0, nullptr);
     
     // If we have normals, create a buffer for them
     if (!normals.empty()) {
-        glGenBuffers(1, &nbo);
-        glBindBuffer(GL_ARRAY_BUFFER, nbo);
-        glBufferData(GL_ARRAY_BUFFER, normals.size() * sizeof(GLfloat), normals.data(), GL_STATIC_DRAW);
+        nbo = graphics->CreateBuffer();
+        graphics->BindBuffer(BufferType::VERTEX_BUFFER, nbo);
+        graphics->BufferData(BufferType::VERTEX_BUFFER, normals.data(), normals.size() * sizeof(float));
         
-        glEnableVertexAttribArray(1);
-        glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 0, (void*)0);
+        graphics->EnableVertexAttrib(1);
+        graphics->VertexAttribPointer(1, 3, false, 0, nullptr);
     }
     
     // If we have texture coordinates, create a buffer for them
     if (!texCoords.empty()) {
-        glGenBuffers(1, &tbo);
-        glBindBuffer(GL_ARRAY_BUFFER, tbo);
-        glBufferData(GL_ARRAY_BUFFER, texCoords.size() * sizeof(GLfloat), texCoords.data(), GL_STATIC_DRAW);
+        tbo = graphics->CreateBuffer();
+        graphics->BindBuffer(BufferType::TEXTURE_COORD_BUFFER, tbo);
+        graphics->BufferData(BufferType::TEXTURE_COORD_BUFFER, texCoords.data(), texCoords.size() * sizeof(float));
         
-        glEnableVertexAttribArray(2);
-        glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 0, (void*)0);
+        graphics->EnableVertexAttrib(2);
+        graphics->VertexAttribPointer(2, 2, false, 0, nullptr);
     }
     
     // If we have indices, create an element buffer
     if (!indices.empty()) {
-        glGenBuffers(1, &ebo);
-        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo);
-        glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices.size() * sizeof(GLuint), indices.data(), GL_STATIC_DRAW);
+        ebo = graphics->CreateBuffer();
+        graphics->BindBuffer(BufferType::INDEX_BUFFER, ebo);
+        graphics->BufferData(BufferType::INDEX_BUFFER, indices.data(), indices.size() * sizeof(unsigned int));
     }
     
     // Unbind VAO
-    glBindVertexArray(0);
+    graphics->BindVertexArray(0);
 }
 
-// Update OpenGL buffers
+// Update graphics buffers
 void Model::UpdateBuffers() {
+    auto graphics = GraphicsAPIFactory::GetInstance().GetGraphicsAPI();
+    if (!graphics) {
+        std::cerr << "Failed to get graphics API instance" << std::endl;
+        return;
+    }
+    
     // Update vertex buffer
-    glBindBuffer(GL_ARRAY_BUFFER, vbo);
-    glBufferData(GL_ARRAY_BUFFER, vertices.size() * sizeof(GLfloat), vertices.data(), GL_STATIC_DRAW);
+    graphics->BindBuffer(BufferType::VERTEX_BUFFER, vbo);
+    graphics->BufferData(BufferType::VERTEX_BUFFER, vertices.data(), vertices.size() * sizeof(float));
     
     // Update normal buffer if we have normals
     if (!normals.empty() && nbo != 0) {
-        glBindBuffer(GL_ARRAY_BUFFER, nbo);
-        glBufferData(GL_ARRAY_BUFFER, normals.size() * sizeof(GLfloat), normals.data(), GL_STATIC_DRAW);
+        graphics->BindBuffer(BufferType::VERTEX_BUFFER, nbo);
+        graphics->BufferData(BufferType::VERTEX_BUFFER, normals.data(), normals.size() * sizeof(float));
     }
     
     // Update texture coordinate buffer if we have texture coordinates
     if (!texCoords.empty() && tbo != 0) {
-        glBindBuffer(GL_ARRAY_BUFFER, tbo);
-        glBufferData(GL_ARRAY_BUFFER, texCoords.size() * sizeof(GLfloat), texCoords.data(), GL_STATIC_DRAW);
+        graphics->BindBuffer(BufferType::TEXTURE_COORD_BUFFER, tbo);
+        graphics->BufferData(BufferType::TEXTURE_COORD_BUFFER, texCoords.data(), texCoords.size() * sizeof(float));
     }
     
     // Update index buffer if we have indices
     if (!indices.empty() && ebo != 0) {
-        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo);
-        glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices.size() * sizeof(GLuint), indices.data(), GL_STATIC_DRAW);
+        graphics->BindBuffer(BufferType::INDEX_BUFFER, ebo);
+        graphics->BufferData(BufferType::INDEX_BUFFER, indices.data(), indices.size() * sizeof(unsigned int));
     }
 }
 
-// Clean up OpenGL objects
+// Clean up graphics objects
 void Model::CleanupGL() {
+    auto graphics = GraphicsAPIFactory::GetInstance().GetGraphicsAPI();
+    if (!graphics) {
+        return;
+    }
+    
     if (vao != 0) {
-        glDeleteVertexArrays(1, &vao);
+        graphics->DeleteVertexArray(vao);
         vao = 0;
     }
     
     if (vbo != 0) {
-        glDeleteBuffers(1, &vbo);
+        graphics->DeleteBuffer(vbo);
         vbo = 0;
     }
     
     if (ebo != 0) {
-        glDeleteBuffers(1, &ebo);
+        graphics->DeleteBuffer(ebo);
         ebo = 0;
     }
     
     if (tbo != 0) {
-        glDeleteBuffers(1, &tbo);
+        graphics->DeleteBuffer(tbo);
         tbo = 0;
     }
     
     if (nbo != 0) {
-        glDeleteBuffers(1, &nbo);
+        graphics->DeleteBuffer(nbo);
         nbo = 0;
     }
 }
 
 // Render the model
 void Model::Render(const std::vector<PointLight>& lights) {
-    if (vao != 0) {
-        glBindVertexArray(vao);
-        
-        if (!indices.empty()) {
-            glDrawElements(GL_TRIANGLES, indices.size(), GL_UNSIGNED_INT, 0);
-        } else {
-            glDrawArrays(GL_TRIANGLES, 0, vertices.size() / 3);
-        }
-        
-        glBindVertexArray(0);
+    auto graphics = GraphicsAPIFactory::GetInstance().GetGraphicsAPI();
+    if (!graphics || vao == 0) {
+        return;
     }
+    
+    // Use shader program if available
+    if (shaderProgram) {
+        graphics->UseShaderProgram(shaderProgram);
+    } else {
+        std::cerr << "Warning: No shader program set for model" << std::endl;
+    }
+    
+    graphics->BindVertexArray(vao);
+    
+    if (!indices.empty()) {
+        graphics->DrawElements(DrawMode::TRIANGLES, indices.size(), nullptr);
+    } else {
+        graphics->DrawArrays(DrawMode::TRIANGLES, 0, vertices.size() / 3);
+    }
+    
+    graphics->BindVertexArray(0);
+}
+
+// Set shader program
+void Model::SetShaderProgram(ShaderProgram* program) {
+    shaderProgram = program;
 }

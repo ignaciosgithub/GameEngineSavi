@@ -7,6 +7,7 @@
 #include "TimeManager.h"
 #include "PhysicsSystem.h"
 #include "CameraManager.h"
+#include "Graphics/Core/IGraphicsAPI.h"
 
 class GameObject;
 class Camera;
@@ -15,6 +16,13 @@ class ShaderProgram;
 
 class Scene {
 public:
+    // Public variables for easier access
+    std::vector<GameObject*> gameObjects;
+    Vector3 ambientLight;
+    float physicsTimeStep;
+    bool createDefaultObjects;
+    bool isRunning;
+    
     Scene() : physicsTimeStep(1.0f / 60.0f), physicsAccumulator(0.0f), frameCount(0), createDefaultObjects(true), isRunning(false), mainCamera(nullptr), minimapCamera(nullptr) {}
     ~Scene();
     
@@ -30,19 +38,19 @@ public:
     void Update(float deltaTime);
     
     void SetMainCamera(Camera* camera);
-    Camera* GetMainCamera() const;
+    Camera* GetMainCamera() const { return mainCamera; }
     
-    void SetPhysicsTimeStep(float timeStep);
-    float GetPhysicsTimeStep() const;
+    void SetPhysicsTimeStep(float timeStep) { physicsTimeStep = timeStep; }
+    float GetPhysicsTimeStep() const { return physicsTimeStep; }
     
     void SetGravity(const Vector3& gravity);
     Vector3 GetGravity() const;
     
-    void SetCreateDefaultObjects(bool create);
-    bool GetCreateDefaultObjects() const;
+    void SetCreateDefaultObjects(bool create) { createDefaultObjects = create; }
+    bool GetCreateDefaultObjects() const { return createDefaultObjects; }
     
-    void SetRunning(bool running);
-    bool IsRunning() const;
+    void SetRunning(bool running) { isRunning = running; }
+    bool IsRunning() const { return isRunning; }
     
     void RenderScene();
     void RenderFromCamera(Camera* camera);
@@ -51,9 +59,9 @@ public:
     void DrawDebugAxes();
     
     void SetMinimapCamera(Camera* camera);
-    Camera* GetMinimapCamera() const;
+    Camera* GetMinimapCamera() const { return minimapCamera; }
     
-    void SetResolutionChangeAllowed(bool allowed);
+    void SetResolutionChangeAllowed(bool allowed) { resolutionChangeAllowed = allowed; }
     void UpdateResolution(int width, int height);
     
     void SetGlobalShaderUniforms(ShaderProgram* program);
@@ -63,20 +71,14 @@ public:
     void Shutdown();
     
 private:
-    std::vector<GameObject*> gameObjects;
     std::unique_ptr<TimeManager> time;
     std::unique_ptr<PhysicsSystem> physicsSystem;
     std::unique_ptr<CameraManager> cameraManager;
     
-    float physicsTimeStep;
     float physicsAccumulator;
     int frameCount;
-    bool createDefaultObjects;
-    bool isRunning;
     bool resolutionChangeAllowed;
     
     Camera* mainCamera;
     Camera* minimapCamera;
-    
-    Vector3 ambientLight;
 };
