@@ -2,6 +2,7 @@
 #include <iostream>
 #include <fstream>
 #include <vector>
+#include "ThirdParty/OpenGL/include/GL/platform_gl.h"
 
 // Capture the current viewport to a file
 bool FrameCapture::CaptureViewportToFile(const std::string& filename, int width, int height) {

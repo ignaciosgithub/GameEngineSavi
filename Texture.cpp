@@ -1,4 +1,14 @@
 #include "Texture.h"
+#include "platform.h"
+
+// Platform-specific OpenGL includes
+#ifdef PLATFORM_WINDOWS
+#include <windows.h>
+#include <gl/gl.h>
+#else
+#include <GL/gl.h>
+#endif
+
 #define STB_IMAGE_IMPLEMENTATION
 #include "stb_image.h"
 #include "Debugger.h"

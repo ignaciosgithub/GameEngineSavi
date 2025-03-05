@@ -1,5 +1,14 @@
 #include "CameraManager.h"
 #include <iostream>
+#include "platform.h"
+
+// Platform-specific OpenGL includes
+#ifdef PLATFORM_WINDOWS
+#include <windows.h>
+#include <gl/gl.h>
+#else
+#include <GL/gl.h>
+#endif
 
 // Constructor
 CameraManager::CameraManager() : mainCamera(nullptr) {

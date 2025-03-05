@@ -10,6 +10,7 @@
 #include <fstream>
 #include <cstring>
 #include <cmath>
+#include "ThirdParty/OpenGL/include/GL/platform_gl.h"
 
 // Include stb_image_write.h for PNG writing
 #define STB_IMAGE_WRITE_IMPLEMENTATION
