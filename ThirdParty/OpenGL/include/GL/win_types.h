@@ -10,7 +10,6 @@ typedef void* HWND;
 typedef void* HDC;
 typedef void* HGLRC;
 typedef void* HINSTANCE;
-typedef void* HINSTANCE;
 typedef char* LPSTR;
 typedef unsigned int UINT;
 typedef unsigned long WPARAM;

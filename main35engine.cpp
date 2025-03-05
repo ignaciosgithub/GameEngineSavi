@@ -1,4 +1,3 @@
-#include "gl_definitions.h"
 /**************************
  * Includes
  *
