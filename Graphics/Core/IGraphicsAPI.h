@@ -59,6 +59,12 @@ public:
     virtual void Clear(bool colorBuffer, bool depthBuffer) = 0;
     virtual void SetClearColor(float r, float g, float b, float a) = 0;
     
+    // Depth and culling
+    virtual void SetDepthTest(bool enable) = 0;
+    virtual void SetDepthFunc(int func) = 0;
+    virtual void SetCullFace(bool enable) = 0;
+    virtual void SetCullFaceMode(int mode) = 0;
+    
     // Shader management
     virtual void UseShaderProgram(ShaderProgram* program) = 0;
     virtual unsigned int CreateShader(int shaderType) = 0;
@@ -81,6 +87,13 @@ public:
     virtual void SetUniform4f(unsigned int program, const std::string& name, float x, float y, float z, float w) = 0;
     virtual void SetUniformMatrix4fv(unsigned int program, const std::string& name, const float* value, bool transpose = false) = 0;
     
+    // Additional uniform setters for arrays
+    virtual void SetUniformFloatArray(unsigned int program, const std::string& name, const float* values, int count) = 0;
+    virtual void SetUniformIntArray(unsigned int program, const std::string& name, const int* values, int count) = 0;
+    virtual void SetUniformVec3Array(unsigned int program, const std::string& name, const float* values, int count) = 0;
+    virtual void SetUniformMatrix4Array(unsigned int program, const std::string& name, const float* values, int count, bool transpose = false) = 0;
+    virtual int GetUniformLocation(unsigned int program, const std::string& name) = 0;
+    
     // Texture management
     virtual unsigned int CreateTexture() = 0;
     virtual void BindTexture(unsigned int texture, unsigned int unit) = 0;
@@ -96,6 +109,15 @@ public:
     
     // Get API name for debugging
     virtual const char* GetAPIName() const = 0;
+    
+    // Default shader for models with missing shaders/textures
+    virtual void UseDefaultRedShader() = 0;
+    
+    // Matrix operations
+    virtual void SetProjectionMatrix(const Matrix4x4& matrix) = 0;
+    virtual void SetViewMatrix(const Matrix4x4& matrix) = 0;
+    virtual void SetModelMatrix(const Matrix4x4& matrix) = 0;
+    virtual bool SupportsMatrixOperations() const = 0;
 };
 
 #endif // IGRAPHICS_API_H
