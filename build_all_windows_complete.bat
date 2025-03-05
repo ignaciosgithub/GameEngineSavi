@@ -5,7 +5,7 @@ echo Building GameEngineSavi for Windows...
 
 REM Set compiler options
 set CFLAGS=-std=c++11 -Wall -Wextra -g
-set INCLUDES=-I. -IThirdParty/OpenGL/include
+set INCLUDES=-I. -IThirdParty/OpenGL/include -IThirdParty/DirectX/include
 
 REM Create output directory if it doesn't exist
 if not exist bin\windows mkdir bin\windows
@@ -20,7 +20,7 @@ echo Compiling engine components...
 
 REM First, compile the graphics API components
 echo Compiling DirectXGraphicsAPI...
-g++ %CFLAGS% %INCLUDES% -c Graphics\Core\DirectXGraphicsAPI.cpp -o bin\windows\DirectXGraphicsAPI.o
+g++ %CFLAGS% %INCLUDES% -c Graphics\Core\DirectXGraphicsAPI.cpp -o bin\windows\DirectXGraphicsAPI.o -DPLATFORM_WINDOWS
 if %ERRORLEVEL% NEQ 0 (
     echo Error: DirectXGraphicsAPI compilation failed
     exit /b 1
@@ -241,7 +241,7 @@ g++ %CFLAGS% %INCLUDES% -o bin\windows\editor.exe ^
     ProjectSettings\ProjectManager.cpp ^
     Profiler.cpp ^
     -DPLATFORM_WINDOWS ^
-    -ld3d11 -ldxgi -ld3dcompiler
+    -L./ThirdParty/DirectX/lib -ld3d11 -ldxgi -ld3dcompiler
 if %ERRORLEVEL% NEQ 0 (
     echo Warning: Editor build failed, but continuing...
 ) else (

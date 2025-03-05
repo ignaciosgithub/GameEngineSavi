@@ -1449,5 +1449,37 @@ The frame viewer provides the following features:
 
 This on-disk rendering flow is ideal for virtual machines and remote development environments where direct display access is limited or unavailable.
 
+## DirectX Implementation
+
+The GameEngineSavi engine now includes a DirectX implementation for Windows builds. This allows the engine to use DirectX for rendering on Windows platforms while still using OpenGL on Linux platforms.
+
+### Requirements
+
+To build the DirectX implementation, you need:
+
+1. Windows SDK (for DirectX headers and libraries)
+2. Visual Studio 2022 or later (recommended)
+
+### Building with DirectX
+
+To build the engine with DirectX support on Windows:
+
+```bash
+build_all_windows_complete.bat
+```
+
+This will compile the engine with DirectX support and create the necessary libraries and executables.
+
+### Testing DirectX Implementation
+
+To test the DirectX implementation:
+
+```bash
+build_directx_test.bat
+```
+
+This will compile the DirectX implementation and verify that it works correctly.
+
+
 ## JSON Serialization
 The engine uses nlohmann/json 3.11.3 for object serialization. See [JSON Library Notes](docs/json_library.md) for implementation details and guidelines.
