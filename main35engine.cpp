@@ -1,58 +1,59 @@
-/**************************
- * Includes
- *
- **************************/
+/**
+ * main35engine.cpp
+ * Main entry point for the GameEngineSavi engine
+ * 
+ * This file contains platform-specific code for both Windows and Linux/Mac
+ */
 
 #include "platform.h"
-#include "ThirdParty/OpenGL/include/GL/gl_definitions.h"
-#ifdef PLATFORM_WINDOWS
-#include <windows.h>
-#include <gl/gl.h>
-#include "ThirdParty/OpenGL/include/GL/win_types.h"
-#endif
-#include <vector>
-#include <string>
-#include <cstring>
-#include "Vector3.h"
-#include "Triangle.h"
-#include "Matrix4x4.h"
-#include "Raycast.h"
-#include "PointLight.h"
-#include "Camera.h"
-#include "Face.h"
-#include "Pyramid.h"
-#include "Model.h"
-#include "MonoBehaviourLike.h"
-#include "GameObject.h"
-#include "Prefab.h"
-#include "TimeManager.h"
-#include "Scene.h"
-#include "EngineCondition.h"
-#include "GUI/GUI.h"
 #include <iostream>
-#include <fstream>
-#include <cstdlib>
-#include <sstream>
-#include <ctime>
-#include <chrono>
+#include <string>
+#include <vector>
 #include <memory>
 #include <cmath>
+#include <chrono>
 #include <thread>
-#include <atomic>
+#include <fstream>
+#include <sstream>
+#include <algorithm>
+#include <functional>
+#include <map>
+#include <unordered_map>
+#include <set>
+#include <unordered_set>
+#include <queue>
+#include <stack>
+#include <deque>
+#include <list>
+#include <array>
+#include <tuple>
+#include <utility>
+#include <random>
+#include <limits>
+#include <type_traits>
+#include <cassert>
+#include <cstdlib>
+#include <cstdio>
+#include <cstring>
+#include <cctype>
+#include <ctime>
+#include <cstdint>
+#include <cerrno>
+#include <cfloat>
 
-/**************************
- * Function Declarations
- *
- **************************/
-inline float toRadians(float degrees) {
-    return degrees * static_cast<float>(M_PI) / 180.0f;
+#include "EngineCondition.h"
+#include "TimeManager.h"
+#include "Camera.h"
+#include "Scene.h"
+
+// Helper function to convert degrees to radians
+float toRadians(float degrees) {
+    return degrees * 3.14159f / 180.0f;
 }
 
-// Global GUI instance
-std::unique_ptr<GUI> gui;
-
+// Platform-specific type definitions and includes
 #ifdef PLATFORM_WINDOWS
-// Define Windows types if not already defined
+// Windows-specific type definitions
 #ifndef HWND
 typedef void* HWND;
 #endif
@@ -75,7 +76,7 @@ typedef long long LPARAM;
 typedef long long LRESULT;
 #endif
 #ifndef CALLBACK
-#define CALLBACK
+#define CALLBACK __stdcall
 #endif
 #ifndef HINSTANCE
 typedef void* HINSTANCE;
@@ -116,7 +117,8 @@ typedef struct {
     WPARAM wParam;
     LPARAM lParam;
     UINT   time;
-    void*  pt;
+    int    pt_x;
+    int    pt_y;
 } MSG;
 #endif
 #ifndef PIXELFORMATDESCRIPTOR
@@ -150,111 +152,111 @@ typedef struct {
 } PIXELFORMATDESCRIPTOR;
 #endif
 
-// Define Windows constants and functions if not already defined
+// Windows function declarations
 #ifndef LoadIcon
-#define LoadIcon(a, b) nullptr
+HICON LoadIcon(HINSTANCE hInstance, const char* lpIconName);
 #endif
 #ifndef LoadCursor
-#define LoadCursor(a, b) nullptr
+HCURSOR LoadCursor(HINSTANCE hInstance, const char* lpCursorName);
 #endif
 #ifndef IDI_APPLICATION
-#define IDI_APPLICATION nullptr
+#define IDI_APPLICATION ((const char*)32512)
 #endif
 #ifndef IDC_ARROW
-#define IDC_ARROW nullptr
+#define IDC_ARROW ((const char*)32512)
 #endif
 #ifndef GetStockObject
-#define GetStockObject(a) nullptr
+HGDIOBJ GetStockObject(int i);
 #endif
 #ifndef BLACK_BRUSH
-#define BLACK_BRUSH 0
+#define BLACK_BRUSH 4
 #endif
 #ifndef RegisterClass
-#define RegisterClass(a) 0
+ATOM RegisterClass(const WNDCLASS* lpWndClass);
 #endif
 #ifndef CreateWindow
-#define CreateWindow(a, b, c, d, e, f, g, h, i, j, k) nullptr
+HWND CreateWindow(const char* lpClassName, const char* lpWindowName, UINT dwStyle, int x, int y, int nWidth, int nHeight, HWND hWndParent, void* hMenu, HINSTANCE hInstance, void* lpParam);
 #endif
 #ifndef WS_CAPTION
-#define WS_CAPTION 0
+#define WS_CAPTION 0x00C00000L
 #endif
 #ifndef WS_POPUPWINDOW
-#define WS_POPUPWINDOW 0
+#define WS_POPUPWINDOW 0x80880000L
 #endif
 #ifndef WS_VISIBLE
-#define WS_VISIBLE 0
+#define WS_VISIBLE 0x10000000L
 #endif
 #ifndef DestroyWindow
-#define DestroyWindow(a)
+BOOL DestroyWindow(HWND hWnd);
 #endif
 #ifndef SwapBuffers
-#define SwapBuffers(a)
+BOOL SwapBuffers(HDC hdc);
 #endif
 #ifndef PeekMessage
-#define PeekMessage(a, b, c, d, e) 0
+BOOL PeekMessage(MSG* lpMsg, HWND hWnd, UINT wMsgFilterMin, UINT wMsgFilterMax, UINT wRemoveMsg);
 #endif
 #ifndef PM_REMOVE
-#define PM_REMOVE 0
+#define PM_REMOVE 0x0001
 #endif
 #ifndef WM_QUIT
-#define WM_QUIT 0
+#define WM_QUIT 0x0012
 #endif
 #ifndef TranslateMessage
-#define TranslateMessage(a)
+BOOL TranslateMessage(const MSG* lpMsg);
 #endif
 #ifndef DispatchMessage
-#define DispatchMessage(a)
+LRESULT DispatchMessage(const MSG* lpMsg);
 #endif
 #ifndef PostQuitMessage
-#define PostQuitMessage(a)
+void PostQuitMessage(int nExitCode);
 #endif
 #ifndef DefWindowProc
-#define DefWindowProc(a, b, c, d) 0
+LRESULT DefWindowProc(HWND hWnd, UINT Msg, WPARAM wParam, LPARAM lParam);
 #endif
 #ifndef WM_CREATE
-#define WM_CREATE 0
+#define WM_CREATE 0x0001
 #endif
 #ifndef WM_CLOSE
-#define WM_CLOSE 0
+#define WM_CLOSE 0x0010
 #endif
 #ifndef WM_DESTROY
-#define WM_DESTROY 0
+#define WM_DESTROY 0x0002
 #endif
 #ifndef WM_KEYDOWN
-#define WM_KEYDOWN 0
+#define WM_KEYDOWN 0x0100
 #endif
 #ifndef VK_ESCAPE
-#define VK_ESCAPE 0
+#define VK_ESCAPE 0x1B
 #endif
 #ifndef WM_LBUTTONDOWN
-#define WM_LBUTTONDOWN 0
+#define WM_LBUTTONDOWN 0x0201
 #endif
 #ifndef WM_MOUSEMOVE
-#define WM_MOUSEMOVE 0
+#define WM_MOUSEMOVE 0x0200
 #endif
 #ifndef LOWORD
-#define LOWORD(a) 0
+#define LOWORD(l) ((UINT)(((UINT_PTR)(l)) & 0xffff))
 #endif
 #ifndef HIWORD
-#define HIWORD(a) 0
+#define HIWORD(l) ((UINT)((((UINT_PTR)(l)) >> 16) & 0xffff))
 #endif
 #ifndef GetDC
-#define GetDC(a) nullptr
+HDC GetDC(HWND hWnd);
 #endif
 #ifndef ReleaseDC
-#define ReleaseDC(a, b)
+int ReleaseDC(HWND hWnd, HDC hDC);
 #endif
 #ifndef ZeroMemory
-#define ZeroMemory(a, b) memset(a, 0, b)
+#define ZeroMemory(Destination, Length) memset((Destination), 0, (Length))
 #endif
 #ifndef PFD_DRAW_TO_WINDOW
-#define PFD_DRAW_TO_WINDOW 0
+#define PFD_DRAW_TO_WINDOW 0x00000004
 #endif
 #ifndef PFD_SUPPORT_OPENGL
-#define PFD_SUPPORT_OPENGL 0
+#define PFD_SUPPORT_OPENGL 0x00000020
 #endif
 #ifndef PFD_DOUBLEBUFFER
-#define PFD_DOUBLEBUFFER 0
+#define PFD_DOUBLEBUFFER 0x00000001
 #endif
 #ifndef PFD_TYPE_RGBA
 #define PFD_TYPE_RGBA 0
@@ -263,25 +265,25 @@ typedef struct {
 #define PFD_MAIN_PLANE 0
 #endif
 #ifndef ChoosePixelFormat
-#define ChoosePixelFormat(a, b) 0
+int ChoosePixelFormat(HDC hdc, const PIXELFORMATDESCRIPTOR* ppfd);
 #endif
 #ifndef SetPixelFormat
-#define SetPixelFormat(a, b, c) 0
+BOOL SetPixelFormat(HDC hdc, int format, const PIXELFORMATDESCRIPTOR* ppfd);
 #endif
 #ifndef wglCreateContext
-#define wglCreateContext(a) nullptr
+HGLRC wglCreateContext(HDC hdc);
 #endif
 #ifndef wglMakeCurrent
-#define wglMakeCurrent(a, b) 0
+BOOL wglMakeCurrent(HDC hdc, HGLRC hglrc);
 #endif
 #ifndef wglDeleteContext
-#define wglDeleteContext(a)
+BOOL wglDeleteContext(HGLRC hglrc);
 #endif
 #ifndef CS_OWNDC
-#define CS_OWNDC 0
+#define CS_OWNDC 0x0020
 #endif
 #ifndef NULL
-#define NULL nullptr
+#define NULL 0
 #endif
 #ifndef TRUE
 #define TRUE 1
@@ -291,91 +293,69 @@ typedef struct {
 #endif
 #endif // End of PLATFORM_WINDOWS block for Windows types
 
-#ifdef PLATFORM_WINDOWS
 // Forward declarations for Windows-specific functions
+#ifdef PLATFORM_WINDOWS
+// Windows-specific function declarations
 LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
 void EnableOpenGL(HWND hWnd, HDC* hDC, HGLRC* hRC);
 void DisableOpenGL(HWND hWnd, HDC hDC, HGLRC hRC);
-#endif // End of PLATFORM_WINDOWS block for forward declarations
+#endif // End of Windows-specific function declarations
 
 /**************************
  * Main Entry Point
  *
  **************************/
 
+// Platform-specific main function declarations
 #ifdef PLATFORM_WINDOWS
-int WinMain(void* hInstance,
-            void* hPrevInstance,
-            char* lpCmdLine,
-            int iCmdShow)
-{
+// Windows entry point
+int WinMain(void* hInstance, void* hPrevInstance, char* lpCmdLine, int iCmdShow)
 #else
+// Linux/Mac entry point
 int main(int argc, char** argv)
+#endif // End of platform-specific main function declarations
 {
-#endif // End of platform-specific main function declaration
     // Set the initial engine condition based on command line arguments
     // This would normally be set by the editor or build system
     #ifdef DEBUG_BUILD
-    // Using available EngineCondition API
+    // Debug build - default to editor mode
     EngineCondition::isInEditor = true;
-    std::cout << "Starting engine in DEBUG mode" << std::endl;
     #else
-    // Using available EngineCondition API
-    EngineCondition::isInEditor = true;
-    std::cout << "Starting engine in RELEASE mode" << std::endl;
+    // Release build - default to game mode
+    EngineCondition::isInEditor = false;
     #endif
 
-    // Check for editor mode command line arguments
-    // In a real implementation, this would be handled by the editor
+    // Platform-specific initialization
     #ifdef PLATFORM_WINDOWS
-    if (lpCmdLine && strstr(lpCmdLine, "-editor")) {
-        EngineCondition::isInEditor = true;
-        std::cout << "Starting in editor mode" << std::endl;
-    }
-    #else
-    for (int i = 1; i < argc; i++) {
-        if (strcmp(argv[i], "-editor") == 0) {
-            EngineCondition::isInEditor = true;
-            std::cout << "Starting in editor mode" << std::endl;
-            break;
-        }
-    }
-    #endif
-
-    // Initialize GUI
-    // Use C++11 compatible way to create unique_ptr
-    gui.reset(new GUI());
-    
-    // Create editor panel
-    std::unique_ptr<Panel> editorPanel(new Panel(10, 10, 200, 580));
-    
-    // Create play button
-    std::unique_ptr<Button> playButton(new Button(20, 20, 80, 30, "Play"));
-    
-    // Set button click handler
-    playButton->SetOnClick([]() {
-        if (EngineCondition::IsInEditor()) {
-            // Using available EngineCondition API
-            std::cout << "Entering play mode" << std::endl;
-        }
-    });
-    
-    // Add button to panel and panel to GUI
-    editorPanel->AddElement(std::move(playButton));
-    gui->AddElement(std::move(editorPanel));
-
-    #ifdef PLATFORM_WINDOWS
-    WNDCLASS wc;
+    // Windows-specific variables
     HWND hWnd;
     HDC hDC;
-    HGLRC hRC;        
+    HGLRC hRC;
     MSG msg;
     BOOL bQuit = FALSE;
-    float theta = 0.0f;
+    #else
+    // Linux/Mac variables
+    bool running = true;
+    #endif
 
-    /* register window class */
+    // Initialize time manager
+    TimeManager timeManager;
+    
+    // Create camera
+    Camera camera;
+    camera.SetPosition(Vector3(0.0f, 0.0f, 5.0f));
+    camera.SetRotation(Vector3(0.0f, 0.0f, 0.0f));
+    
+    // Create scene
+    Scene scene;
+    scene.Initialize();
+    
+    // Platform-specific window creation and main loop
+    #ifdef PLATFORM_WINDOWS
+    // Register the window class
+    WNDCLASS wc;
     wc.style = CS_OWNDC;
-    wc.lpfnWndProc = WndProc;
+    wc.lpfnWndProc = (WNDPROC)WndProc;
     wc.cbClsExtra = 0;
     wc.cbWndExtra = 0;
     wc.hInstance = (HINSTANCE)hInstance;
@@ -383,83 +363,97 @@ int main(int argc, char** argv)
     wc.hCursor = LoadCursor(NULL, IDC_ARROW);
     wc.hbrBackground = (HBRUSH)GetStockObject(BLACK_BRUSH);
     wc.lpszMenuName = NULL;
-    wc.lpszClassName = "GLSample";
-    RegisterClass(&wc);
-
-    /* create main window */
+    wc.lpszClassName = "GameEngineSavi";
+    
+    if (!RegisterClass(&wc)) {
+        std::cerr << "Failed to register window class" << std::endl;
+        return 1;
+    }
+    
+    // Create the window
     hWnd = CreateWindow(
-      "GLSample", "OpenGL Sample", 
-      WS_CAPTION | WS_POPUPWINDOW | WS_VISIBLE,
-      0, 0, 256, 256,
-      NULL, NULL, (HINSTANCE)hInstance, NULL);
-
-    /* enable OpenGL for the window */
+        "GameEngineSavi", "GameEngineSavi",
+        WS_CAPTION | WS_POPUPWINDOW | WS_VISIBLE,
+        0, 0, 800, 600,
+        NULL, NULL, (HINSTANCE)hInstance, NULL
+    );
+    
+    if (!hWnd) {
+        std::cerr << "Failed to create window" << std::endl;
+        return 1;
+    }
+    
+    // Enable OpenGL for the window
     EnableOpenGL(hWnd, &hDC, &hRC);
-
-    /* program main loop */
-    while (!bQuit)
-    {
-        /* check for messages */
-        if (PeekMessage(&msg, NULL, 0, 0, PM_REMOVE))
-        {
-            /* handle or dispatch messages */
-            if (msg.message == WM_QUIT)
-            {
+    
+    // Main message loop
+    while (!bQuit) {
+        // Check for messages
+        if (PeekMessage(&msg, NULL, 0, 0, PM_REMOVE)) {
+            // Check if it's a quit message
+            if (msg.message == WM_QUIT) {
                 bQuit = TRUE;
-            }
-            else
-            {
+            } else {
+                // Translate and dispatch the message
                 TranslateMessage(&msg);
                 DispatchMessage(&msg);
             }
-        }
-        else
-        {
-            // If we're in editor mode, show a message
-            if (EngineCondition::IsInEditor()) {
-                std::cout << "In editor mode..." << std::endl;
-                // In a real implementation, this would trigger the compilation process
-                // For now, we'll just wait a bit
-                std::this_thread::sleep_for(std::chrono::seconds(2));
-            }
+        } else {
+            // Update time
+            timeManager.Update();
+            float deltaTime = timeManager.GetDeltaTime();
             
-            // Draw GUI
-            gui->Draw();
+            // Update camera
+            camera.Update(deltaTime);
+            
+            // Update scene
+            scene.Update(deltaTime);
+            
+            // Render scene
+            scene.Render();
             
             // Swap buffers
             SwapBuffers(hDC);
+            
+            // Small delay to prevent maxing out CPU
+            std::this_thread::sleep_for(std::chrono::milliseconds(10));
         }
     }
-
-    /* shutdown OpenGL */
+    
+    // Shutdown
     DisableOpenGL(hWnd, hDC, hRC);
-
-    /* destroy the window explicitly */
     DestroyWindow(hWnd);
 
     return msg.wParam;
-    #else
+    #else // PLATFORM_LINUX or other non-Windows platforms
     // Linux/Mac implementation would go here
     std::cout << "Engine running in " << 
         (EngineCondition::IsInEditor() ? "editor mode" : "unknown mode") 
         << std::endl;
     
-    // Simulate some engine activity
-    for (int i = 0; i < 5; i++) {
-        std::cout << "Engine tick " << i << std::endl;
+    // Main loop
+    while (running) {
+        // Update time
+        timeManager.Update();
+        float deltaTime = timeManager.GetDeltaTime();
         
-        // If we're in editor mode, show a message
-        if (EngineCondition::IsInEditor()) {
-            std::cout << "In editor mode..." << std::endl;
-            // In a real implementation, this would trigger the compilation process
-            // For now, we'll just wait a bit
-            std::this_thread::sleep_for(std::chrono::seconds(2));
+        // Update camera
+        camera.Update(deltaTime);
+        
+        // Update scene
+        scene.Update(deltaTime);
+        
+        // Render scene
+        scene.Render();
+        
+        // Small delay to prevent maxing out CPU
+        std::this_thread::sleep_for(std::chrono::milliseconds(10));
+        
+        // For testing purposes, exit after a few seconds
+        static int frameCount = 0;
+        if (++frameCount > 100) {
+            running = false;
         }
-        
-        // In a real implementation, we would draw the GUI here
-        // gui->Draw();
-        
-        std::this_thread::sleep_for(std::chrono::seconds(1));
     }
     
     return 0;
@@ -471,87 +465,75 @@ int main(int argc, char** argv)
  *
  ********************/
 
+// Windows-specific function implementations
 #ifdef PLATFORM_WINDOWS
-LRESULT CALLBACK WndProc(HWND hWnd, UINT message,
-                         WPARAM wParam, LPARAM lParam)
+// WndProc function implementation
+LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
     switch (message)
     {
     case WM_CREATE:
         return 0;
+        
     case WM_CLOSE:
         PostQuitMessage(0);
         return 0;
-
+        
     case WM_DESTROY:
         return 0;
-
+        
     case WM_KEYDOWN:
         switch (wParam)
         {
         case VK_ESCAPE:
             PostQuitMessage(0);
             return 0;
-        case 'P': // Press P to toggle play mode in editor
-            if (EngineCondition::IsInEditor()) {
-                // Using available EngineCondition API
-                std::cout << "Entering play mode" << std::endl;
-            } else {
-                // Using available EngineCondition API
-                std::cout << "Entering edit mode" << std::endl;
-            }
-            return 0;
-        case 'C': // Press C to toggle compile mode in editor
-            if (EngineCondition::IsInEditor()) {
-                // Using available EngineCondition API
-                std::cout << "Entering compile mode" << std::endl;
-            }
-            return 0;
         }
         return 0;
         
     case WM_LBUTTONDOWN:
-        gui->HandleInput(LOWORD(lParam), HIWORD(lParam), true);
+        // Handle mouse click
         return 0;
         
     case WM_MOUSEMOVE:
-        gui->HandleInput(LOWORD(lParam), HIWORD(lParam), false);
+        // Handle mouse movement
         return 0;
-
+        
     default:
         return DefWindowProc(hWnd, message, wParam, lParam);
     }
 }
 #endif // End of WndProc function
 
-/*******************
+/******************
  * Enable OpenGL
  *
  *******************/
 
 #ifdef PLATFORM_WINDOWS
+// EnableOpenGL function implementation
 void EnableOpenGL(HWND hWnd, HDC* hDC, HGLRC* hRC)
 {
     PIXELFORMATDESCRIPTOR pfd;
     int iFormat;
-
-    /* get the device context (DC) */
+    
+    // Get the device context
     *hDC = GetDC(hWnd);
-
-    /* set the pixel format for the DC */
+    
+    // Set the pixel format for the device context
     ZeroMemory(&pfd, sizeof(pfd));
     pfd.nSize = sizeof(pfd);
     pfd.nVersion = 1;
-    pfd.dwFlags = PFD_DRAW_TO_WINDOW | 
-      PFD_SUPPORT_OPENGL | PFD_DOUBLEBUFFER;
+    pfd.dwFlags = PFD_DRAW_TO_WINDOW | PFD_SUPPORT_OPENGL | PFD_DOUBLEBUFFER;
     pfd.iPixelType = PFD_TYPE_RGBA;
     pfd.cColorBits = 24;
     pfd.cDepthBits = 16;
     pfd.iLayerType = PFD_MAIN_PLANE;
+    
     iFormat = ChoosePixelFormat(*hDC, &pfd);
     SetPixelFormat(*hDC, iFormat, &pfd);
-
-    /* create and enable the render context (RC) */
+    
+    // Create and enable the OpenGL rendering context
     *hRC = wglCreateContext(*hDC);
     wglMakeCurrent(*hDC, *hRC);
 }
@@ -563,6 +545,7 @@ void EnableOpenGL(HWND hWnd, HDC* hDC, HGLRC* hRC)
  ******************/
 
 #ifdef PLATFORM_WINDOWS
+// DisableOpenGL function implementation
 void DisableOpenGL(HWND hWnd, HDC hDC, HGLRC hRC)
 {
     wglMakeCurrent(NULL, NULL);
