@@ -1,6 +1,9 @@
 #ifndef GAME_ENGINE_SAVI_GL_DEFINITIONS_H
 #define GAME_ENGINE_SAVI_GL_DEFINITIONS_H
 
+// Include standard headers
+#include <cstdint>
+
 // Define GLEW_STATIC before including glew.h
 #ifndef GLEW_STATIC
 #define GLEW_STATIC
