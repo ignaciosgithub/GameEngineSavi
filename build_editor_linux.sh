@@ -7,11 +7,11 @@ if ! dpkg -l | grep -q libglew-dev; then
     sudo apt-get install -y libglew-dev
 fi
 
-# Check if GLUT is installed
-if ! dpkg -l | grep -q freeglut3-dev; then
+# Check if GLUT is installed (use glut instead of freeglut)
+if ! dpkg -l | grep -q libglut3-dev; then
     echo "GLUT development package not found. Installing..."
     sudo apt-get update
-    sudo apt-get install -y freeglut3-dev
+    sudo apt-get install -y libglut3-dev
 fi
 
 # Create build directory if it doesn't exist
@@ -33,13 +33,21 @@ g++ -o build/editor \
     -I. \
     -IThirdParty/OpenGL/include \
     -DGL_GLEXT_PROTOTYPES \
+    -DGLEW_STATIC \
     -include ThirdParty/OpenGL/include/GL/gl_definitions.h \
     -lGLEW -lGL -lGLU -lglut -lX11
 
 # Check if build was successful
 if [ $? -eq 0 ]; then
     echo "Editor build successful."
-    echo "Run the editor with: ./build/editor"
+    
+    # Check if we're in a headless environment
+    if [ -z "$DISPLAY" ]; then
+        echo "Warning: No display detected. Running the editor may fail in a headless environment."
+        echo "Consider using the emergency editor for headless environments."
+    else
+        echo "Run the editor with: ./build/editor"
+    fi
 else
     echo "Editor build failed."
 fi
