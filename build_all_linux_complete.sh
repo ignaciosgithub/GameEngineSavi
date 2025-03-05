@@ -27,7 +27,20 @@ rm -rf bin/linux/*.o bin/linux/*.a
 # Compile the engine components in the correct order
 echo "Compiling engine components..."
 
-# First, compile the basic components
+# First, compile the graphics API components
+echo "Compiling OpenGLGraphicsAPI..."
+g++ $CFLAGS $INCLUDES -c Graphics/Core/OpenGLGraphicsAPI.cpp -o bin/linux/OpenGLGraphicsAPI.o
+check_status "OpenGLGraphicsAPI compilation"
+
+echo "Compiling DirectXGraphicsAPI..."
+g++ $CFLAGS $INCLUDES -c Graphics/Core/DirectXGraphicsAPI.cpp -o bin/linux/DirectXGraphicsAPI.o
+check_status "DirectXGraphicsAPI compilation"
+
+echo "Compiling GraphicsAPIFactory..."
+g++ $CFLAGS $INCLUDES -c Graphics/Core/GraphicsAPIFactory.cpp -o bin/linux/GraphicsAPIFactory.o
+check_status "GraphicsAPIFactory compilation"
+
+# Then compile the basic components
 echo "Compiling Vector3..."
 g++ $CFLAGS $INCLUDES -c Vector3.cpp -o bin/linux/Vector3.o
 check_status "Vector3 compilation"
@@ -99,7 +112,7 @@ g++ $CFLAGS $INCLUDES -c Profiler.cpp -o bin/linux/Profiler.o || echo "Warning: 
 
 # Create a static library with the components that compiled successfully
 echo "Creating static library..."
-ar rcs bin/linux/libGameEngineSavi.a bin/linux/Vector3.o bin/linux/Matrix4x4.o bin/linux/Model.o bin/linux/GameObject.o bin/linux/Camera.o bin/linux/Raycast.o bin/linux/TimeManager.o bin/linux/NavMesh.o bin/linux/NavMeshManager.o bin/linux/AIEntity.o bin/linux/ProjectSettings.o
+ar rcs bin/linux/libGameEngineSavi.a bin/linux/OpenGLGraphicsAPI.o bin/linux/DirectXGraphicsAPI.o bin/linux/GraphicsAPIFactory.o bin/linux/Vector3.o bin/linux/Matrix4x4.o bin/linux/Model.o bin/linux/GameObject.o bin/linux/Camera.o bin/linux/Raycast.o bin/linux/TimeManager.o bin/linux/NavMesh.o bin/linux/NavMeshManager.o bin/linux/AIEntity.o bin/linux/ProjectSettings.o
 if [ -f bin/linux/RigidBody.o ]; then
     ar rcs bin/linux/libGameEngineSavi.a bin/linux/RigidBody.o
 fi

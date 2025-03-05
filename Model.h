@@ -12,64 +12,27 @@
 // Face.h is already included elsewhere, so we'll just forward declare it
 class Face;
 #include "Shaders/Core/ShaderProgram.h"
-#include "GL/gl_types.h"
 #include "MonoBehaviourLike.h"
 #include "Texture.h"
 #include "platform.h"
+#include "Graphics/Core/IGraphicsAPI.h"
 
-// Platform-specific OpenGL includes
-#ifdef PLATFORM_WINDOWS
-#include <windows.h>
-#include <gl/gl.h>
-#else
-#include <GL/gl.h>
-#endif
-
+// Forward declarations
 class PointLight;
 
 class Model : public MonoBehaviourLike {
-private:
+public:
     // Mesh data
-    std::vector<GLfloat> vertices; // Stores the vertices
-    std::vector<GLuint> indices; // Stores the indices representing triangles
-    std::vector<GLfloat> texCoords; // Stores texture coordinates
-    std::vector<GLfloat> normals;   // Stores vertex normals
-    
-    // Texture data
-    std::string texturePath;
-    
-    // Shader program
-    ShaderProgram* shaderProgram;
+    std::vector<float> vertices; // Stores the vertices
+    std::vector<unsigned int> indices; // Stores the indices representing triangles
+    std::vector<float> texCoords; // Stores texture coordinates
+    std::vector<float> normals;   // Stores vertex normals
     
     // Position and rotation
     Vector3 position;
     Vector3 rotation;
+    Vector3 size;
     
-    // Textures
-    Texture* albedoTexture = nullptr;
-    Texture* normalTexture = nullptr;
-    Texture* opacityTexture = nullptr;
-    
-    // Callback for when vertices are updated
-    std::function<void(Model*)> onVerticesUpdated;
-    
-    // Calculate normal for a vertex
-    Vector3 calculateNormal(size_t i) const {
-        if (i + 2 < vertices.size()) {
-            Vector3 v1(vertices[i], vertices[i+1], vertices[i+2]);
-            Vector3 v2(vertices[i+3], vertices[i+4], vertices[i+5]);
-            Vector3 v3(vertices[i+6], vertices[i+7], vertices[i+8]);
-            
-            Vector3 edge1 = v2 - v1;
-            Vector3 edge2 = v3 - v1;
-            
-            return edge1.cross(edge2).normalized();
-        }
-        
-        return Vector3(0, 1, 0);
-    }
-    
-public:
     // Constructor
     Model();
     
@@ -119,7 +82,7 @@ public:
     void UpdateUniforms(const Matrix4x4& viewMatrix, const Matrix4x4& projectionMatrix);
     
     // Update vertices
-    void UpdateVertices(const std::vector<GLfloat>& newVertices);
+    void UpdateVertices(const std::vector<float>& newVertices);
     
     // Initialize buffers
     void InitializeBuffers();
@@ -128,29 +91,59 @@ public:
     void SetShaderProgram(ShaderProgram* program);
     
     // Get shader program
-    ShaderProgram* GetShaderProgram() const;
+    ShaderProgram* GetShaderProgram() const { return shaderProgram; }
     
     // Set texture path
-    void SetTexturePath(const std::string& path);
+    void SetTexturePath(const std::string& path) { texturePath = path; }
     
     // Get texture path
-    const std::string& GetTexturePath() const;
+    const std::string& GetTexturePath() const { return texturePath; }
     
 private:
-    // OpenGL objects
-    GLuint vao = 0;  // Vertex Array Object
-    GLuint vbo = 0;  // Vertex Buffer Object
-    GLuint ebo = 0;  // Element Buffer Object
-    GLuint tbo = 0;  // Texture Coordinate Buffer Object
-    GLuint nbo = 0;  // Normal Buffer Object
+    // Texture data
+    std::string texturePath;
     
-    // Initialize OpenGL objects
+    // Shader program
+    ShaderProgram* shaderProgram = nullptr;
+    
+    // Textures
+    Texture* albedoTexture = nullptr;
+    Texture* normalTexture = nullptr;
+    Texture* opacityTexture = nullptr;
+    
+    // Callback for when vertices are updated
+    std::function<void(Model*)> onVerticesUpdated;
+    
+    // Graphics API objects
+    unsigned int vao = 0;  // Vertex Array Object
+    unsigned int vbo = 0;  // Vertex Buffer Object
+    unsigned int ebo = 0;  // Element Buffer Object
+    unsigned int tbo = 0;  // Texture Coordinate Buffer Object
+    unsigned int nbo = 0;  // Normal Buffer Object
+    
+    // Calculate normal for a vertex
+    Vector3 calculateNormal(size_t i) const {
+        if (i + 2 < vertices.size()) {
+            Vector3 v1(vertices[i], vertices[i+1], vertices[i+2]);
+            Vector3 v2(vertices[i+3], vertices[i+4], vertices[i+5]);
+            Vector3 v3(vertices[i+6], vertices[i+7], vertices[i+8]);
+            
+            Vector3 edge1 = v2 - v1;
+            Vector3 edge2 = v3 - v1;
+            
+            return edge1.cross(edge2).normalized();
+        }
+        
+        return Vector3(0, 1, 0);
+    }
+    
+    // Initialize graphics objects
     void InitializeGL();
     
-    // Update OpenGL buffers
+    // Update graphics buffers
     void UpdateBuffers();
     
-    // Clean up OpenGL objects
+    // Clean up graphics objects
     void CleanupGL();
 };
 

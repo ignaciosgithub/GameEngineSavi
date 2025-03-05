@@ -6,14 +6,7 @@
 #include "EngineCondition.h"
 #include "Scene_includes.h"
 #include "platform.h"
-
-// Platform-specific OpenGL includes
-#ifdef PLATFORM_WINDOWS
-#include <windows.h>
-#include <gl/gl.h>
-#else
-#include <GL/gl.h>
-#endif
+#include "Graphics/Core/GraphicsAPIFactory.h"
 
 // GameObject extensions included via GameObject.h
 
@@ -166,13 +159,7 @@ Vector3 Scene::GetGravity() const {
     return Vector3(0, -9.81f, 0); // Default gravity
 }
 
-void Scene::SetPhysicsTimeStep(float timeStep) {
-    physicsTimeStep = timeStep;
-}
-
-float Scene::GetPhysicsTimeStep() const {
-    return physicsTimeStep;
-}
+// SetPhysicsTimeStep and GetPhysicsTimeStep are now inline in Scene.h
 
 void Scene::Update(float deltaTime) {
     // Update time
@@ -213,8 +200,11 @@ void Scene::Update(float deltaTime) {
 }
 
 void Scene::Render() {
-    // Clear the screen
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    // Clear the screen using the graphics API
+    auto graphics = GraphicsAPIFactory::GetInstance().GetGraphicsAPI();
+    if (graphics) {
+        graphics->Clear(true, true);
+    }
 
     // Render the scene
     RenderScene();
@@ -268,13 +258,16 @@ void Scene::RenderScene() {
             continue;
         }
 
-        // Set viewport
+        // Set viewport using the graphics API
         int viewportX = 0;
         int viewportY = 0;
         int viewportWidth = camera->GetViewportWidth();
         int viewportHeight = camera->GetViewportHeight();
 
-        glViewport(viewportX, viewportY, viewportWidth, viewportHeight);
+        auto graphics = GraphicsAPIFactory::GetInstance().GetGraphicsAPI();
+        if (graphics) {
+            graphics->SetViewport(viewportX, viewportY, viewportWidth, viewportHeight);
+        }
 
         // Get view and projection matrices
         Matrix4x4 viewMatrix = camera->GetViewMatrix();
@@ -317,25 +310,14 @@ void Scene::RenderMesh(Model* mesh, const Matrix4x4& modelMatrix, const Matrix4x
 }
 
 void Scene::DrawDebugAxes() {
-    // Draw coordinate axes for debugging
-    glBegin(GL_LINES);
-
-    // X axis (red)
-    glColor3f(1.0f, 0.0f, 0.0f);
-    glVertex3f(0.0f, 0.0f, 0.0f);
-    glVertex3f(1.0f, 0.0f, 0.0f);
-
-    // Y axis (green)
-    glColor3f(0.0f, 1.0f, 0.0f);
-    glVertex3f(0.0f, 0.0f, 0.0f);
-    glVertex3f(0.0f, 1.0f, 0.0f);
-
-    // Z axis (blue)
-    glColor3f(0.0f, 0.0f, 1.0f);
-    glVertex3f(0.0f, 0.0f, 0.0f);
-    glVertex3f(0.0f, 0.0f, 1.0f);
-
-    glEnd();
+    // Draw coordinate axes for debugging using the graphics API
+    auto graphics = GraphicsAPIFactory::GetInstance().GetGraphicsAPI();
+    if (!graphics) {
+        return;
+    }
+    
+    // Draw the debug axes using the graphics API
+    graphics->DrawDebugAxes();
 }
 
 void Scene::SetGlobalShaderUniforms(ShaderProgram* program) {
@@ -446,34 +428,25 @@ Scene::~Scene() {
     Shutdown();
 }
 
-void Scene::SetCreateDefaultObjects(bool create) {
-    createDefaultObjects = create;
-}
+// SetCreateDefaultObjects and GetCreateDefaultObjects are now inline in Scene.h
 
-bool Scene::GetCreateDefaultObjects() const {
-    return createDefaultObjects;
-}
-
-void Scene::SetRunning(bool running) {
-    isRunning = running;
-}
-
-bool Scene::IsRunning() const {
-    return isRunning;
-}
+// SetRunning and IsRunning are now inline in Scene.h
 
 void Scene::RenderFromCamera(Camera* camera) {
     if (!camera) {
         return;
     }
 
-    // Set viewport
+    // Set viewport using the graphics API
     int viewportX = 0;
     int viewportY = 0;
     int viewportWidth = camera->GetViewportWidth();
     int viewportHeight = camera->GetViewportHeight();
 
-    glViewport(viewportX, viewportY, viewportWidth, viewportHeight);
+    auto graphics = GraphicsAPIFactory::GetInstance().GetGraphicsAPI();
+    if (graphics) {
+        graphics->SetViewport(viewportX, viewportY, viewportWidth, viewportHeight);
+    }
 
     // Get view and projection matrices
     Matrix4x4 viewMatrix = camera->GetViewMatrix();
@@ -494,17 +467,7 @@ void Scene::SetMinimapCamera(Camera* camera) {
     minimapCamera = camera;
 }
 
-Camera* Scene::GetMinimapCamera() const {
-    return minimapCamera;
-}
-
-Camera* Scene::GetMainCamera() const {
-    return mainCamera;
-}
-
-void Scene::SetResolutionChangeAllowed(bool allowed) {
-    resolutionChangeAllowed = allowed;
-}
+// GetMinimapCamera, GetMainCamera, and SetResolutionChangeAllowed are now inline in Scene.h
 
 void Scene::UpdateResolution(int width, int height) {
     if (!resolutionChangeAllowed) {
