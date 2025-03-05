@@ -129,10 +129,15 @@ void DirectXGraphicsAPI::DeleteVertexArray(unsigned int vao) {
 
 unsigned int DirectXGraphicsAPI::CreateBuffer() {
 #ifdef PLATFORM_WINDOWS
-    // In a real implementation, we would create a D3D buffer here
-    // For now, just return a placeholder ID
+    // Create a buffer ID for tracking
     static unsigned int nextBuffer = 1;
-    return nextBuffer++;
+    unsigned int bufferID = nextBuffer++;
+    
+    // Store buffer ID for later use
+    // In a full implementation, we would store the buffer in a map
+    // buffers[bufferID] = nullptr;
+    
+    return bufferID;
 #else
     return 0;
 #endif
@@ -141,7 +146,27 @@ unsigned int DirectXGraphicsAPI::CreateBuffer() {
 void DirectXGraphicsAPI::BindBuffer(BufferType type, unsigned int buffer) {
     currentBuffer = buffer;
 #ifdef PLATFORM_WINDOWS
-    // In a real implementation, we would bind the buffer here
+    // Store the current buffer type and ID
+    if (context) {
+        // In DirectX, binding depends on the buffer type
+        switch (type) {
+            case VERTEX_BUFFER:
+                // We'll set the vertex buffer when we have an actual buffer to bind
+                // This is done in DrawArrays or DrawElements
+                break;
+            case INDEX_BUFFER:
+                // We'll set the index buffer when we have an actual buffer to bind
+                // This is done in DrawElements
+                break;
+            case UNIFORM_BUFFER:
+                // DirectX uses constant buffers for uniforms
+                // We'll set these when we have shader programs
+                break;
+            default:
+                std::cerr << "Unknown buffer type: " << type << std::endl;
+                break;
+        }
+    }
 #endif
 }
 
@@ -150,13 +175,94 @@ void DirectXGraphicsAPI::DeleteBuffer(unsigned int buffer) {
         currentBuffer = 0;
     }
 #ifdef PLATFORM_WINDOWS
-    // In a real implementation, we would release the buffer here
+    // In a full implementation, we would retrieve the buffer from a map
+    // ID3D11Buffer* d3dBuffer = buffers[buffer];
+    
+    // Release the buffer if it exists
+    // if (d3dBuffer) {
+    //     d3dBuffer->Release();
+    //     buffers.erase(buffer);
+    // }
+    
+    // If this was the current vertex or index buffer, clear it
+    if (currentVertexBuffer && buffer == currentBuffer) {
+        currentVertexBuffer->Release();
+        currentVertexBuffer = nullptr;
+    }
+    
+    if (currentIndexBuffer && buffer == currentBuffer) {
+        currentIndexBuffer->Release();
+        currentIndexBuffer = nullptr;
+    }
+    
+    std::cout << "Deleted buffer " << buffer << std::endl;
 #endif
 }
 
 void DirectXGraphicsAPI::BufferData(BufferType type, const void* data, size_t size, bool dynamic) {
 #ifdef PLATFORM_WINDOWS
-    // In a real implementation, we would update the buffer data here
+    if (device && data && size > 0) {
+        // Create a new buffer based on the type
+        D3D11_BUFFER_DESC bufferDesc = {};
+        bufferDesc.ByteWidth = static_cast<UINT>(size);
+        bufferDesc.Usage = dynamic ? D3D11_USAGE_DYNAMIC : D3D11_USAGE_DEFAULT;
+        bufferDesc.CPUAccessFlags = dynamic ? D3D11_CPU_ACCESS_WRITE : 0;
+        
+        // Set buffer type-specific flags
+        switch (type) {
+            case VERTEX_BUFFER:
+                bufferDesc.BindFlags = D3D11_BIND_VERTEX_BUFFER;
+                break;
+            case INDEX_BUFFER:
+                bufferDesc.BindFlags = D3D11_BIND_INDEX_BUFFER;
+                break;
+            case UNIFORM_BUFFER:
+                bufferDesc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
+                break;
+            default:
+                std::cerr << "Unknown buffer type: " << type << std::endl;
+                return;
+        }
+        
+        // Initialize buffer with data
+        D3D11_SUBRESOURCE_DATA initData = {};
+        initData.pSysMem = data;
+        
+        // Create the buffer
+        ID3D11Buffer* buffer = nullptr;
+        HRESULT hr = device->CreateBuffer(&bufferDesc, &initData, &buffer);
+        
+        if (SUCCEEDED(hr)) {
+            // Store the buffer for the current buffer ID
+            // In a full implementation, we would store this in a map
+            // buffers[currentBuffer] = buffer;
+            
+            // Bind the buffer based on its type
+            switch (type) {
+                case VERTEX_BUFFER: {
+                    UINT stride = static_cast<UINT>(size); // This would need to be adjusted based on vertex format
+                    UINT offset = 0;
+                    context->IASetVertexBuffers(0, 1, &buffer, &stride, &offset);
+                    currentVertexBuffer = buffer;
+                    break;
+                }
+                case INDEX_BUFFER:
+                    context->IASetIndexBuffer(buffer, DXGI_FORMAT_R32_UINT, 0);
+                    currentIndexBuffer = buffer;
+                    break;
+                case UNIFORM_BUFFER:
+                    // For constant buffers, we would bind to specific shader stages
+                    context->VSSetConstantBuffers(0, 1, &buffer);
+                    context->PSSetConstantBuffers(0, 1, &buffer);
+                    break;
+            }
+            
+            std::cout << "Created and bound buffer of type " << type 
+                      << " with size " << size << " bytes" << std::endl;
+        } else {
+            std::cerr << "Failed to create buffer of type " << type << std::endl;
+        }
+    }
 #endif
 }
 
@@ -241,75 +347,134 @@ void DirectXGraphicsAPI::UseShaderProgram(ShaderProgram* program) {
         // Get shader resources from the program
         ID3D11VertexShader* vertexShader = nullptr;
         ID3D11PixelShader* pixelShader = nullptr;
+        ID3D11GeometryShader* geometryShader = nullptr;
         ID3D11InputLayout* inputLayout = nullptr;
         
-        // In a real implementation, we would get these from the program
-        // For now, we'll use static variables to simulate shader compilation
-        static bool shadersInitialized = false;
-        static ID3D11VertexShader* defaultVS = nullptr;
-        static ID3D11PixelShader* defaultPS = nullptr;
-        static ID3D11InputLayout* defaultLayout = nullptr;
-        
-        if (!shadersInitialized) {
-            // Compile default shaders
-            const char* vsCode = 
-                "float4 main(float4 pos : POSITION) : SV_POSITION { return pos; }";
+        // Check if the program has DirectX shaders
+        if (program->HasDirectXShaders()) {
+            // Get DirectX shaders from the program
+            vertexShader = program->GetDirectXVertexShader();
+            pixelShader = program->GetDirectXPixelShader();
+            geometryShader = program->GetDirectXGeometryShader();
+            inputLayout = program->GetDirectXInputLayout();
+        } else {
+            // Compile DirectX shaders from GLSL source
+            // This is a fallback for when the program only has GLSL shaders
             
-            const char* psCode = 
-                "float4 main() : SV_TARGET { return float4(1.0f, 1.0f, 1.0f, 1.0f); }";
+            // Initialize default shaders if not already done
+            static bool shadersInitialized = false;
+            static ID3D11VertexShader* defaultVS = nullptr;
+            static ID3D11PixelShader* defaultPS = nullptr;
+            static ID3D11InputLayout* defaultLayout = nullptr;
             
-            // Compile vertex shader
-            ID3DBlob* vsBlob = nullptr;
-            ID3DBlob* errorBlob = nullptr;
-            HRESULT hr = D3DCompile(vsCode, strlen(vsCode), "VS", nullptr, nullptr, 
-                                   "main", "vs_5_0", 0, 0, &vsBlob, &errorBlob);
-            
-            if (SUCCEEDED(hr)) {
-                // Create vertex shader
-                device->CreateVertexShader(vsBlob->GetBufferPointer(), 
-                                          vsBlob->GetBufferSize(), nullptr, &defaultVS);
+            if (!shadersInitialized) {
+                // Default red shader for fallback
+                const char* vsCode = 
+                    "float4 main(float4 pos : POSITION) : SV_POSITION { return pos; }";
                 
-                // Create input layout
-                D3D11_INPUT_ELEMENT_DESC layout[] = {
-                    { "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, 
-                     D3D11_INPUT_PER_VERTEX_DATA, 0 }
-                };
+                const char* psCode = 
+                    "float4 main() : SV_TARGET { return float4(1.0f, 0.0f, 0.0f, 1.0f); }";
                 
-                device->CreateInputLayout(layout, 1, vsBlob->GetBufferPointer(),
-                                         vsBlob->GetBufferSize(), &defaultLayout);
+                // Compile vertex shader
+                ID3DBlob* vsBlob = nullptr;
+                ID3DBlob* errorBlob = nullptr;
+                HRESULT hr = D3DCompile(vsCode, strlen(vsCode), "VS", nullptr, nullptr, 
+                                       "main", "vs_5_0", 0, 0, &vsBlob, &errorBlob);
                 
-                vsBlob->Release();
+                if (SUCCEEDED(hr)) {
+                    // Create vertex shader
+                    hr = device->CreateVertexShader(vsBlob->GetBufferPointer(), 
+                                              vsBlob->GetBufferSize(), nullptr, &defaultVS);
+                    
+                    if (FAILED(hr)) {
+                        std::cerr << "Failed to create vertex shader" << std::endl;
+                        if (errorBlob) {
+                            std::cerr << "Error: " << (char*)errorBlob->GetBufferPointer() << std::endl;
+                        }
+                    }
+                    
+                    // Create input layout
+                    D3D11_INPUT_ELEMENT_DESC layout[] = {
+                        { "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, 
+                         D3D11_INPUT_PER_VERTEX_DATA, 0 },
+                        { "NORMAL", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 12, 
+                         D3D11_INPUT_PER_VERTEX_DATA, 0 },
+                        { "TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 0, 24, 
+                         D3D11_INPUT_PER_VERTEX_DATA, 0 }
+                    };
+                    
+                    hr = device->CreateInputLayout(layout, 3, vsBlob->GetBufferPointer(),
+                                             vsBlob->GetBufferSize(), &defaultLayout);
+                    
+                    if (FAILED(hr)) {
+                        std::cerr << "Failed to create input layout" << std::endl;
+                    }
+                    
+                    vsBlob->Release();
+                } else {
+                    std::cerr << "Failed to compile vertex shader" << std::endl;
+                    if (errorBlob) {
+                        std::cerr << "Error: " << (char*)errorBlob->GetBufferPointer() << std::endl;
+                    }
+                }
+                
+                // Compile pixel shader
+                ID3DBlob* psBlob = nullptr;
+                hr = D3DCompile(psCode, strlen(psCode), "PS", nullptr, nullptr,
+                               "main", "ps_5_0", 0, 0, &psBlob, &errorBlob);
+                
+                if (SUCCEEDED(hr)) {
+                    // Create pixel shader
+                    hr = device->CreatePixelShader(psBlob->GetBufferPointer(),
+                                             psBlob->GetBufferSize(), nullptr, &defaultPS);
+                    
+                    if (FAILED(hr)) {
+                        std::cerr << "Failed to create pixel shader" << std::endl;
+                        if (errorBlob) {
+                            std::cerr << "Error: " << (char*)errorBlob->GetBufferPointer() << std::endl;
+                        }
+                    }
+                    
+                    psBlob->Release();
+                } else {
+                    std::cerr << "Failed to compile pixel shader" << std::endl;
+                    if (errorBlob) {
+                        std::cerr << "Error: " << (char*)errorBlob->GetBufferPointer() << std::endl;
+                    }
+                }
+                
+                if (errorBlob) {
+                    errorBlob->Release();
+                }
+                
+                shadersInitialized = true;
             }
             
-            // Compile pixel shader
-            ID3DBlob* psBlob = nullptr;
-            hr = D3DCompile(psCode, strlen(psCode), "PS", nullptr, nullptr,
-                           "main", "ps_5_0", 0, 0, &psBlob, &errorBlob);
+            // Use default shaders if program doesn't provide its own
+            vertexShader = defaultVS;
+            pixelShader = defaultPS;
+            inputLayout = defaultLayout;
             
-            if (SUCCEEDED(hr)) {
-                // Create pixel shader
-                device->CreatePixelShader(psBlob->GetBufferPointer(),
-                                         psBlob->GetBufferSize(), nullptr, &defaultPS);
-                
-                psBlob->Release();
-            }
-            
-            if (errorBlob) {
-                errorBlob->Release();
-            }
-            
-            shadersInitialized = true;
+            // Store the compiled DirectX shaders in the program for future use
+            program->SetDirectXVertexShader(vertexShader);
+            program->SetDirectXPixelShader(pixelShader);
+            program->SetDirectXInputLayout(inputLayout);
         }
-        
-        // Use default shaders if program doesn't provide its own
-        vertexShader = defaultVS;
-        pixelShader = defaultPS;
-        inputLayout = defaultLayout;
         
         // Set shaders and input layout
         context->VSSetShader(vertexShader, nullptr, 0);
         context->PSSetShader(pixelShader, nullptr, 0);
+        
+        if (geometryShader) {
+            context->GSSetShader(geometryShader, nullptr, 0);
+        } else {
+            context->GSSetShader(nullptr, nullptr, 0);
+        }
+        
         context->IASetInputLayout(inputLayout);
+        
+        // Set primitive topology
+        context->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
         
         std::cout << "Using shader program: " << program << std::endl;
     }
@@ -479,7 +644,7 @@ void DirectXGraphicsAPI::TexImage2D(int width, int height, const void* data, boo
         textureDesc.Height = height;
         textureDesc.MipLevels = 1;
         textureDesc.ArraySize = 1;
-        textureDesc.Format = hasAlpha ? DXGI_FORMAT_R8G8B8A8_UNORM : DXGI_FORMAT_R8G8B8A8_UNORM;
+        textureDesc.Format = hasAlpha ? DXGI_FORMAT_R8G8B8A8_UNORM : DXGI_FORMAT_B8G8R8A8_UNORM;
         textureDesc.SampleDesc.Count = 1;
         textureDesc.SampleDesc.Quality = 0;
         textureDesc.Usage = D3D11_USAGE_DEFAULT;
@@ -489,11 +654,28 @@ void DirectXGraphicsAPI::TexImage2D(int width, int height, const void* data, boo
         
         // Create initial data if provided
         D3D11_SUBRESOURCE_DATA initialData = {};
-        if (data) {
+        
+        // Convert RGB to RGBA if needed
+        std::vector<unsigned char> convertedData;
+        if (data && !hasAlpha) {
+            // Convert RGB to RGBA by adding alpha channel
+            const unsigned char* srcData = static_cast<const unsigned char*>(data);
+            convertedData.resize(width * height * 4);
+            
+            for (int i = 0; i < width * height; ++i) {
+                convertedData[i * 4 + 0] = srcData[i * 3 + 0]; // R
+                convertedData[i * 4 + 1] = srcData[i * 3 + 1]; // G
+                convertedData[i * 4 + 2] = srcData[i * 3 + 2]; // B
+                convertedData[i * 4 + 3] = 255;                // A (fully opaque)
+            }
+            
+            initialData.pSysMem = convertedData.data();
+            initialData.SysMemPitch = width * 4;
+        } else if (data) {
             initialData.pSysMem = data;
-            initialData.SysMemPitch = width * (hasAlpha ? 4 : 3);
-            initialData.SysMemSlicePitch = 0;
+            initialData.SysMemPitch = width * 4; // RGBA is always 4 bytes per pixel
         }
+        initialData.SysMemSlicePitch = 0;
         
         // Create the texture
         ID3D11Texture2D* texture = nullptr;
@@ -512,9 +694,31 @@ void DirectXGraphicsAPI::TexImage2D(int width, int height, const void* data, boo
             
             if (SUCCEEDED(hr)) {
                 // Store the texture and view for later use
-                // In a real implementation, we would store these in a map
-                // textures[currentTexture].texture = texture;
-                // textures[currentTexture].textureView = textureView;
+                // In a full implementation, we would store these in a map
+                // For example:
+                // TextureResource resource;
+                // resource.texture = texture;
+                // resource.textureView = textureView;
+                // textures[currentTexture] = resource;
+                
+                // For now, we'll store them in static variables for the current texture
+                static ID3D11Texture2D* currentTexture = nullptr;
+                static ID3D11ShaderResourceView* currentTextureView = nullptr;
+                
+                // Release previous resources if they exist
+                if (currentTexture) {
+                    currentTexture->Release();
+                }
+                if (currentTextureView) {
+                    currentTextureView->Release();
+                }
+                
+                // Store new resources
+                currentTexture = texture;
+                currentTextureView = textureView;
+                
+                // Bind the texture to the pixel shader
+                context->PSSetShaderResources(0, 1, &textureView);
                 
                 std::cout << "Created texture with dimensions " << width << "x" << height 
                           << " (has alpha: " << (hasAlpha ? "yes" : "no") << ")" << std::endl;
@@ -598,8 +802,15 @@ void DirectXGraphicsAPI::DrawDebugLine(const Vector3& start, const Vector3& end,
                 
                 if (SUCCEEDED(hr)) {
                     // Create vertex shader
-                    device->CreateVertexShader(vsBlob->GetBufferPointer(), 
+                    hr = device->CreateVertexShader(vsBlob->GetBufferPointer(), 
                                               vsBlob->GetBufferSize(), nullptr, &lineVS);
+                    
+                    if (FAILED(hr)) {
+                        std::cerr << "Failed to create line vertex shader" << std::endl;
+                        if (errorBlob) {
+                            std::cerr << "Error: " << (char*)errorBlob->GetBufferPointer() << std::endl;
+                        }
+                    }
                     
                     // Create input layout
                     D3D11_INPUT_ELEMENT_DESC layout[] = {
@@ -609,10 +820,19 @@ void DirectXGraphicsAPI::DrawDebugLine(const Vector3& start, const Vector3& end,
                          D3D11_INPUT_PER_VERTEX_DATA, 0 }
                     };
                     
-                    device->CreateInputLayout(layout, 2, vsBlob->GetBufferPointer(),
+                    hr = device->CreateInputLayout(layout, 2, vsBlob->GetBufferPointer(),
                                              vsBlob->GetBufferSize(), &lineLayout);
                     
+                    if (FAILED(hr)) {
+                        std::cerr << "Failed to create line input layout" << std::endl;
+                    }
+                    
                     vsBlob->Release();
+                } else {
+                    std::cerr << "Failed to compile line vertex shader" << std::endl;
+                    if (errorBlob) {
+                        std::cerr << "Error: " << (char*)errorBlob->GetBufferPointer() << std::endl;
+                    }
                 }
                 
                 // Compile pixel shader
@@ -622,10 +842,22 @@ void DirectXGraphicsAPI::DrawDebugLine(const Vector3& start, const Vector3& end,
                 
                 if (SUCCEEDED(hr)) {
                     // Create pixel shader
-                    device->CreatePixelShader(psBlob->GetBufferPointer(),
+                    hr = device->CreatePixelShader(psBlob->GetBufferPointer(),
                                              psBlob->GetBufferSize(), nullptr, &linePS);
                     
+                    if (FAILED(hr)) {
+                        std::cerr << "Failed to create line pixel shader" << std::endl;
+                        if (errorBlob) {
+                            std::cerr << "Error: " << (char*)errorBlob->GetBufferPointer() << std::endl;
+                        }
+                    }
+                    
                     psBlob->Release();
+                } else {
+                    std::cerr << "Failed to compile line pixel shader" << std::endl;
+                    if (errorBlob) {
+                        std::cerr << "Error: " << (char*)errorBlob->GetBufferPointer() << std::endl;
+                    }
                 }
                 
                 if (errorBlob) {
@@ -638,11 +870,37 @@ void DirectXGraphicsAPI::DrawDebugLine(const Vector3& start, const Vector3& end,
             context->PSSetShader(linePS, nullptr, 0);
             context->IASetInputLayout(lineLayout);
             
-            // Draw the line
-            context->Draw(2, 0);
+            // Set up rasterizer state for lines
+            D3D11_RASTERIZER_DESC rasterizerDesc = {};
+            rasterizerDesc.FillMode = D3D11_FILL_SOLID;
+            rasterizerDesc.CullMode = D3D11_CULL_NONE;
+            rasterizerDesc.FrontCounterClockwise = FALSE;
+            rasterizerDesc.DepthBias = 0;
+            rasterizerDesc.DepthBiasClamp = 0.0f;
+            rasterizerDesc.SlopeScaledDepthBias = 0.0f;
+            rasterizerDesc.DepthClipEnable = TRUE;
+            rasterizerDesc.ScissorEnable = FALSE;
+            rasterizerDesc.MultisampleEnable = FALSE;
+            rasterizerDesc.AntialiasedLineEnable = TRUE;
+            
+            ID3D11RasterizerState* rasterizerState = nullptr;
+            hr = device->CreateRasterizerState(&rasterizerDesc, &rasterizerState);
+            
+            if (SUCCEEDED(hr)) {
+                // Set rasterizer state
+                context->RSSetState(rasterizerState);
+                
+                // Draw the line
+                context->Draw(2, 0);
+                
+                // Release rasterizer state
+                rasterizerState->Release();
+            }
             
             // Release vertex buffer
             vertexBuffer->Release();
+        } else {
+            std::cerr << "Failed to create line vertex buffer" << std::endl;
         }
         
         std::cout << "Drawing debug line from (" 
@@ -859,11 +1117,17 @@ void DirectXGraphicsAPI::SetUniformMatrix4Array(unsigned int program, const std:
 
 #ifdef PLATFORM_WINDOWS
 void DirectXGraphicsAPI::CreateDeviceAndSwapChain(HWND hwnd) {
+    // Get window dimensions
+    RECT clientRect;
+    GetClientRect(hwnd, &clientRect);
+    UINT width = clientRect.right - clientRect.left;
+    UINT height = clientRect.bottom - clientRect.top;
+    
     // Create the DirectX device and swap chain
     DXGI_SWAP_CHAIN_DESC swapChainDesc = {};
     swapChainDesc.BufferCount = 1;
-    swapChainDesc.BufferDesc.Width = 0; // Use window width
-    swapChainDesc.BufferDesc.Height = 0; // Use window height
+    swapChainDesc.BufferDesc.Width = width > 0 ? width : 800; // Use window width or default
+    swapChainDesc.BufferDesc.Height = height > 0 ? height : 600; // Use window height or default
     swapChainDesc.BufferDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
     swapChainDesc.BufferDesc.RefreshRate.Numerator = 60;
     swapChainDesc.BufferDesc.RefreshRate.Denominator = 1;
@@ -872,24 +1136,59 @@ void DirectXGraphicsAPI::CreateDeviceAndSwapChain(HWND hwnd) {
     swapChainDesc.SampleDesc.Count = 1;
     swapChainDesc.SampleDesc.Quality = 0;
     swapChainDesc.Windowed = TRUE;
+    swapChainDesc.SwapEffect = DXGI_SWAP_EFFECT_DISCARD;
     
     // Create device, context, and swap chain
-    D3D_FEATURE_LEVEL featureLevel = D3D_FEATURE_LEVEL_11_0;
+    D3D_FEATURE_LEVEL featureLevels[] = {
+        D3D_FEATURE_LEVEL_11_0,
+        D3D_FEATURE_LEVEL_10_1,
+        D3D_FEATURE_LEVEL_10_0,
+        D3D_FEATURE_LEVEL_9_3
+    };
+    D3D_FEATURE_LEVEL featureLevel;
     UINT createDeviceFlags = 0;
     
 #ifdef _DEBUG
     createDeviceFlags |= D3D11_CREATE_DEVICE_DEBUG;
 #endif
     
+    // Try to create device with hardware acceleration first
     HRESULT hr = D3D11CreateDeviceAndSwapChain(
         nullptr, D3D_DRIVER_TYPE_HARDWARE, nullptr, createDeviceFlags,
-        &featureLevel, 1, D3D11_SDK_VERSION, &swapChainDesc,
-        &swapChain, &device, nullptr, &context);
+        featureLevels, ARRAYSIZE(featureLevels), D3D11_SDK_VERSION, &swapChainDesc,
+        &swapChain, &device, &featureLevel, &context);
+    
+    // If hardware acceleration fails, try WARP (software rendering)
+    if (FAILED(hr)) {
+        std::cerr << "Hardware acceleration not available, trying WARP..." << std::endl;
+        hr = D3D11CreateDeviceAndSwapChain(
+            nullptr, D3D_DRIVER_TYPE_WARP, nullptr, createDeviceFlags,
+            featureLevels, ARRAYSIZE(featureLevels), D3D11_SDK_VERSION, &swapChainDesc,
+            &swapChain, &device, &featureLevel, &context);
+    }
+    
+    // If WARP fails, try reference device (very slow)
+    if (FAILED(hr)) {
+        std::cerr << "WARP not available, trying reference device..." << std::endl;
+        hr = D3D11CreateDeviceAndSwapChain(
+            nullptr, D3D_DRIVER_TYPE_REFERENCE, nullptr, createDeviceFlags,
+            featureLevels, ARRAYSIZE(featureLevels), D3D11_SDK_VERSION, &swapChainDesc,
+            &swapChain, &device, &featureLevel, &context);
+    }
     
     if (FAILED(hr)) {
-        std::cerr << "Error: Failed to create DirectX device and swap chain" << std::endl;
+        std::cerr << "Error: Failed to create DirectX device and swap chain (HRESULT: 0x" 
+                  << std::hex << hr << std::dec << ")" << std::endl;
     } else {
-        std::cout << "Successfully created DirectX device and swap chain" << std::endl;
+        std::cout << "Successfully created DirectX device and swap chain with feature level ";
+        switch (featureLevel) {
+            case D3D_FEATURE_LEVEL_11_0: std::cout << "11.0"; break;
+            case D3D_FEATURE_LEVEL_10_1: std::cout << "10.1"; break;
+            case D3D_FEATURE_LEVEL_10_0: std::cout << "10.0"; break;
+            case D3D_FEATURE_LEVEL_9_3: std::cout << "9.3"; break;
+            default: std::cout << "unknown"; break;
+        }
+        std::cout << std::endl;
     }
 }
 
@@ -902,17 +1201,32 @@ void DirectXGraphicsAPI::CreateRenderTargetView() {
         
         if (SUCCEEDED(hr)) {
             // Create the render target view
-            hr = device->CreateRenderTargetView(backBuffer, nullptr, &renderTargetView);
+            D3D11_RENDER_TARGET_VIEW_DESC rtvDesc = {};
+            rtvDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
+            rtvDesc.ViewDimension = D3D11_RTV_DIMENSION_TEXTURE2D;
+            rtvDesc.Texture2D.MipSlice = 0;
+            
+            hr = device->CreateRenderTargetView(backBuffer, &rtvDesc, &renderTargetView);
             backBuffer->Release();
             
             if (FAILED(hr)) {
-                std::cerr << "Error: Failed to create render target view" << std::endl;
+                std::cerr << "Error: Failed to create render target view (HRESULT: 0x" 
+                          << std::hex << hr << std::dec << ")" << std::endl;
             } else {
-                std::cout << "Successfully created render target view" << std::endl;
+                // Set the render target
+                if (context && renderTargetView && depthStencilView) {
+                    context->OMSetRenderTargets(1, &renderTargetView, depthStencilView);
+                    std::cout << "Successfully created and set render target view" << std::endl;
+                } else {
+                    std::cout << "Successfully created render target view" << std::endl;
+                }
             }
         } else {
-            std::cerr << "Error: Failed to get back buffer" << std::endl;
+            std::cerr << "Error: Failed to get back buffer (HRESULT: 0x" 
+                      << std::hex << hr << std::dec << ")" << std::endl;
         }
+    } else {
+        std::cerr << "Error: Device or swap chain not initialized" << std::endl;
     }
 }
 
@@ -947,13 +1261,48 @@ void DirectXGraphicsAPI::CreateDepthStencilView(int width, int height) {
             depthStencilTexture->Release();
             
             if (FAILED(hr)) {
-                std::cerr << "Error: Failed to create depth stencil view" << std::endl;
+                std::cerr << "Error: Failed to create depth stencil view (HRESULT: 0x" 
+                          << std::hex << hr << std::dec << ")" << std::endl;
             } else {
-                std::cout << "Successfully created depth stencil view" << std::endl;
+                // Create depth stencil state
+                D3D11_DEPTH_STENCIL_DESC dsDesc = {};
+                dsDesc.DepthEnable = TRUE;
+                dsDesc.DepthWriteMask = D3D11_DEPTH_WRITE_MASK_ALL;
+                dsDesc.DepthFunc = D3D11_COMPARISON_LESS;
+                dsDesc.StencilEnable = FALSE;
+                dsDesc.StencilReadMask = D3D11_DEFAULT_STENCIL_READ_MASK;
+                dsDesc.StencilWriteMask = D3D11_DEFAULT_STENCIL_WRITE_MASK;
+                dsDesc.FrontFace.StencilFailOp = D3D11_STENCIL_OP_KEEP;
+                dsDesc.FrontFace.StencilDepthFailOp = D3D11_STENCIL_OP_KEEP;
+                dsDesc.FrontFace.StencilPassOp = D3D11_STENCIL_OP_KEEP;
+                dsDesc.FrontFace.StencilFunc = D3D11_COMPARISON_ALWAYS;
+                dsDesc.BackFace = dsDesc.FrontFace;
+                
+                ID3D11DepthStencilState* depthStencilState = nullptr;
+                hr = device->CreateDepthStencilState(&dsDesc, &depthStencilState);
+                
+                if (SUCCEEDED(hr)) {
+                    // Set the depth stencil state
+                    context->OMSetDepthStencilState(depthStencilState, 1);
+                    depthStencilState->Release();
+                    
+                    // Set the render target and depth stencil view
+                    if (renderTargetView) {
+                        context->OMSetRenderTargets(1, &renderTargetView, depthStencilView);
+                    }
+                    
+                    std::cout << "Successfully created and configured depth stencil view" << std::endl;
+                } else {
+                    std::cerr << "Error: Failed to create depth stencil state (HRESULT: 0x" 
+                              << std::hex << hr << std::dec << ")" << std::endl;
+                }
             }
         } else {
-            std::cerr << "Error: Failed to create depth stencil texture" << std::endl;
+            std::cerr << "Error: Failed to create depth stencil texture (HRESULT: 0x" 
+                      << std::hex << hr << std::dec << ")" << std::endl;
         }
+    } else {
+        std::cerr << "Error: Device not initialized" << std::endl;
     }
 }
 #endif
