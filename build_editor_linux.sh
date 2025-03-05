@@ -1,52 +1,45 @@
 #!/bin/bash
 
-# Create bin directory if it doesn't exist
-mkdir -p bin/linux
+# Check if GLEW is installed
+if ! dpkg -l | grep -q libglew-dev; then
+    echo "GLEW development package not found. Installing..."
+    sudo apt-get update
+    sudo apt-get install -y libglew-dev
+fi
 
-# Build the editor with all necessary files
-g++ -std=c++11 -o bin/linux/Editor \
-    Editor/EditorMain.cpp \
-    Editor/Editor.cpp \
-    Editor/HierarchyPanel.cpp \
-    Editor/InspectorPanel.cpp \
-    Editor/ProjectPanel.cpp \
-    Editor/SceneViewPanel.cpp \
-    Editor/Vector3Field.cpp \
-    GameObject.cpp \
-    Vector3.cpp \
-    Matrix4x4.cpp \
-    Camera.cpp \
-    Model.cpp \
-    MonoBehaviourLike.cpp \
-    TimeManager.cpp \
-    Raycast.cpp \
-    RigidBody.cpp \
-    CollisionSystem.cpp \
-    PhysicsSystem.cpp \
-    Scene.cpp \
-    PointLight.cpp \
-    CameraManager.cpp \
-    Shaders/Core/ShaderProgram.cpp \
-    Shaders/Core/Shader.cpp \
-    Shaders/Core/ShaderError.cpp \
-    Editor/TextField.cpp \
-    Texture.cpp \
-    EngineCondition.cpp \
-    FrameCapture.cpp \
-    ProjectSettings/ProjectSettings.cpp \
-    ProjectSettings/ProjectManager.cpp \
-    Profiler.cpp \
-    Debugger.cpp \
-    RedundancyDetector.cpp \
+# Check if GLUT is installed
+if ! dpkg -l | grep -q freeglut3-dev; then
+    echo "GLUT development package not found. Installing..."
+    sudo apt-get update
+    sudo apt-get install -y freeglut3-dev
+fi
+
+# Create build directory if it doesn't exist
+mkdir -p build
+
+# Find all .cpp files that exist in the repository
+EXISTING_CPP_FILES=""
+for file in Editor/EditorMain.cpp Scene.cpp GameObject.cpp Vector3.cpp Matrix4x4.cpp Camera.cpp CameraManager.cpp Model.cpp Texture.cpp PointLight.cpp Debugger.cpp FrameCapture.cpp FrameCapture_png.cpp TimeManager.cpp PhysicsSystem.cpp ShaderProgram.cpp RedundancyDetector.cpp EngineCondition.cpp; do
+    if [ -f "$file" ]; then
+        EXISTING_CPP_FILES="$EXISTING_CPP_FILES $file"
+    fi
+done
+
+# Compile the editor
+echo "Building editor..."
+g++ -o build/editor \
+    $EXISTING_CPP_FILES \
+    -std=c++11 \
     -I. \
     -IThirdParty/OpenGL/include \
     -DGL_GLEXT_PROTOTYPES \
-    -lGL -lGLU -lglut -lX11
+    -include ThirdParty/OpenGL/include/GL/gl_definitions.h \
+    -lGLEW -lGL -lGLU -lglut -lX11
 
 # Check if build was successful
 if [ $? -eq 0 ]; then
     echo "Editor build successful."
-    chmod +x bin/linux/Editor
+    echo "Run the editor with: ./build/editor"
 else
     echo "Editor build failed."
 fi

@@ -1,9 +1,12 @@
+#include "gl_definitions.h"
 /**************************
  * Includes
  *
  **************************/
 
 #include "platform.h"
+#include "ThirdParty/OpenGL/include/GL/gl_definitions.h"
+#include "ThirdParty/OpenGL/include/GL/win_types.h"
 #ifdef PLATFORM_WINDOWS
 #include <windows.h>
 #include <gl/gl.h>

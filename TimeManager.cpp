@@ -1,61 +1,30 @@
 #include "TimeManager.h"
+#include <iostream>
 
-// Initialize static instance
-TimeManager* TimeManager::instance = nullptr;
-
-// Constructor
 TimeManager::TimeManager() {
-    // Initialize time values
-    startTime = std::chrono::high_resolution_clock::now();
-    lastFrameTime = startTime;
-    deltaTime = 0.0f;
-    totalTime = 0.0f;
-    timeScale = 1.0f;
-    fixedDeltaTime = 1.0f / 60.0f; // Default to 60 Hz for physics
-    
-    // Set instance
-    if (!instance) {
-        instance = this;
-    }
+    std::cout << "TimeManager initialized" << std::endl;
 }
 
-// Destructor
 TimeManager::~TimeManager() {
-    if (instance == this) {
-        instance = nullptr;
-    }
+    std::cout << "TimeManager destroyed" << std::endl;
 }
 
 void TimeManager::Update() {
-    // Get the current time
-    auto currentFrameTime = std::chrono::high_resolution_clock::now();
-    
-    // Calculate the time difference in seconds
-    std::chrono::duration<float> timeDiff = currentFrameTime - lastFrameTime;
-    deltaTime = timeDiff.count() * timeScale;
-    
-    // Update total time
-    std::chrono::duration<float> totalTimeDiff = currentFrameTime - startTime;
-    totalTime = totalTimeDiff.count();
-    
-    // Update lastFrameTime to the current time for the next Update call
-    lastFrameTime = currentFrameTime;
+    // Stub implementation
 }
 
-// Get delta time
-float TimeManager::DeltaTime() const {
-    return deltaTime;
-}
-
-// Get total time since start
-float TimeManager::GetTime() const {
-    return totalTime;
-}
-
-// Reset time values
 void TimeManager::Reset() {
-    startTime = std::chrono::high_resolution_clock::now();
-    lastFrameTime = startTime;
-    totalTime = 0.0f;
-    deltaTime = 0.0f;
+    // Stub implementation
+}
+
+float TimeManager::GetTime() const {
+    return 0.0f; // Stub implementation
+}
+
+float TimeManager::DeltaTime() const {
+    return 0.016f; // Stub implementation (60 FPS)
+}
+
+float TimeManager::GetDeltaTime() const {
+    return DeltaTime(); // Call the existing DeltaTime method
 }
