@@ -1,4 +1,4 @@
-#include "Scene.h"
+#include "Scene_minimal.h"
 #include "GameObject.h"
 #include "PointLight.h"
 #include <iostream>
