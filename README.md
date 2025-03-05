@@ -16,9 +16,6 @@ GameEngineSavi is a lightweight C++ game engine designed for creating 3D games w
 - **Texture System**: Support for texture mapping with tiling, opacity, and normal maps
 - **Engine Condition System**: Different engine states for editing, playing, and compiling
 - **Debugger System**: Comprehensive error handling for script errors
-- **Animation System**: Keyframe-based animation with linear interpolation
-- **Nav Mesh and Raycasting**: Path finding and collision detection
-- **AI Entities**: Intelligent agent behavior and decision making
 
 ## Architecture
 
