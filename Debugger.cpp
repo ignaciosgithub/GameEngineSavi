@@ -3,48 +3,86 @@
 #include <iostream>
 #include <fstream>
 #include <sstream>
-#include <vector>
-#include <string>
-#include <algorithm>
+
+// Initialize the singleton instance
+Debugger* Debugger::instance = nullptr;
 
 // Constructor
-Debugger::Debugger() {
-    std::cout << "Debugger initialized" << std::endl;
+Debugger::Debugger() : showErrorPanel(false), showRedundancyPanel(false), showImportErrorPanel(false) {
+    // Initialize the debugger
 }
 
-// Destructor
-Debugger::~Debugger() {
-    std::cout << "Debugger destroyed" << std::endl;
+// Get the singleton instance
+Debugger& Debugger::GetInstance() {
+    if (!instance) {
+        instance = new Debugger();
+    }
+    return *instance;
 }
 
-// Log a message
-void Debugger::Log(const std::string& message) {
-    std::cout << "[DEBUG] " << message << std::endl;
+// Log an error with full context
+void Debugger::LogError(const std::string& message, const std::string& scriptName,
+                       const std::string& functionName, int lineNumber) {
+    errors.push_back(ScriptError(message, scriptName, functionName, lineNumber));
+    std::cerr << "[ERROR] " << message << " in " << scriptName << "::" << functionName << " at line " << lineNumber << std::endl;
 }
 
-// Log an error
+// Log a simple error message
 void Debugger::LogError(const std::string& message) {
+    errors.push_back(ScriptError(message, "", "", -1));
     std::cerr << "[ERROR] " << message << std::endl;
 }
 
-// Log a warning
-void Debugger::LogWarning(const std::string& message) {
-    std::cout << "[WARNING] " << message << std::endl;
+// Method to log redundant declarations
+void Debugger::LogRedundancy(const std::string& fileName, const std::string& symbolName,
+                            const std::string& type, int lineNumber) {
+    redundancies.push_back(RedundancyInfo(fileName, symbolName, type, lineNumber));
+    std::cout << "[REDUNDANCY] " << symbolName << " (" << type << ") in " << fileName << " at line " << lineNumber << std::endl;
 }
 
-// Check for memory leaks
-void Debugger::CheckForMemoryLeaks() {
-    std::cout << "Checking for memory leaks..." << std::endl;
+// Method to log import errors
+void Debugger::LogImportError(const std::string& message, const std::string& filePath,
+                             const std::string& importType) {
+    importErrors.push_back(ImportError(message, filePath, importType));
+    std::cerr << "[IMPORT ERROR] " << message << " for " << importType << " at " << filePath << std::endl;
+}
+
+// Clear all logged errors
+void Debugger::ClearErrors() {
+    errors.clear();
+}
+
+// Clear all logged redundancies
+void Debugger::ClearRedundancies() {
+    redundancies.clear();
+}
+
+// Clear all logged import errors
+void Debugger::ClearImportErrors() {
+    importErrors.clear();
+}
+
+// Get all current errors
+const std::vector<Debugger::ScriptError>& Debugger::GetErrors() const {
+    return errors;
+}
+
+// Get all current redundancies
+const std::vector<Debugger::RedundancyInfo>& Debugger::GetRedundancies() const {
+    return redundancies;
+}
+
+// Get all current import errors
+const std::vector<Debugger::ImportError>& Debugger::GetImportErrors() const {
+    return importErrors;
+}
+
+// Update error display
+void Debugger::Update() {
     // Stub implementation
 }
 
-// Check for performance issues
-void Debugger::CheckForPerformanceIssues() {
-    std::cout << "Checking for performance issues..." << std::endl;
-    // Stub implementation
-}
-
-// Check for redundancies
+// New method to check for redundant declarations in the codebase
 void Debugger::CheckForRedundancies() {
     std::cout << "Checking for redundancies..." << std::endl;
     
@@ -63,102 +101,8 @@ void Debugger::CheckForRedundancies() {
     
     // Simplified implementation that doesn't rely on pair.first and pair.second
     while (std::getline(iss, line)) {
-        std::cout << "Redundant symbol: " << line << std::endl;
+        // In a real implementation, we would parse the line and log redundancies
+        // For now, just log a generic redundancy
+        LogRedundancy("unknown.cpp", line, "unknown", 0);
     }
-}
-
-// Check for unused variables
-void Debugger::CheckForUnusedVariables() {
-    std::cout << "Checking for unused variables..." << std::endl;
-    // Stub implementation
-}
-
-// Check for unused functions
-void Debugger::CheckForUnusedFunctions() {
-    std::cout << "Checking for unused functions..." << std::endl;
-    // Stub implementation
-}
-
-// Check for unused classes
-void Debugger::CheckForUnusedClasses() {
-    std::cout << "Checking for unused classes..." << std::endl;
-    // Stub implementation
-}
-
-// Check for unused includes
-void Debugger::CheckForUnusedIncludes() {
-    std::cout << "Checking for unused includes..." << std::endl;
-    // Stub implementation
-}
-
-// Check for circular dependencies
-void Debugger::CheckForCircularDependencies() {
-    std::cout << "Checking for circular dependencies..." << std::endl;
-    // Stub implementation
-}
-
-// Check for code smells
-void Debugger::CheckForCodeSmells() {
-    std::cout << "Checking for code smells..." << std::endl;
-    // Stub implementation
-}
-
-// Check for code duplication
-void Debugger::CheckForCodeDuplication() {
-    std::cout << "Checking for code duplication..." << std::endl;
-    // Stub implementation
-}
-
-// Check for code complexity
-void Debugger::CheckForCodeComplexity() {
-    std::cout << "Checking for code complexity..." << std::endl;
-    // Stub implementation
-}
-
-// Check for code coverage
-void Debugger::CheckForCodeCoverage() {
-    std::cout << "Checking for code coverage..." << std::endl;
-    // Stub implementation
-}
-
-// Check for code quality
-void Debugger::CheckForCodeQuality() {
-    std::cout << "Checking for code quality..." << std::endl;
-    // Stub implementation
-}
-
-// Check for code style
-void Debugger::CheckForCodeStyle() {
-    std::cout << "Checking for code style..." << std::endl;
-    // Stub implementation
-}
-
-// Check for code documentation
-void Debugger::CheckForCodeDocumentation() {
-    std::cout << "Checking for code documentation..." << std::endl;
-    // Stub implementation
-}
-
-// Check for code maintainability
-void Debugger::CheckForCodeMaintainability() {
-    std::cout << "Checking for code maintainability..." << std::endl;
-    // Stub implementation
-}
-
-// Check for code testability
-void Debugger::CheckForCodeTestability() {
-    std::cout << "Checking for code testability..." << std::endl;
-    // Stub implementation
-}
-
-// Check for code security
-void Debugger::CheckForCodeSecurity() {
-    std::cout << "Checking for code security..." << std::endl;
-    // Stub implementation
-}
-
-// Check for code performance
-void Debugger::CheckForCodePerformance() {
-    std::cout << "Checking for code performance..." << std::endl;
-    // Stub implementation
 }
