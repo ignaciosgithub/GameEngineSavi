@@ -341,9 +341,10 @@ int main(int argc, char** argv) {
     auto graphics = GraphicsAPIFactory::GetInstance().GetGraphicsAPI();
     if (graphics) {
         graphics->SetDepthTest(true);
-        graphics->SetDepthFunc(GL_LEQUAL);
+        graphics->SetDepthFunc(0x0203); // GL_LEQUAL
         graphics->SetCullFace(true);
-        graphics->SetCullFaceMode(GL_BACK);
+        graphics->SetCullFaceMode(0x0405); // GL_BACK
+        graphics->SetClearColor(1.0f, 0.0f, 0.0f, 1.0f); // Set red as default color for missing shaders/textures
     }
     
     // Main loop

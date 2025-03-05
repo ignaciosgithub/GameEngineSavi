@@ -1,7 +1,6 @@
-#include <gl/gl.h>
+#include "ThirdParty/OpenGL/include/GL/gl_definitions.h"
 #include <GL/glu.h>
 #include <windows.h>
-#include <gl/gl.h>
 #include "Vector3.h"
 #include"Matrix4x4.h"
 #include<vector>
@@ -13,15 +12,13 @@
 #include <sstream>
 #include<math.h>
 #include<iostream>
-#include <fstream>
 #include <cstdlib>
-#include <sstream>
 #include <ctime>
 #include <chrono>
 #include <memory>
 #include <cmath>
 #include <thread>
-#include <memory>
+#include <algorithm>
 #include"Model.h"
 #include"MonobEhaviourLike.h"
 #include"GameObject.h"
@@ -57,5 +54,56 @@ public:
         lights.push_back(light);
     }
 
-    // Other methods for manipulating the game object...
-};  
+    // Game object manipulation methods
+    void Move(const Vector3& position)
+    {
+        for (auto& child : childGameObjects) {
+            child->transform.position += position;
+        }
+    }
+
+    void Rotate(const Vector3& rotation)
+    {
+        for (auto& child : childGameObjects) {
+            child->transform.rotation += rotation;
+        }
+    }
+
+    void Resize(const Vector3& scale)
+    {
+        for (auto& child : childGameObjects) {
+            child->transform.scale *= scale;
+        }
+    }
+
+    GameObject* Instantiate(const Vector3& position, const Vector3& rotation = Vector3(0, 0, 0), const Vector3& scale = Vector3(1, 1, 1))
+    {
+        GameObject* newObject = new GameObject();
+        newObject->transform.position = position;
+        newObject->transform.rotation = rotation;
+        newObject->transform.scale = scale;
+        
+        // Copy meshes
+        for (auto mesh : meshes) {
+            newObject->AddMesh(mesh);
+        }
+        
+        // Copy lights
+        for (auto light : lights) {
+            PointLight* newLight = new PointLight(*light);
+            newObject->AddLight(newLight);
+        }
+        
+        return newObject;
+    }
+
+    void Destroy(GameObject* gameObject)
+    {
+        // Remove from child list
+        auto it = std::find(childGameObjects.begin(), childGameObjects.end(), gameObject);
+        if (it != childGameObjects.end()) {
+            childGameObjects.erase(it);
+            delete gameObject;
+        }
+    }
+};        

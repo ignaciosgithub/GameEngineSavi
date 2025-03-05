@@ -1,10 +1,9 @@
 #include "TextField.h"
 #include "../platform.h"
 #ifdef PLATFORM_LINUX
-#include <GL/gl.h>
+#include "ThirdParty/OpenGL/include/GL/gl_definitions.h"
 #elif defined(PLATFORM_WINDOWS)
 #include <windows.h>
-#include <GL/gl.h>
 #endif
 #include <iostream>
 

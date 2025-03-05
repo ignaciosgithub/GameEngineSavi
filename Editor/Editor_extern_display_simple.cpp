@@ -1,15 +1,16 @@
 /**
  * Editor_extern_display_simple.cpp
  * Simplified implementation of the external display editor
- * Uses basic OpenGL functions for compatibility
+ * Uses graphics API wrapper for cross-platform compatibility
  */
 
 #include <iostream>
 #include <string>
 #include <vector>
 #include <cmath>
-#include <GL/gl.h>
-#include <GL/glu.h>
+#include "../Graphics/Core/GraphicsAPIFactory.h"
+#include "../Vector3.h"
+#include "../Matrix4x4.h"
 #include "../FrameCapture_png.h"
 
 // Window dimensions
@@ -33,129 +34,157 @@ struct PointLightInfo {
     float intensity;
 };
 
-// Initialize OpenGL
-void initGL() {
-    // Set clear color (black)
-    glClearColor(0.2f, 0.2f, 0.2f, 1.0f);
+// Initialize graphics
+void initGraphics() {
+    // Get the graphics API
+    auto graphics = GraphicsAPIFactory::GetInstance().GetGraphicsAPI();
+    if (!graphics) {
+        std::cerr << "Failed to get graphics API" << std::endl;
+        return;
+    }
+    
+    // Set clear color
+    graphics->SetClearColor(0.2f, 0.2f, 0.2f, 1.0f);
     
     // Enable depth testing
-    glEnable(GL_DEPTH_TEST);
-    glDepthFunc(GL_LESS);
+    graphics->SetDepthTest(true);
+    graphics->SetDepthFunc(4); // GL_LESS = 4
     
-    // Enable lighting
-    glEnable(GL_LIGHTING);
-    glEnable(GL_LIGHT0);
+    // Enable culling
+    graphics->SetCullFace(true);
+    graphics->SetCullFaceMode(1029); // GL_BACK = 1029
     
-    // Set up light 0
-    GLfloat lightAmbient[] = { 0.2f, 0.2f, 0.2f, 1.0f };
-    GLfloat lightDiffuse[] = { 1.0f, 1.0f, 1.0f, 1.0f };
-    GLfloat lightSpecular[] = { 1.0f, 1.0f, 1.0f, 1.0f };
-    GLfloat lightPosition[] = { 0.0f, 5.0f, 0.0f, 1.0f };
-    
-    glLightfv(GL_LIGHT0, GL_AMBIENT, lightAmbient);
-    glLightfv(GL_LIGHT0, GL_DIFFUSE, lightDiffuse);
-    glLightfv(GL_LIGHT0, GL_SPECULAR, lightSpecular);
-    glLightfv(GL_LIGHT0, GL_POSITION, lightPosition);
-    
-    // Set up material properties
-    GLfloat matAmbient[] = { 0.2f, 0.2f, 0.2f, 1.0f };
-    GLfloat matDiffuse[] = { 0.8f, 0.8f, 0.8f, 1.0f };
-    GLfloat matSpecular[] = { 1.0f, 1.0f, 1.0f, 1.0f };
-    GLfloat matShininess[] = { 50.0f };
-    
-    glMaterialfv(GL_FRONT, GL_AMBIENT, matAmbient);
-    glMaterialfv(GL_FRONT, GL_DIFFUSE, matDiffuse);
-    glMaterialfv(GL_FRONT, GL_SPECULAR, matSpecular);
-    glMaterialfv(GL_FRONT, GL_SHININESS, matShininess);
-    
-    std::cout << "OpenGL initialized successfully" << std::endl;
+    std::cout << "Graphics API initialized successfully: " << graphics->GetAPIName() << std::endl;
 }
 
 // Draw a colored cube
-void drawCube() {
-    // Draw cube using immediate mode
-    glBegin(GL_QUADS);
+void drawCube(IGraphicsAPI* graphics) {
+    // This is a simplified version that uses the graphics API
+    // In a real implementation, we would use the graphics API's buffer and drawing functions
     
-    // Front face (red)
-    glColor3f(1.0f, 0.0f, 0.0f);
-    glNormal3f(0.0f, 0.0f, 1.0f);
-    glVertex3f(-0.5f, -0.5f, 0.5f);
-    glVertex3f(0.5f, -0.5f, 0.5f);
-    glVertex3f(0.5f, 0.5f, 0.5f);
-    glVertex3f(-0.5f, 0.5f, 0.5f);
+    // Create vertex data for a cube
+    float vertices[] = {
+        // Front face (red)
+        -0.5f, -0.5f, 0.5f,   1.0f, 0.0f, 0.0f,   0.0f, 0.0f, 1.0f,
+        0.5f, -0.5f, 0.5f,    1.0f, 0.0f, 0.0f,   0.0f, 0.0f, 1.0f,
+        0.5f, 0.5f, 0.5f,     1.0f, 0.0f, 0.0f,   0.0f, 0.0f, 1.0f,
+        -0.5f, 0.5f, 0.5f,    1.0f, 0.0f, 0.0f,   0.0f, 0.0f, 1.0f,
+        
+        // Back face (green)
+        -0.5f, -0.5f, -0.5f,  0.0f, 1.0f, 0.0f,   0.0f, 0.0f, -1.0f,
+        -0.5f, 0.5f, -0.5f,   0.0f, 1.0f, 0.0f,   0.0f, 0.0f, -1.0f,
+        0.5f, 0.5f, -0.5f,    0.0f, 1.0f, 0.0f,   0.0f, 0.0f, -1.0f,
+        0.5f, -0.5f, -0.5f,   0.0f, 1.0f, 0.0f,   0.0f, 0.0f, -1.0f,
+        
+        // Top face (blue)
+        -0.5f, 0.5f, -0.5f,   0.0f, 0.0f, 1.0f,   0.0f, 1.0f, 0.0f,
+        -0.5f, 0.5f, 0.5f,    0.0f, 0.0f, 1.0f,   0.0f, 1.0f, 0.0f,
+        0.5f, 0.5f, 0.5f,     0.0f, 0.0f, 1.0f,   0.0f, 1.0f, 0.0f,
+        0.5f, 0.5f, -0.5f,    0.0f, 0.0f, 1.0f,   0.0f, 1.0f, 0.0f,
+        
+        // Bottom face (yellow)
+        -0.5f, -0.5f, -0.5f,  1.0f, 1.0f, 0.0f,   0.0f, -1.0f, 0.0f,
+        0.5f, -0.5f, -0.5f,   1.0f, 1.0f, 0.0f,   0.0f, -1.0f, 0.0f,
+        0.5f, -0.5f, 0.5f,    1.0f, 1.0f, 0.0f,   0.0f, -1.0f, 0.0f,
+        -0.5f, -0.5f, 0.5f,   1.0f, 1.0f, 0.0f,   0.0f, -1.0f, 0.0f,
+        
+        // Right face (magenta)
+        0.5f, -0.5f, -0.5f,   1.0f, 0.0f, 1.0f,   1.0f, 0.0f, 0.0f,
+        0.5f, 0.5f, -0.5f,    1.0f, 0.0f, 1.0f,   1.0f, 0.0f, 0.0f,
+        0.5f, 0.5f, 0.5f,     1.0f, 0.0f, 1.0f,   1.0f, 0.0f, 0.0f,
+        0.5f, -0.5f, 0.5f,    1.0f, 0.0f, 1.0f,   1.0f, 0.0f, 0.0f,
+        
+        // Left face (cyan)
+        -0.5f, -0.5f, -0.5f,  0.0f, 1.0f, 1.0f,   -1.0f, 0.0f, 0.0f,
+        -0.5f, -0.5f, 0.5f,   0.0f, 1.0f, 1.0f,   -1.0f, 0.0f, 0.0f,
+        -0.5f, 0.5f, 0.5f,    0.0f, 1.0f, 1.0f,   -1.0f, 0.0f, 0.0f,
+        -0.5f, 0.5f, -0.5f,   0.0f, 1.0f, 1.0f,   -1.0f, 0.0f, 0.0f
+    };
     
-    // Back face (green)
-    glColor3f(0.0f, 1.0f, 0.0f);
-    glNormal3f(0.0f, 0.0f, -1.0f);
-    glVertex3f(-0.5f, -0.5f, -0.5f);
-    glVertex3f(-0.5f, 0.5f, -0.5f);
-    glVertex3f(0.5f, 0.5f, -0.5f);
-    glVertex3f(0.5f, -0.5f, -0.5f);
+    // Create index data for a cube
+    unsigned int indices[] = {
+        0, 1, 2, 2, 3, 0,       // Front face
+        4, 5, 6, 6, 7, 4,       // Back face
+        8, 9, 10, 10, 11, 8,    // Top face
+        12, 13, 14, 14, 15, 12, // Bottom face
+        16, 17, 18, 18, 19, 16, // Right face
+        20, 21, 22, 22, 23, 20  // Left face
+    };
     
-    // Top face (blue)
-    glColor3f(0.0f, 0.0f, 1.0f);
-    glNormal3f(0.0f, 1.0f, 0.0f);
-    glVertex3f(-0.5f, 0.5f, -0.5f);
-    glVertex3f(-0.5f, 0.5f, 0.5f);
-    glVertex3f(0.5f, 0.5f, 0.5f);
-    glVertex3f(0.5f, 0.5f, -0.5f);
+    // Create and bind vertex array
+    unsigned int vao = graphics->CreateVertexArray();
+    graphics->BindVertexArray(vao);
     
-    // Bottom face (yellow)
-    glColor3f(1.0f, 1.0f, 0.0f);
-    glNormal3f(0.0f, -1.0f, 0.0f);
-    glVertex3f(-0.5f, -0.5f, -0.5f);
-    glVertex3f(0.5f, -0.5f, -0.5f);
-    glVertex3f(0.5f, -0.5f, 0.5f);
-    glVertex3f(-0.5f, -0.5f, 0.5f);
+    // Create and bind vertex buffer
+    unsigned int vbo = graphics->CreateBuffer();
+    graphics->BindBuffer(BufferType::VERTEX_BUFFER, vbo);
+    graphics->BufferData(BufferType::VERTEX_BUFFER, vertices, sizeof(vertices), false);
     
-    // Right face (magenta)
-    glColor3f(1.0f, 0.0f, 1.0f);
-    glNormal3f(1.0f, 0.0f, 0.0f);
-    glVertex3f(0.5f, -0.5f, -0.5f);
-    glVertex3f(0.5f, 0.5f, -0.5f);
-    glVertex3f(0.5f, 0.5f, 0.5f);
-    glVertex3f(0.5f, -0.5f, 0.5f);
+    // Create and bind index buffer
+    unsigned int ibo = graphics->CreateBuffer();
+    graphics->BindBuffer(BufferType::INDEX_BUFFER, ibo);
+    graphics->BufferData(BufferType::INDEX_BUFFER, indices, sizeof(indices), false);
     
-    // Left face (cyan)
-    glColor3f(0.0f, 1.0f, 1.0f);
-    glNormal3f(-1.0f, 0.0f, 0.0f);
-    glVertex3f(-0.5f, -0.5f, -0.5f);
-    glVertex3f(-0.5f, -0.5f, 0.5f);
-    glVertex3f(-0.5f, 0.5f, 0.5f);
-    glVertex3f(-0.5f, 0.5f, -0.5f);
+    // Set up vertex attributes
+    graphics->EnableVertexAttrib(0); // Position
+    graphics->VertexAttribPointer(0, 3, false, 9 * sizeof(float), 0);
     
-    glEnd();
+    graphics->EnableVertexAttrib(1); // Color
+    graphics->VertexAttribPointer(1, 3, false, 9 * sizeof(float), (void*)(3 * sizeof(float)));
+    
+    graphics->EnableVertexAttrib(2); // Normal
+    graphics->VertexAttribPointer(2, 3, false, 9 * sizeof(float), (void*)(6 * sizeof(float)));
+    
+    // Draw the cube
+    graphics->DrawElements(DrawMode::TRIANGLES, 36, 0);
+    
+    // Clean up
+    graphics->DisableVertexAttrib(0);
+    graphics->DisableVertexAttrib(1);
+    graphics->DisableVertexAttrib(2);
+    
+    graphics->DeleteBuffer(vbo);
+    graphics->DeleteBuffer(ibo);
+    graphics->DeleteVertexArray(vao);
 }
 
 // Render scene
 void renderScene(float rotationAngle) {
+    // Get the graphics API
+    auto graphics = GraphicsAPIFactory::GetInstance().GetGraphicsAPI();
+    if (!graphics) {
+        return;
+    }
+    
     // Clear color and depth buffers
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    graphics->SetClearColor(0.2f, 0.2f, 0.2f, 1.0f);
+    graphics->Clear(true, true);
     
     // Set up projection matrix
-    glMatrixMode(GL_PROJECTION);
-    glLoadIdentity();
-    gluPerspective(60.0f, (float)WINDOW_WIDTH / (float)WINDOW_HEIGHT, 0.1f, 100.0f);
+    Matrix4x4 projMatrix;
+    projMatrix.SetPerspective(60.0f, (float)WINDOW_WIDTH / (float)WINDOW_HEIGHT, 0.1f, 100.0f);
     
-    // Set up modelview matrix
-    glMatrixMode(GL_MODELVIEW);
-    glLoadIdentity();
+    // Set up view matrix
+    Matrix4x4 viewMatrix;
+    viewMatrix.SetLookAt(Vector3(0.0f, 2.0f, 5.0f), Vector3(0.0f, 0.0f, 0.0f), Vector3(0.0f, 1.0f, 0.0f));
     
-    // Position camera
-    gluLookAt(0.0f, 2.0f, 5.0f,  // Eye position
-              0.0f, 0.0f, 0.0f,  // Look at position
-              0.0f, 1.0f, 0.0f); // Up vector
+    // Set matrices using the graphics API
+    graphics->SetProjectionMatrix(projMatrix);
+    graphics->SetViewMatrix(viewMatrix);
     
-    // Draw cube with rotation
-    glPushMatrix();
-    glRotatef(15.0f, 1.0f, 0.0f, 0.0f);
-    glRotatef(rotationAngle, 0.0f, 1.0f, 0.0f);
-    drawCube();
-    glPopMatrix();
+    // Create model matrix with rotation
+    Matrix4x4 modelMatrix;
+    modelMatrix.rotateX(15.0f);
+    modelMatrix.rotateY(rotationAngle);
+    
+    // Set model matrix
+    graphics->SetModelMatrix(modelMatrix);
+    
+    // Draw cube
+    drawCube(graphics);
     
     // Ensure all rendering commands are completed
-    glFlush();
-    glFinish();
+    graphics->SwapBuffers();
 }
 
 // Main function

@@ -3,7 +3,7 @@
 #include <iostream>
 
 // Handle shader compilation errors
-std::string ShaderError::HandleCompileError(GLuint shader) {
+std::string ShaderError::HandleCompileError(unsigned int shader) {
     auto graphics = GraphicsAPIFactory::GetInstance().GetGraphicsAPI();
     if (!graphics) {
         return "Graphics API not available";
@@ -17,7 +17,7 @@ std::string ShaderError::HandleCompileError(GLuint shader) {
 }
 
 // Handle shader program linking errors
-std::string ShaderError::HandleLinkError(GLuint program) {
+std::string ShaderError::HandleLinkError(unsigned int program) {
     auto graphics = GraphicsAPIFactory::GetInstance().GetGraphicsAPI();
     if (!graphics) {
         return "Graphics API not available";

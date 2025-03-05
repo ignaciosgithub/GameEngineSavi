@@ -4,9 +4,8 @@
 // Platform-specific OpenGL includes
 #ifdef PLATFORM_WINDOWS
 #include <windows.h>
-#include <gl/gl.h>
+#include "ThirdParty/OpenGL/include/GL/gl_definitions.h"
 #else
-#include <GL/gl.h>
 #endif
 
 #define STB_IMAGE_IMPLEMENTATION

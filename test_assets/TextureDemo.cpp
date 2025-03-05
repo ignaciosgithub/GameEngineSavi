@@ -1,5 +1,5 @@
 #include <windows.h>
-#include <gl/gl.h>
+#include "ThirdParty/OpenGL/include/GL/gl_definitions.h"
 #include <GL/glu.h>
 #include <iostream>
 #include "../Vector3.h"

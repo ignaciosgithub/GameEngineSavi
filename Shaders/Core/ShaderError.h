@@ -1,10 +1,10 @@
 #pragma once
 
 #include <string>
-#include "../../ThirdParty/OpenGL/include/GL/platform_gl.h"
+#include "../../Graphics/Core/IGraphicsAPI.h"
 
 class ShaderError {
 public:
-    static std::string HandleCompileError(GLuint shader);
-    static std::string HandleLinkError(GLuint program);
+    static std::string HandleCompileError(unsigned int shader);
+    static std::string HandleLinkError(unsigned int program);
 };

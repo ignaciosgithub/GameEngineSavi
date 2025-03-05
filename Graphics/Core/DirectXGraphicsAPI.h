@@ -47,6 +47,32 @@ public:
     
     // Shader management
     void UseShaderProgram(ShaderProgram* program) override;
+    unsigned int CreateShader(int shaderType) override;
+    void DeleteShader(unsigned int shader) override;
+    void ShaderSource(unsigned int shader, const std::string& source) override;
+    void CompileShader(unsigned int shader) override;
+    bool GetShaderCompileStatus(unsigned int shader) override;
+    std::string GetShaderInfoLog(unsigned int shader) override;
+    bool GetProgramLinkStatus(unsigned int program) override;
+    std::string GetProgramInfoLog(unsigned int program) override;
+    void AttachShader(unsigned int program, unsigned int shader) override;
+    void LinkProgram(unsigned int program) override;
+    unsigned int CreateProgram() override;
+    void DeleteProgram(unsigned int program) override;
+    
+    // Uniform setters
+    void SetUniform1f(unsigned int program, const std::string& name, float value) override;
+    void SetUniform1i(unsigned int program, const std::string& name, int value) override;
+    void SetUniform3f(unsigned int program, const std::string& name, float x, float y, float z) override;
+    void SetUniform4f(unsigned int program, const std::string& name, float x, float y, float z, float w) override;
+    void SetUniformMatrix4fv(unsigned int program, const std::string& name, const float* value, bool transpose = false) override;
+    
+    // Additional uniform setters for arrays
+    void SetUniformFloatArray(unsigned int program, const std::string& name, const float* values, int count) override;
+    void SetUniformIntArray(unsigned int program, const std::string& name, const int* values, int count) override;
+    void SetUniformVec3Array(unsigned int program, const std::string& name, const float* values, int count) override;
+    void SetUniformMatrix4Array(unsigned int program, const std::string& name, const float* values, int count, bool transpose = false) override;
+    int GetUniformLocation(unsigned int program, const std::string& name) override;
     
     // Texture management
     unsigned int CreateTexture() override;
@@ -60,6 +86,15 @@ public:
     
     // Get API name for debugging
     const char* GetAPIName() const override { return "DirectX"; }
+    
+    // Default shader for models with missing shaders/textures
+    void UseDefaultRedShader() override;
+    
+    // Matrix operations
+    void SetProjectionMatrix(const Matrix4x4& matrix) override;
+    void SetViewMatrix(const Matrix4x4& matrix) override;
+    void SetModelMatrix(const Matrix4x4& matrix) override;
+    bool SupportsMatrixOperations() const override { return true; }
     
 private:
 #ifdef PLATFORM_WINDOWS

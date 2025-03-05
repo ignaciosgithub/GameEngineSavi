@@ -1,6 +1,7 @@
 #include "Shader.h"
 #include "ShaderError.h"
 #include "../../Debugger.h"
+#include "../../Graphics/Core/GraphicsAPIFactory.h"
 #include <iostream>
 #include <fstream>
 #include <sstream>
@@ -9,14 +10,20 @@
 // Constructor
 Shader::Shader(Type type) : type(type), handle(0) {
     // Create a new shader
-    handle = glCreateShader(GetGLShaderType());
+    auto graphics = GraphicsAPIFactory::GetInstance().GetGraphicsAPI();
+    if (graphics) {
+        handle = graphics->CreateShader(GetShaderType());
+    }
 }
 
 // Destructor
 Shader::~Shader() {
     if (handle != 0) {
-        glDeleteShader(handle);
-        handle = 0;
+        auto graphics = GraphicsAPIFactory::GetInstance().GetGraphicsAPI();
+        if (graphics) {
+            graphics->DeleteShader(handle);
+            handle = 0;
+        }
     }
 }
 
@@ -42,29 +49,33 @@ bool Shader::LoadFromFile(const std::string& filename) {
 }
 
 // Load shader from string
-bool Shader::LoadFromString(const std::string& source, GLenum shaderType) {
+bool Shader::LoadFromString(const std::string& source, int shaderType) {
     // Store the source
     this->source = source;
     
     // Set the source
-    const GLchar* sourcePtr = source.c_str();
-    glShaderSource(handle, 1, &sourcePtr, NULL);
+    auto graphics = GraphicsAPIFactory::GetInstance().GetGraphicsAPI();
+    if (graphics) {
+        graphics->ShaderSource(handle, source);
+    }
     
     return true;
 }
 
 // Compile the shader
 bool Shader::Compile() {
+    auto graphics = GraphicsAPIFactory::GetInstance().GetGraphicsAPI();
+    if (!graphics) {
+        return false;
+    }
+    
     // Compile the shader
-    glCompileShader(handle);
+    graphics->CompileShader(handle);
     
     // Check if compilation was successful
-    GLint success = 0;
-    glGetShaderiv(handle, GL_COMPILE_STATUS, &success);
-    
-    if (success == GL_FALSE) {
+    if (!graphics->GetShaderCompileStatus(handle)) {
         // Get the error message
-        std::string errorMessage = ShaderError::HandleCompileError(handle);
+        std::string errorMessage = graphics->GetShaderInfoLog(handle);
         
         // Print the error message
         std::cerr << "Error compiling shader: " << errorMessage << std::endl;
@@ -75,14 +86,26 @@ bool Shader::Compile() {
     return true;
 }
 
-// Get the OpenGL shader type
-GLenum Shader::GetGLShaderType() const {
+// Get the shader type
+int Shader::GetShaderType() const {
     switch (type) {
         case VERTEX:
-            return GL_VERTEX_SHADER;
+            #ifndef PLATFORM_WINDOWS
+            return 0x8B31; // GL_VERTEX_SHADER
+            #else
+            return 1; // D3D11_VERTEX_SHADER
+            #endif
         case FRAGMENT:
-            return GL_FRAGMENT_SHADER;
+            #ifndef PLATFORM_WINDOWS
+            return 0x8B30; // GL_FRAGMENT_SHADER
+            #else
+            return 2; // D3D11_PIXEL_SHADER
+            #endif
         default:
-            return GL_VERTEX_SHADER;
+            #ifndef PLATFORM_WINDOWS
+            return 0x8B31; // GL_VERTEX_SHADER
+            #else
+            return 1; // D3D11_VERTEX_SHADER
+            #endif
     }
 }

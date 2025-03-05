@@ -1,0 +1,10 @@
+W: Up
+A: Left
+S: Down
+D: Right
+Shift: Fast Movement
+Space: Play/Pause
+Ctrl+1: Hierarchy Panel
+Ctrl+2: Scene View Panel
+Ctrl+3: Inspector Panel
+Ctrl+4: Project Panel

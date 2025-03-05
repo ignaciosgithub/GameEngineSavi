@@ -41,9 +41,9 @@ private:
             : message(msg), filePath(path), importType(type) {}
     };
     
-    std::vector<ScriptError> errors;
-    std::vector<RedundancyInfo> redundancies;  // Track redundant declarations
-    std::vector<ImportError> importErrors;     // Track import errors
+    static std::vector<ScriptError> errors;
+    static std::vector<RedundancyInfo> redundancies;  // Track redundant declarations
+    static std::vector<ImportError> importErrors;     // Track import errors
     bool showErrorPanel;
     bool showRedundancyPanel;  // New flag for redundancy panel
     bool showImportErrorPanel;  // New flag for import error panel
@@ -79,19 +79,37 @@ public:
     void ClearImportErrors();
     
     // Get all current errors
-    const std::vector<ScriptError>& GetErrors() const;
+    static const std::vector<ScriptError>& GetErrors();
     
     // Get all current redundancies
-    const std::vector<RedundancyInfo>& GetRedundancies() const;
+    static const std::vector<RedundancyInfo>& GetRedundancies();
     
     // Get all current import errors
-    const std::vector<ImportError>& GetImportErrors() const;
+    static const std::vector<ImportError>& GetImportErrors();
     
     // Update error display
     void Update();
     
     // New method to check for redundant declarations in the codebase
     void CheckForRedundancies();
+    
+    // Check if there are any errors
+    static bool HasErrors();
+    
+    // Check if there are any redundant declarations
+    static bool HasRedundancies();
+    
+    // Check if there are any import errors
+    static bool HasImportErrors();
+    
+    // Print all errors to the console
+    static void PrintErrors();
+    
+    // Print all redundant declarations to the console
+    static void PrintRedundancies();
+    
+    // Print all import errors to the console
+    static void PrintImportErrors();
     
     // Methods to control display panels
     void ShowErrorPanel(bool show) { showErrorPanel = show; }

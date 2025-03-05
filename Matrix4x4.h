@@ -1,6 +1,8 @@
 #ifndef MATRIX4X4_H
 #define MATRIX4X4_H
 
+#include "Vector3.h"
+
 class Matrix4x4 {
 public:
     // Matrix elements (row-major order)
@@ -18,6 +20,10 @@ public:
     void rotateX(float angle);
     void rotateY(float angle);
     void rotateZ(float angle);
+    
+    // Projection and view matrix methods
+    void SetPerspective(float fovy, float aspectRatio, float zNear, float zFar);
+    void SetLookAt(const Vector3& eye, const Vector3& center, const Vector3& up);
    
     friend Matrix4x4 operator*(const Matrix4x4 &m1, const Matrix4x4 &m2);
 };

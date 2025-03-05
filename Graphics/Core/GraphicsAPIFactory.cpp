@@ -3,50 +3,72 @@
 #include "DirectXGraphicsAPI.h"
 #include "../../platform.h"
 #include <iostream>
-#include <stdexcept>
+
+// Initialize static instance
+GraphicsAPIFactory* GraphicsAPIFactory::instance = nullptr;
 
 GraphicsAPIFactory& GraphicsAPIFactory::GetInstance() {
-    static GraphicsAPIFactory instance;
-    return instance;
+    if (!instance) {
+        instance = new GraphicsAPIFactory();
+    }
+    return *instance;
 }
 
-std::shared_ptr<IGraphicsAPI> GraphicsAPIFactory::CreateGraphicsAPI() {
+GraphicsAPIFactory::GraphicsAPIFactory() : graphicsAPI(nullptr) {
+}
+
+GraphicsAPIFactory::~GraphicsAPIFactory() {
+    if (graphicsAPI) {
+        graphicsAPI->Shutdown();
+        graphicsAPI = nullptr;
+    }
+}
+
+bool GraphicsAPIFactory::Initialize() {
+    // Create the appropriate graphics API based on platform
 #ifdef PLATFORM_WINDOWS
-    // Try to create DirectX graphics API first
+    // Use DirectX on Windows
     try {
-        currentAPI = std::make_shared<DirectXGraphicsAPI>();
-        std::cout << "Created DirectX graphics API" << std::endl;
-        
-        if (!currentAPI->Initialize()) {
-            std::cerr << "Failed to initialize DirectX graphics API, falling back to OpenGL" << std::endl;
-            throw std::runtime_error("DirectX initialization failed");
+        graphicsAPI = std::make_shared<DirectXGraphicsAPI>();
+        if (!graphicsAPI->Initialize()) {
+            std::cout << "Failed to initialize DirectX, falling back to OpenGL" << std::endl;
+            graphicsAPI = nullptr;
         }
     } catch (const std::exception& e) {
-        std::cerr << "DirectX error: " << e.what() << std::endl;
-        std::cerr << "Falling back to OpenGL graphics API" << std::endl;
-        currentAPI = std::make_shared<OpenGLGraphicsAPI>();
-        
-        if (!currentAPI->Initialize()) {
-            std::cerr << "Failed to initialize OpenGL graphics API" << std::endl;
-            currentAPI.reset();
+        std::cout << "Exception initializing DirectX: " << e.what() << std::endl;
+        graphicsAPI = nullptr;
+    }
+    
+    // Fallback to OpenGL if DirectX initialization fails
+    if (!graphicsAPI) {
+        try {
+            graphicsAPI = std::make_shared<OpenGLGraphicsAPI>();
+            if (!graphicsAPI->Initialize()) {
+                std::cout << "Failed to initialize OpenGL fallback" << std::endl;
+                return false;
+            }
+        } catch (const std::exception& e) {
+            std::cout << "Exception initializing OpenGL fallback: " << e.what() << std::endl;
+            return false;
         }
     }
 #else
-    currentAPI = std::make_shared<OpenGLGraphicsAPI>();
-    std::cout << "Created OpenGL graphics API" << std::endl;
-    
-    if (!currentAPI->Initialize()) {
-        std::cerr << "Failed to initialize graphics API" << std::endl;
-        currentAPI.reset();
+    // Use OpenGL on other platforms
+    try {
+        graphicsAPI = std::make_shared<OpenGLGraphicsAPI>();
+        if (!graphicsAPI->Initialize()) {
+            std::cout << "Failed to initialize OpenGL" << std::endl;
+            return false;
+        }
+    } catch (const std::exception& e) {
+        std::cout << "Exception initializing OpenGL: " << e.what() << std::endl;
+        return false;
     }
 #endif
-    
-    return currentAPI;
+
+    return true;
 }
 
 std::shared_ptr<IGraphicsAPI> GraphicsAPIFactory::GetGraphicsAPI() {
-    if (!currentAPI) {
-        return CreateGraphicsAPI();
-    }
-    return currentAPI;
+    return graphicsAPI;
 }

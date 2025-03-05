@@ -3,14 +3,7 @@
 
 #include <string>
 #include "platform.h" // Include platform.h for platform-specific macros
-
-// Platform-specific OpenGL includes
-#ifdef PLATFORM_WINDOWS
-#include <windows.h>
-#include <gl/gl.h>
-#else
-#include <GL/gl.h>
-#endif
+#include "ThirdParty/OpenGL/include/GL/gl_definitions.h" // Use our centralized GL definitions
 
 class Texture {
 public:

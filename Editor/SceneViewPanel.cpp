@@ -75,31 +75,16 @@ void SceneViewPanel::Render() {
     Vector3 target = pos + camera->lookDirection;
     Vector3 up(0, 1, 0);
     
-    // For now, we'll use the legacy OpenGL functions for matrix operations
-    // In a future update, these should be replaced with proper matrix operations
-    // using the graphics API wrapper
-#ifndef PLATFORM_WINDOWS
-    glMatrixMode(GL_PROJECTION);
-    glLoadIdentity();
-    
-    // Replacement for gluPerspective
-    float fovy = 1.0f / tan(45.0f * 0.5f * 3.14159f / 180.0f);
+    // Create projection and view matrices using the graphics API wrapper
+    float fovy = 45.0f; // Field of view in degrees
     float zNear = 0.1f;
     float zFar = 1000.0f;
     
-    float projMatrix[16] = {
-        fovy / aspectRatio, 0, 0, 0,
-        0, fovy, 0, 0,
-        0, 0, (zFar + zNear) / (zNear - zFar), -1,
-        0, 0, (2 * zFar * zNear) / (zNear - zFar), 0
-    };
+    // Create projection matrix
+    Matrix4x4 projMatrix;
+    projMatrix.SetPerspective(fovy, aspectRatio, zNear, zFar);
     
-    glLoadMatrixf(projMatrix);
-    
-    glMatrixMode(GL_MODELVIEW);
-    glLoadIdentity();
-    
-    // Replacement for gluLookAt
+    // Create view matrix
     Vector3 forward = target - pos;
     forward.normalize();
     
@@ -108,15 +93,21 @@ void SceneViewPanel::Render() {
     
     Vector3 upVector = Vector3::Cross(side, forward);
     
-    float viewMatrix[16] = {
-        side.x, upVector.x, -forward.x, 0,
-        side.y, upVector.y, -forward.y, 0,
-        side.z, upVector.z, -forward.z, 0,
-        -Vector3::Dot(side, pos), -Vector3::Dot(upVector, pos), Vector3::Dot(forward, pos), 1
-    };
+    Matrix4x4 viewMatrix;
+    viewMatrix.SetLookAt(pos, target, up);
     
-    glLoadMatrixf(viewMatrix);
-#endif
+    // Set matrices using the graphics API
+    graphics->SetProjectionMatrix(projMatrix);
+    graphics->SetViewMatrix(viewMatrix);
+    
+    // If the graphics API doesn't support matrix operations directly,
+    // we would need to fall back to legacy OpenGL functions
+    // But for now, we'll just use the graphics API wrapper
+    if (!graphics->SupportsMatrixOperations()) {
+        // This is handled by the graphics API wrapper
+        std::cout << "Warning: Graphics API does not support matrix operations directly." << std::endl;
+        std::cout << "Using graphics API wrapper for matrix operations." << std::endl;
+    }
     
     // Render the scene
     scene->RenderScene();
