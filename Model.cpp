@@ -11,27 +11,14 @@
 #include <string>
 
 // Constructor
-Model::Model() : vao(0), vbo(0), ebo(0), vertexCount(0), indexCount(0) {
+Model::Model() : vao(0), vbo(0), ebo(0), tbo(0), nbo(0) {
     // Initialize model data
 }
 
 // Destructor
 Model::~Model() {
     // Clean up OpenGL resources
-    if (vao != 0) {
-        glDeleteVertexArrays(1, &vao);
-        vao = 0;
-    }
-    
-    if (vbo != 0) {
-        glDeleteBuffers(1, &vbo);
-        vbo = 0;
-    }
-    
-    if (ebo != 0) {
-        glDeleteBuffers(1, &ebo);
-        ebo = 0;
-    }
+    CleanupGL();
 }
 
 // Load model from file
@@ -42,7 +29,8 @@ bool Model::LoadFromFile(const std::string& filename) {
     std::string extension = filename.substr(filename.find_last_of(".") + 1);
     
     if (extension == "obj") {
-        return LoadOBJ(filename);
+        loadOBJ(filename);
+        return true;
     } else {
         std::cerr << "Unsupported file format: " << extension << std::endl;
         return false;
@@ -50,16 +38,16 @@ bool Model::LoadFromFile(const std::string& filename) {
 }
 
 // Load OBJ file
-bool Model::LoadOBJ(const std::string& filename) {
+void Model::loadOBJ(std::string path) {
     std::vector<Vector3> temp_vertices;
     std::vector<Vector3> temp_normals;
     std::vector<Vector2> temp_uvs;
     std::vector<unsigned int> vertexIndices, uvIndices, normalIndices;
     
-    std::ifstream file(filename);
+    std::ifstream file(path);
     if (!file.is_open()) {
-        std::cerr << "Error: Could not open file " << filename << std::endl;
-        return false;
+        std::cerr << "Error: Could not open file " << path << std::endl;
+        return;
     }
     
     std::string line;
@@ -122,29 +110,37 @@ bool Model::LoadOBJ(const std::string& filename) {
         unsigned int vertexIndex = vertexIndices[i];
         
         Vector3 vertex = temp_vertices[vertexIndex];
-        vertices.push_back(vertex);
+        vertices.push_back(vertex.x);
+        vertices.push_back(vertex.y);
+        vertices.push_back(vertex.z);
         
         if (!temp_normals.empty() && i < normalIndices.size()) {
             unsigned int normalIndex = normalIndices[i];
             Vector3 normal = temp_normals[normalIndex];
-            normals.push_back(normal);
+            normals.push_back(normal.x);
+            normals.push_back(normal.y);
+            normals.push_back(normal.z);
         }
         
         if (!temp_uvs.empty() && i < uvIndices.size()) {
             unsigned int uvIndex = uvIndices[i];
             Vector2 uv = temp_uvs[uvIndex];
-            uvs.push_back(uv);
+            texCoords.push_back(uv.x);
+            texCoords.push_back(uv.y);
         }
     }
     
     // Initialize OpenGL buffers
-    InitBuffers();
-    
-    return true;
+    InitializeBuffers();
 }
 
 // Initialize OpenGL buffers
-void Model::InitBuffers() {
+void Model::InitializeBuffers() {
+    InitializeGL();
+}
+
+// Initialize OpenGL objects
+void Model::InitializeGL() {
     // Generate VAO
     glGenVertexArrays(1, &vao);
     glBindVertexArray(vao);
@@ -152,46 +148,107 @@ void Model::InitBuffers() {
     // Generate VBO for vertices
     glGenBuffers(1, &vbo);
     glBindBuffer(GL_ARRAY_BUFFER, vbo);
-    glBufferData(GL_ARRAY_BUFFER, vertices.size() * sizeof(Vector3), &vertices[0], GL_STATIC_DRAW);
+    glBufferData(GL_ARRAY_BUFFER, vertices.size() * sizeof(GLfloat), vertices.data(), GL_STATIC_DRAW);
     
     // Set vertex attributes
     glEnableVertexAttribArray(0);
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(Vector3), (void*)0);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, (void*)0);
     
     // If we have normals, create a buffer for them
     if (!normals.empty()) {
-        GLuint normalVBO;
-        glGenBuffers(1, &normalVBO);
-        glBindBuffer(GL_ARRAY_BUFFER, normalVBO);
-        glBufferData(GL_ARRAY_BUFFER, normals.size() * sizeof(Vector3), &normals[0], GL_STATIC_DRAW);
+        glGenBuffers(1, &nbo);
+        glBindBuffer(GL_ARRAY_BUFFER, nbo);
+        glBufferData(GL_ARRAY_BUFFER, normals.size() * sizeof(GLfloat), normals.data(), GL_STATIC_DRAW);
         
         glEnableVertexAttribArray(1);
-        glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(Vector3), (void*)0);
+        glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 0, (void*)0);
     }
     
-    // If we have UVs, create a buffer for them
-    if (!uvs.empty()) {
-        GLuint uvVBO;
-        glGenBuffers(1, &uvVBO);
-        glBindBuffer(GL_ARRAY_BUFFER, uvVBO);
-        glBufferData(GL_ARRAY_BUFFER, uvs.size() * sizeof(Vector2), &uvs[0], GL_STATIC_DRAW);
+    // If we have texture coordinates, create a buffer for them
+    if (!texCoords.empty()) {
+        glGenBuffers(1, &tbo);
+        glBindBuffer(GL_ARRAY_BUFFER, tbo);
+        glBufferData(GL_ARRAY_BUFFER, texCoords.size() * sizeof(GLfloat), texCoords.data(), GL_STATIC_DRAW);
         
         glEnableVertexAttribArray(2);
-        glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof(Vector2), (void*)0);
+        glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 0, (void*)0);
+    }
+    
+    // If we have indices, create an element buffer
+    if (!indices.empty()) {
+        glGenBuffers(1, &ebo);
+        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo);
+        glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices.size() * sizeof(GLuint), indices.data(), GL_STATIC_DRAW);
     }
     
     // Unbind VAO
     glBindVertexArray(0);
+}
+
+// Update OpenGL buffers
+void Model::UpdateBuffers() {
+    // Update vertex buffer
+    glBindBuffer(GL_ARRAY_BUFFER, vbo);
+    glBufferData(GL_ARRAY_BUFFER, vertices.size() * sizeof(GLfloat), vertices.data(), GL_STATIC_DRAW);
     
-    // Set vertex count
-    vertexCount = vertices.size();
+    // Update normal buffer if we have normals
+    if (!normals.empty() && nbo != 0) {
+        glBindBuffer(GL_ARRAY_BUFFER, nbo);
+        glBufferData(GL_ARRAY_BUFFER, normals.size() * sizeof(GLfloat), normals.data(), GL_STATIC_DRAW);
+    }
+    
+    // Update texture coordinate buffer if we have texture coordinates
+    if (!texCoords.empty() && tbo != 0) {
+        glBindBuffer(GL_ARRAY_BUFFER, tbo);
+        glBufferData(GL_ARRAY_BUFFER, texCoords.size() * sizeof(GLfloat), texCoords.data(), GL_STATIC_DRAW);
+    }
+    
+    // Update index buffer if we have indices
+    if (!indices.empty() && ebo != 0) {
+        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo);
+        glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices.size() * sizeof(GLuint), indices.data(), GL_STATIC_DRAW);
+    }
+}
+
+// Clean up OpenGL objects
+void Model::CleanupGL() {
+    if (vao != 0) {
+        glDeleteVertexArrays(1, &vao);
+        vao = 0;
+    }
+    
+    if (vbo != 0) {
+        glDeleteBuffers(1, &vbo);
+        vbo = 0;
+    }
+    
+    if (ebo != 0) {
+        glDeleteBuffers(1, &ebo);
+        ebo = 0;
+    }
+    
+    if (tbo != 0) {
+        glDeleteBuffers(1, &tbo);
+        tbo = 0;
+    }
+    
+    if (nbo != 0) {
+        glDeleteBuffers(1, &nbo);
+        nbo = 0;
+    }
 }
 
 // Render the model
-void Model::Render() {
+void Model::Render(const std::vector<PointLight>& lights) {
     if (vao != 0) {
         glBindVertexArray(vao);
-        glDrawArrays(GL_TRIANGLES, 0, vertexCount);
+        
+        if (!indices.empty()) {
+            glDrawElements(GL_TRIANGLES, indices.size(), GL_UNSIGNED_INT, 0);
+        } else {
+            glDrawArrays(GL_TRIANGLES, 0, vertices.size() / 3);
+        }
+        
         glBindVertexArray(0);
     }
 }

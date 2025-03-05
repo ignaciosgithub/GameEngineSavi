@@ -17,31 +17,18 @@ fi
 # Create build directory if it doesn't exist
 mkdir -p build
 
+# Find all .cpp files that exist in the repository
+EXISTING_CPP_FILES=""
+for file in Editor/EditorMain.cpp Scene.cpp GameObject.cpp Vector3.cpp Vector2.cpp Matrix4x4.cpp Camera.cpp CameraManager.cpp Model.cpp Texture.cpp PointLight.cpp Debugger.cpp FrameCapture.cpp FrameCapture_png.cpp; do
+    if [ -f "$file" ]; then
+        EXISTING_CPP_FILES="$EXISTING_CPP_FILES $file"
+    fi
+done
+
 # Compile the editor
 echo "Building editor..."
 g++ -o build/editor \
-    Editor/EditorMain.cpp \
-    Scene.cpp \
-    GameObject.cpp \
-    Transform.cpp \
-    Vector3.cpp \
-    Vector2.cpp \
-    Matrix4x4.cpp \
-    Quaternion.cpp \
-    Camera.cpp \
-    CameraManager.cpp \
-    Model.cpp \
-    Texture.cpp \
-    Material.cpp \
-    Shader.cpp \
-    ShaderProgram.cpp \
-    Light.cpp \
-    PointLight.cpp \
-    DirectionalLight.cpp \
-    SpotLight.cpp \
-    FrameCapture.cpp \
-    FrameCapture_png.cpp \
-    Debugger.cpp \
+    $EXISTING_CPP_FILES \
     -std=c++11 \
     -DGLEW_STATIC \
     -I. \
