@@ -291,6 +291,18 @@ BOOL wglDeleteContext(HGLRC hglrc);
 #ifndef FALSE
 #define FALSE 0
 #endif
+#ifndef HGDIOBJ
+typedef void* HGDIOBJ;
+#endif
+#ifndef WNDPROC
+typedef LRESULT (*WNDPROC)(HWND, UINT, WPARAM, LPARAM);
+#endif
+#ifndef ATOM
+typedef unsigned short ATOM;
+#endif
+#ifndef UINT_PTR
+typedef unsigned long long UINT_PTR;
+#endif
 #endif // End of PLATFORM_WINDOWS block for Windows types
 
 // Forward declarations for Windows-specific functions
@@ -302,7 +314,6 @@ void DisableOpenGL(HWND hWnd, HDC hDC, HGLRC hRC);
 
 /**************************
  * Main Entry Point
- *
  **************************/
 
 // Platform-specific main function declarations
@@ -459,7 +470,6 @@ int main(int argc, char** argv)
 
 /********************
  * Window Procedure
- *
  ********************/
 
 // Windows-specific function implementations
@@ -500,8 +510,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam) 
 
 /******************
  * Enable OpenGL
- *
- *******************/
+ ******************/
 
 #ifdef PLATFORM_WINDOWS
 void EnableOpenGL(HWND hWnd, HDC* hDC, HGLRC* hRC) {
@@ -532,7 +541,6 @@ void EnableOpenGL(HWND hWnd, HDC* hDC, HGLRC* hRC) {
 
 /******************
  * Disable OpenGL
- *
  ******************/
 
 #ifdef PLATFORM_WINDOWS
