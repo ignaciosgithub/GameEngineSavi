@@ -303,10 +303,13 @@ typedef unsigned short ATOM;
 #ifndef UINT_PTR
 typedef unsigned long long UINT_PTR;
 #endif
+#ifndef __stdcall
+#define __stdcall
+#endif
 #endif // End of PLATFORM_WINDOWS block for Windows types
 
-// Forward declarations for Windows-specific functions
 #ifdef PLATFORM_WINDOWS
+// Forward declarations for Windows-specific functions
 LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
 void EnableOpenGL(HWND hWnd, HDC* hDC, HGLRC* hRC);
 void DisableOpenGL(HWND hWnd, HDC hDC, HGLRC hRC);
@@ -316,8 +319,8 @@ void DisableOpenGL(HWND hWnd, HDC hDC, HGLRC hRC);
  * Main Entry Point
  **************************/
 
-// Platform-specific main function declarations
 #ifdef PLATFORM_WINDOWS
+// Platform-specific main function declarations
 int WinMain(void* hInstance, void* hPrevInstance, char* lpCmdLine, int iCmdShow)
 #else
 int main(int argc, char** argv)
@@ -468,12 +471,10 @@ int main(int argc, char** argv)
     #endif
 }
 
+#ifdef PLATFORM_WINDOWS
 /********************
  * Window Procedure
  ********************/
-
-// Windows-specific function implementations
-#ifdef PLATFORM_WINDOWS
 LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam) {
     switch (message) {
     case WM_CREATE:
@@ -506,13 +507,10 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam) 
         return DefWindowProc(hWnd, message, wParam, lParam);
     }
 }
-#endif
 
 /******************
  * Enable OpenGL
  ******************/
-
-#ifdef PLATFORM_WINDOWS
 void EnableOpenGL(HWND hWnd, HDC* hDC, HGLRC* hRC) {
     PIXELFORMATDESCRIPTOR pfd;
     int iFormat;
@@ -537,16 +535,13 @@ void EnableOpenGL(HWND hWnd, HDC* hDC, HGLRC* hRC) {
     *hRC = wglCreateContext(*hDC);
     wglMakeCurrent(*hDC, *hRC);
 }
-#endif
 
 /******************
  * Disable OpenGL
  ******************/
-
-#ifdef PLATFORM_WINDOWS
 void DisableOpenGL(HWND hWnd, HDC hDC, HGLRC hRC) {
     wglMakeCurrent(NULL, NULL);
     wglDeleteContext(hRC);
     ReleaseDC(hWnd, hDC);
 }
-#endif
+#endif // End of PLATFORM_WINDOWS block
