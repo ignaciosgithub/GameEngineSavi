@@ -6,6 +6,9 @@
 #include "platform.h"
 #include "ThirdParty/OpenGL/include/GL/gl_definitions.h"
 #ifdef PLATFORM_WINDOWS
+#ifndef CALLBACK
+#define CALLBACK __stdcall
+#endif
 #include <windows.h>
 #include <gl/gl.h>
 #include "ThirdParty/OpenGL/include/GL/win_types.h"
@@ -64,10 +67,10 @@ void DisableOpenGL(HWND hWnd, HDC hDC, HGLRC hRC);
  **************************/
 
 #ifdef PLATFORM_WINDOWS
-int WinMain(void* hInstance,
-            void* hPrevInstance,
-            char* lpCmdLine,
-            int iCmdShow)
+int WINAPI WinMain(HINSTANCE hInstance,
+            HINSTANCE hPrevInstance,
+            LPSTR lpCmdLine,
+            int nCmdShow)
 #else
 int main(int argc, char** argv)
 #endif
@@ -124,7 +127,7 @@ int main(int argc, char** argv)
     gui->AddElement(std::move(editorPanel));
 
     #ifdef PLATFORM_WINDOWS
-    WNDCLASS wc;
+    WNDCLASS wc = {};
     HWND hWnd;
     HDC hDC;
     HGLRC hRC;        
