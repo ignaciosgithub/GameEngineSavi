@@ -1,4 +1,7 @@
 #include "EngineCondition.h"
 
-// Initialize static member
-bool EngineCondition::isInEditor = false;
+bool EngineCondition::isInEditor = true;
+
+bool EngineCondition::IsInEditor() {
+    return isInEditor;
+}
