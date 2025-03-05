@@ -1,100 +1,121 @@
-#ifndef OPENGL_GRAPHICS_API_H
-#define OPENGL_GRAPHICS_API_H
+#ifndef GAME_ENGINE_SAVI_OPENGL_GRAPHICS_API_H
+#define GAME_ENGINE_SAVI_OPENGL_GRAPHICS_API_H
 
 #include "IGraphicsAPI.h"
-#include "../../platform.h"
-
-#ifndef PLATFORM_WINDOWS
 #include "../../ThirdParty/OpenGL/include/GL/gl_definitions.h"
+#include "../../Shaders/Core/ShaderProgram.h"
+#include <iostream>
 
+// OpenGL implementation of the IGraphicsAPI interface
+// This is used on Linux platforms
 class OpenGLGraphicsAPI : public IGraphicsAPI {
 public:
     OpenGLGraphicsAPI();
-    ~OpenGLGraphicsAPI() override;
-    
+    virtual ~OpenGLGraphicsAPI();
+
     // Initialization and cleanup
-    bool Initialize() override;
-    void Shutdown() override;
+    virtual bool Initialize() override;
+    virtual void Shutdown() override;
     
     // Buffer management
-    unsigned int CreateVertexArray() override;
-    void BindVertexArray(unsigned int vao) override;
-    void DeleteVertexArray(unsigned int vao) override;
+    virtual unsigned int CreateVertexArray() override;
+    virtual void BindVertexArray(unsigned int vao) override;
+    virtual void DeleteVertexArray(unsigned int vao) override;
     
-    unsigned int CreateBuffer() override;
-    void BindBuffer(BufferType type, unsigned int buffer) override;
-    void DeleteBuffer(unsigned int buffer) override;
-    void BufferData(BufferType type, const void* data, size_t size, bool dynamic = false) override;
+    virtual unsigned int CreateBuffer() override;
+    virtual void BindBuffer(BufferType type, unsigned int buffer) override;
+    virtual void DeleteBuffer(unsigned int buffer) override;
+    virtual void BufferData(BufferType type, const void* data, size_t size, bool dynamic = false) override;
     
     // Attribute configuration
-    void EnableVertexAttrib(unsigned int index) override;
-    void DisableVertexAttrib(unsigned int index) override;
-    void VertexAttribPointer(unsigned int index, int size, bool normalized, size_t stride, const void* pointer) override;
+    virtual void EnableVertexAttrib(unsigned int index) override;
+    virtual void DisableVertexAttrib(unsigned int index) override;
+    virtual void VertexAttribPointer(unsigned int index, int size, bool normalized, size_t stride, const void* pointer) override;
     
     // Drawing
-    void DrawArrays(DrawMode mode, int first, int count) override;
-    void DrawElements(DrawMode mode, int count, const void* indices) override;
+    virtual void DrawArrays(DrawMode mode, int first, int count) override;
+    virtual void DrawElements(DrawMode mode, int count, const void* indices) override;
     
     // Viewport and clear
-    void SetViewport(int x, int y, int width, int height) override;
-    void Clear(bool colorBuffer, bool depthBuffer) override;
-    void SetClearColor(float r, float g, float b, float a) override;
+    virtual void SetViewport(int x, int y, int width, int height) override;
+    virtual void Clear(bool colorBuffer, bool depthBuffer) override;
+    virtual void SetClearColor(float r, float g, float b, float a) override;
     
     // Depth and culling
-    void SetDepthTest(bool enable) override;
-    void SetDepthFunc(int func) override;
-    void SetCullFace(bool enable) override;
-    void SetCullFaceMode(int mode) override;
+    virtual void SetDepthTest(bool enable) override;
+    virtual void SetDepthFunc(int func) override;
+    virtual void SetCullFace(bool enable) override;
+    virtual void SetCullFaceMode(int mode) override;
     
     // Shader management
-    void UseShaderProgram(ShaderProgram* program) override;
-    unsigned int CreateShader(int shaderType) override;
-    void DeleteShader(unsigned int shader) override;
-    void ShaderSource(unsigned int shader, const std::string& source) override;
-    void CompileShader(unsigned int shader) override;
-    bool GetShaderCompileStatus(unsigned int shader) override;
-    std::string GetShaderInfoLog(unsigned int shader) override;
-    bool GetProgramLinkStatus(unsigned int program) override;
-    std::string GetProgramInfoLog(unsigned int program) override;
-    void AttachShader(unsigned int program, unsigned int shader) override;
-    void LinkProgram(unsigned int program) override;
-    unsigned int CreateProgram() override;
-    void DeleteProgram(unsigned int program) override;
+    virtual void UseShaderProgram(ShaderProgram* program) override;
+    virtual unsigned int CreateShader(int shaderType) override;
+    virtual void DeleteShader(unsigned int shader) override;
+    virtual void ShaderSource(unsigned int shader, const std::string& source) override;
+    virtual void CompileShader(unsigned int shader) override;
+    virtual bool GetShaderCompileStatus(unsigned int shader) override;
+    virtual std::string GetShaderInfoLog(unsigned int shader) override;
+    virtual bool GetProgramLinkStatus(unsigned int program) override;
+    virtual std::string GetProgramInfoLog(unsigned int program) override;
+    virtual void AttachShader(unsigned int program, unsigned int shader) override;
+    virtual void LinkProgram(unsigned int program) override;
+    virtual unsigned int CreateProgram() override;
+    virtual void DeleteProgram(unsigned int program) override;
     
     // Uniform setters
-    void SetUniform1f(unsigned int program, const std::string& name, float value) override;
-    void SetUniform1i(unsigned int program, const std::string& name, int value) override;
-    void SetUniform3f(unsigned int program, const std::string& name, float x, float y, float z) override;
-    void SetUniform4f(unsigned int program, const std::string& name, float x, float y, float z, float w) override;
-    void SetUniformMatrix4fv(unsigned int program, const std::string& name, const float* value, bool transpose = false) override;
+    virtual void SetUniform1f(unsigned int program, const std::string& name, float value) override;
+    virtual void SetUniform1i(unsigned int program, const std::string& name, int value) override;
+    virtual void SetUniform3f(unsigned int program, const std::string& name, float x, float y, float z) override;
+    virtual void SetUniform4f(unsigned int program, const std::string& name, float x, float y, float z, float w) override;
+    virtual void SetUniformMatrix4fv(unsigned int program, const std::string& name, const float* value, bool transpose = false) override;
+    
+    // Additional uniform setters for arrays
+    virtual void SetUniformFloatArray(unsigned int program, const std::string& name, const float* values, int count) override;
+    virtual void SetUniformIntArray(unsigned int program, const std::string& name, const int* values, int count) override;
+    virtual void SetUniformVec3Array(unsigned int program, const std::string& name, const float* values, int count) override;
+    virtual void SetUniformMatrix4Array(unsigned int program, const std::string& name, const float* values, int count, bool transpose = false) override;
+    virtual int GetUniformLocation(unsigned int program, const std::string& name) override;
     
     // Texture management
-    unsigned int CreateTexture() override;
-    void BindTexture(unsigned int texture, unsigned int unit) override;
-    void DeleteTexture(unsigned int texture) override;
-    void TexImage2D(int width, int height, const void* data, bool hasAlpha) override;
+    virtual unsigned int CreateTexture() override;
+    virtual void BindTexture(unsigned int texture, unsigned int unit) override;
+    virtual void DeleteTexture(unsigned int texture) override;
+    virtual void TexImage2D(int width, int height, const void* data, bool hasAlpha) override;
     
     // Debug utilities
-    void DrawDebugLine(const Vector3& start, const Vector3& end, const Vector3& color) override;
-    void DrawDebugAxes() override;
-    
-    // Get API name for debugging
-    const char* GetAPIName() const override { return "OpenGL"; }
+    virtual void DrawDebugLine(const Vector3& start, const Vector3& end, const Vector3& color) override;
+    virtual void DrawDebugAxes() override;
     
     // Platform-specific operations
-    void SwapBuffers() override;
+    virtual void SwapBuffers() override;
     
+    // Get API name for debugging
+    virtual const char* GetAPIName() const override { return "OpenGL"; }
+    
+    // Default shader for models with missing shaders/textures
+    virtual void UseDefaultRedShader() override;
+    
+    // Matrix operations
+    virtual void SetProjectionMatrix(const Matrix4x4& matrix) override;
+    virtual void SetViewMatrix(const Matrix4x4& matrix) override;
+    virtual void SetModelMatrix(const Matrix4x4& matrix) override;
+    virtual bool SupportsMatrixOperations() const override { return true; }
+
+    // Conversion methods
+    GLenum ConvertBufferType(BufferType type);
+    GLenum ConvertDrawMode(DrawMode mode);
+    GLenum ConvertDataType(int type);
+    GLenum ConvertBufferUsage(bool dynamic);
+    GLenum ConvertTextureType(unsigned int unit);
+    GLenum ConvertTextureParameter(int param);
+    GLenum ConvertPixelFormat(bool hasAlpha);
+
 private:
-    // Convert enum values to OpenGL constants
-    GLenum ConvertBufferType(BufferType type) const;
-    GLenum ConvertDrawMode(DrawMode mode) const;
-    
-    // OpenGL state tracking
-    GLuint currentVAO;
-    GLuint currentBuffer;
-    GLuint currentShader;
+    // Track current state to avoid redundant state changes
+    unsigned int currentVAO;
+    unsigned int currentBuffer;
+    unsigned int currentShader;
+    unsigned int currentTexture;
 };
 
-#endif // !PLATFORM_WINDOWS
-
-#endif // OPENGL_GRAPHICS_API_H
+#endif // GAME_ENGINE_SAVI_OPENGL_GRAPHICS_API_H
