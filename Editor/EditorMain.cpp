@@ -8,7 +8,7 @@
 #include <string>
 #include <vector>
 #include <GL/gl.h>
-#include <GL/glut.h>
+#include <GL/freeglut.h>
 
 #include "EditorMain.h"
 #include "../Scene.h"
@@ -59,9 +59,6 @@ void InitializeEditor() {
     Scene* scene = new Scene();
     scene->CreateDefaultObjects();
     
-    // Set up camera
-    // ...
-    
     std::cout << "Editor initialized successfully" << std::endl;
 }
 
@@ -79,9 +76,6 @@ void RenderScene() {
     gluLookAt(0.0f, 5.0f, 10.0f,  // Eye position
               0.0f, 0.0f, 0.0f,   // Look at position
               0.0f, 1.0f, 0.0f);  // Up vector
-    
-    // Render the scene
-    // ...
     
     // Swap buffers
     glutSwapBuffers();
@@ -106,7 +100,6 @@ void KeyboardInput(unsigned char key, int x, int y) {
         case 27: // ESC key
             exit(0);
             break;
-        // Add more key handlers as needed
     }
     
     // Redraw the scene
@@ -118,18 +111,14 @@ void MouseInput(int button, int state, int x, int y) {
     if (button == GLUT_LEFT_BUTTON) {
         if (state == GLUT_DOWN) {
             // Left mouse button pressed
-            // ...
         } else {
             // Left mouse button released
-            // ...
         }
     } else if (button == GLUT_RIGHT_BUTTON) {
         if (state == GLUT_DOWN) {
             // Right mouse button pressed
-            // ...
         } else {
             // Right mouse button released
-            // ...
         }
     }
     
@@ -139,7 +128,6 @@ void MouseInput(int button, int state, int x, int y) {
 
 void MouseMotion(int x, int y) {
     // Handle mouse motion
-    // ...
     
     // Redraw the scene
     glutPostRedisplay();
