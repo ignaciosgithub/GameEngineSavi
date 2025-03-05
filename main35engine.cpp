@@ -64,10 +64,10 @@ void DisableOpenGL(HWND hWnd, HDC hDC, HGLRC hRC);
  **************************/
 
 #ifdef PLATFORM_WINDOWS
-int WinMain(void* hInstance,
-            void* hPrevInstance,
-            char* lpCmdLine,
-            int iCmdShow)
+int WINAPI WinMain(HINSTANCE hInstance,
+            HINSTANCE hPrevInstance,
+            LPSTR lpCmdLine,
+            int nCmdShow)
 #else
 int main(int argc, char** argv)
 #endif
@@ -124,7 +124,7 @@ int main(int argc, char** argv)
     gui->AddElement(std::move(editorPanel));
 
     #ifdef PLATFORM_WINDOWS
-    WNDCLASS wc;
+    WNDCLASS wc = {};
     HWND hWnd;
     HDC hDC;
     HGLRC hRC;        
@@ -134,7 +134,7 @@ int main(int argc, char** argv)
 
     /* register window class */
     wc.style = CS_OWNDC;
-    wc.lpfnWndProc = WndProc;
+    wc.lpfnWndProc = (WNDPROC)WndProc;
     wc.cbClsExtra = 0;
     wc.cbWndExtra = 0;
     wc.hInstance = hInstance;
