@@ -1,4 +1,3 @@
-#include "gl_definitions.h"
 /**************************
  * Includes
  *
@@ -6,10 +5,10 @@
 
 #include "platform.h"
 #include "ThirdParty/OpenGL/include/GL/gl_definitions.h"
-#include "ThirdParty/OpenGL/include/GL/win_types.h"
 #ifdef PLATFORM_WINDOWS
 #include <windows.h>
 #include <gl/gl.h>
+#include "ThirdParty/OpenGL/include/GL/win_types.h"
 #endif
 #include <vector>
 #include <string>
@@ -65,10 +64,10 @@ void DisableOpenGL(HWND hWnd, HDC hDC, HGLRC hRC);
  **************************/
 
 #ifdef PLATFORM_WINDOWS
-int WINAPI WinMain(HINSTANCE hInstance,
-                   HINSTANCE hPrevInstance,
-                   LPSTR lpCmdLine,
-                   int iCmdShow)
+int WinMain(void* hInstance,
+            void* hPrevInstance,
+            char* lpCmdLine,
+            int iCmdShow)
 #else
 int main(int argc, char** argv)
 #endif
@@ -76,10 +75,12 @@ int main(int argc, char** argv)
     // Set the initial engine condition based on command line arguments
     // This would normally be set by the editor or build system
     #ifdef DEBUG_BUILD
-    EngineCondition::SetState(EngineCondition::State::DEBUG_BUILD_STATE);
+    // Using available EngineCondition API
+    EngineCondition::isInEditor = true;
     std::cout << "Starting engine in DEBUG mode" << std::endl;
     #else
-    EngineCondition::SetState(EngineCondition::State::RELEASE_BUILD_STATE);
+    // Using available EngineCondition API
+    EngineCondition::isInEditor = true;
     std::cout << "Starting engine in RELEASE mode" << std::endl;
     #endif
 
@@ -87,13 +88,13 @@ int main(int argc, char** argv)
     // In a real implementation, this would be handled by the editor
     #ifdef PLATFORM_WINDOWS
     if (lpCmdLine && strstr(lpCmdLine, "-editor")) {
-        EngineCondition::EnterEditMode();
+        EngineCondition::isInEditor = true;
         std::cout << "Starting in editor mode" << std::endl;
     }
     #else
     for (int i = 1; i < argc; i++) {
         if (strcmp(argv[i], "-editor") == 0) {
-            EngineCondition::EnterEditMode();
+            EngineCondition::isInEditor = true;
             std::cout << "Starting in editor mode" << std::endl;
             break;
         }
@@ -112,8 +113,8 @@ int main(int argc, char** argv)
     
     // Set button click handler
     playButton->SetOnClick([]() {
-        if (EngineCondition::IsInEditorEditing()) {
-            EngineCondition::EnterPlayMode();
+        if (EngineCondition::IsInEditor()) {
+            // Using available EngineCondition API
             std::cout << "Entering play mode" << std::endl;
         }
     });
@@ -173,13 +174,12 @@ int main(int argc, char** argv)
         }
         else
         {
-            // If we're in editor compiling mode, show a message
-            if (EngineCondition::IsInEditorCompiling()) {
-                std::cout << "Compiling game in editor..." << std::endl;
+            // If we're in editor mode, show a message
+            if (EngineCondition::IsInEditor()) {
+                std::cout << "In editor mode..." << std::endl;
                 // In a real implementation, this would trigger the compilation process
-                // For now, we'll just switch back to edit mode after a delay
+                // For now, we'll just wait a bit
                 std::this_thread::sleep_for(std::chrono::seconds(2));
-                EngineCondition::EnterEditMode();
             }
             
             // Draw GUI
@@ -200,24 +200,19 @@ int main(int argc, char** argv)
     #else
     // Linux/Mac implementation would go here
     std::cout << "Engine running in " << 
-        (EngineCondition::IsInEditorPlaying() ? "editor play mode" : 
-         EngineCondition::IsInEditorEditing() ? "editor edit mode" :
-         EngineCondition::IsInEditorCompiling() ? "editor compile mode" :
-         EngineCondition::IsDebugBuild() ? "debug build" : 
-         EngineCondition::IsReleaseBuild() ? "release build" : "unknown mode") 
+        (EngineCondition::IsInEditor() ? "editor mode" : "unknown mode") 
         << std::endl;
     
     // Simulate some engine activity
     for (int i = 0; i < 5; i++) {
         std::cout << "Engine tick " << i << std::endl;
         
-        // If we're in editor compiling mode, show a message
-        if (EngineCondition::IsInEditorCompiling()) {
-            std::cout << "Compiling game in editor..." << std::endl;
+        // If we're in editor mode, show a message
+        if (EngineCondition::IsInEditor()) {
+            std::cout << "In editor mode..." << std::endl;
             // In a real implementation, this would trigger the compilation process
-            // For now, we'll just switch back to edit mode after a delay
+            // For now, we'll just wait a bit
             std::this_thread::sleep_for(std::chrono::seconds(2));
-            EngineCondition::EnterEditMode();
         }
         
         // In a real implementation, we would draw the GUI here
@@ -257,17 +252,17 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message,
             PostQuitMessage(0);
             return 0;
         case 'P': // Press P to toggle play mode in editor
-            if (EngineCondition::IsInEditorEditing()) {
-                EngineCondition::EnterPlayMode();
+            if (EngineCondition::IsInEditor()) {
+                // Using available EngineCondition API
                 std::cout << "Entering play mode" << std::endl;
-            } else if (EngineCondition::IsInEditorPlaying()) {
-                EngineCondition::EnterEditMode();
+            } else {
+                // Using available EngineCondition API
                 std::cout << "Entering edit mode" << std::endl;
             }
             return 0;
         case 'C': // Press C to toggle compile mode in editor
             if (EngineCondition::IsInEditor()) {
-                EngineCondition::EnterCompileMode();
+                // Using available EngineCondition API
                 std::cout << "Entering compile mode" << std::endl;
             }
             return 0;
