@@ -3,7 +3,9 @@
 
 // Include standard headers
 #include <cstdint>
+#include <iostream>
 #include "../../../../platform.h"
+#include "../../../../Debugger.h"
 
 // Only include OpenGL headers for non-Windows platforms
 #ifndef PLATFORM_WINDOWS
@@ -54,98 +56,250 @@ typedef double GLclampd;
 #endif
 
 // Include GLEW first
-#include <GL/glew.h>
+try {
+    #include <GL/glew.h>
+    std::cout << "Successfully included GL/glew.h" << std::endl;
+} catch (...) {
+    std::cout << "Unknown error including GL/glew.h" << std::endl;
+    Debugger::GetInstance().LogError("Unknown error including GL/glew.h", "gl_definitions.h", "Include GLEW", -1);
+}
 
 // Then include other OpenGL headers
-#include <GL/gl.h>
-#include <GL/glu.h>
-#include <GL/glut.h>
+try {
+    #include <GL/gl.h>
+    std::cout << "Successfully included GL/gl.h" << std::endl;
+} catch (...) {
+    std::cout << "Unknown error including GL/gl.h" << std::endl;
+    Debugger::GetInstance().LogError("Unknown error including GL/gl.h", "gl_definitions.h", "Include GL", -1);
+}
+
+try {
+    #include <GL/glu.h>
+    std::cout << "Successfully included GL/glu.h" << std::endl;
+} catch (...) {
+    std::cout << "Unknown error including GL/glu.h" << std::endl;
+    Debugger::GetInstance().LogError("Unknown error including GL/glu.h", "gl_definitions.h", "Include GLU", -1);
+}
+
+try {
+    #include <GL/glut.h>
+    std::cout << "Successfully included GL/glut.h" << std::endl;
+} catch (...) {
+    std::cout << "Unknown error including GL/glut.h" << std::endl;
+    Debugger::GetInstance().LogError("Unknown error including GL/glut.h", "gl_definitions.h", "Include GLUT", -1);
+}
 
 // Define missing function pointer types with ARB/EXT suffixes
 // These are needed for compatibility with GLEW
-#ifndef PFNGLCLIENTACTIVETEXTUREARBPROC
-typedef void (APIENTRY * PFNGLCLIENTACTIVETEXTUREARBPROC) (GLenum texture);
-#endif
+try {
+    #ifndef PFNGLCLIENTACTIVETEXTUREARBPROC
+    typedef void (APIENTRY * PFNGLCLIENTACTIVETEXTUREARBPROC) (GLenum texture);
+    #endif
+    std::cout << "Successfully defined PFNGLCLIENTACTIVETEXTUREARBPROC" << std::endl;
+} catch (...) {
+    std::cout << "Error defining PFNGLCLIENTACTIVETEXTUREARBPROC" << std::endl;
+    Debugger::GetInstance().LogError("Error defining PFNGLCLIENTACTIVETEXTUREARBPROC", "gl_definitions.h", "Define Types", -1);
+}
 
-#ifndef PFNGLLOADTRANSPOSEMATRIXDARBPROC
-typedef void (APIENTRY * PFNGLLOADTRANSPOSEMATRIXDARBPROC) (const GLdouble m[16]);
-#endif
+try {
+    #ifndef PFNGLLOADTRANSPOSEMATRIXDARBPROC
+    typedef void (APIENTRY * PFNGLLOADTRANSPOSEMATRIXDARBPROC) (const GLdouble m[16]);
+    #endif
+    std::cout << "Successfully defined PFNGLLOADTRANSPOSEMATRIXDARBPROC" << std::endl;
+} catch (...) {
+    std::cout << "Error defining PFNGLLOADTRANSPOSEMATRIXDARBPROC" << std::endl;
+    Debugger::GetInstance().LogError("Error defining PFNGLLOADTRANSPOSEMATRIXDARBPROC", "gl_definitions.h", "Define Types", -1);
+}
 
-#ifndef PFNGLLOADTRANSPOSEMATRIXFARBPROC
-typedef void (APIENTRY * PFNGLLOADTRANSPOSEMATRIXFARBPROC) (const GLfloat m[16]);
-#endif
+try {
+    #ifndef PFNGLLOADTRANSPOSEMATRIXFARBPROC
+    typedef void (APIENTRY * PFNGLLOADTRANSPOSEMATRIXFARBPROC) (const GLfloat m[16]);
+    #endif
+    std::cout << "Successfully defined PFNGLLOADTRANSPOSEMATRIXFARBPROC" << std::endl;
+} catch (...) {
+    std::cout << "Error defining PFNGLLOADTRANSPOSEMATRIXFARBPROC" << std::endl;
+    Debugger::GetInstance().LogError("Error defining PFNGLLOADTRANSPOSEMATRIXFARBPROC", "gl_definitions.h", "Define Types", -1);
+}
 
-#ifndef PFNGLMULTTRANSPOSEMATRIXDARBPROC
-typedef void (APIENTRY * PFNGLMULTTRANSPOSEMATRIXDARBPROC) (const GLdouble m[16]);
-#endif
+try {
+    #ifndef PFNGLMULTTRANSPOSEMATRIXDARBPROC
+    typedef void (APIENTRY * PFNGLMULTTRANSPOSEMATRIXDARBPROC) (const GLdouble m[16]);
+    #endif
+    std::cout << "Successfully defined PFNGLMULTTRANSPOSEMATRIXDARBPROC" << std::endl;
+} catch (...) {
+    std::cout << "Error defining PFNGLMULTTRANSPOSEMATRIXDARBPROC" << std::endl;
+    Debugger::GetInstance().LogError("Error defining PFNGLMULTTRANSPOSEMATRIXDARBPROC", "gl_definitions.h", "Define Types", -1);
+}
 
-#ifndef PFNGLMULTTRANSPOSEMATRIXFARBPROC
-typedef void (APIENTRY * PFNGLMULTTRANSPOSEMATRIXFARBPROC) (const GLfloat m[16]);
-#endif
+try {
+    #ifndef PFNGLMULTTRANSPOSEMATRIXFARBPROC
+    typedef void (APIENTRY * PFNGLMULTTRANSPOSEMATRIXFARBPROC) (const GLfloat m[16]);
+    #endif
+    std::cout << "Successfully defined PFNGLMULTTRANSPOSEMATRIXFARBPROC" << std::endl;
+} catch (...) {
+    std::cout << "Error defining PFNGLMULTTRANSPOSEMATRIXFARBPROC" << std::endl;
+    Debugger::GetInstance().LogError("Error defining PFNGLMULTTRANSPOSEMATRIXFARBPROC", "gl_definitions.h", "Define Types", -1);
+}
 
-#ifndef PFNGLCONVOLUTIONPARAMETERFEXTPROC
-typedef void (APIENTRY * PFNGLCONVOLUTIONPARAMETERFEXTPROC) (GLenum target, GLenum pname, GLfloat param);
-#endif
+try {
+    #ifndef PFNGLCONVOLUTIONPARAMETERFEXTPROC
+    typedef void (APIENTRY * PFNGLCONVOLUTIONPARAMETERFEXTPROC) (GLenum target, GLenum pname, GLfloat param);
+    #endif
+    std::cout << "Successfully defined PFNGLCONVOLUTIONPARAMETERFEXTPROC" << std::endl;
+} catch (...) {
+    std::cout << "Error defining PFNGLCONVOLUTIONPARAMETERFEXTPROC" << std::endl;
+    Debugger::GetInstance().LogError("Error defining PFNGLCONVOLUTIONPARAMETERFEXTPROC", "gl_definitions.h", "Define Types", -1);
+}
 
-#ifndef PFNGLCONVOLUTIONPARAMETERFVEXTPROC
-typedef void (APIENTRY * PFNGLCONVOLUTIONPARAMETERFVEXTPROC) (GLenum target, GLenum pname, const GLfloat *params);
-#endif
+try {
+    #ifndef PFNGLCONVOLUTIONPARAMETERFVEXTPROC
+    typedef void (APIENTRY * PFNGLCONVOLUTIONPARAMETERFVEXTPROC) (GLenum target, GLenum pname, const GLfloat *params);
+    #endif
+    std::cout << "Successfully defined PFNGLCONVOLUTIONPARAMETERFVEXTPROC" << std::endl;
+} catch (...) {
+    std::cout << "Error defining PFNGLCONVOLUTIONPARAMETERFVEXTPROC" << std::endl;
+    Debugger::GetInstance().LogError("Error defining PFNGLCONVOLUTIONPARAMETERFVEXTPROC", "gl_definitions.h", "Define Types", -1);
+}
 
-#ifndef PFNGLCONVOLUTIONPARAMETERIEXTPROC
-typedef void (APIENTRY * PFNGLCONVOLUTIONPARAMETERIEXTPROC) (GLenum target, GLenum pname, GLint param);
-#endif
+try {
+    #ifndef PFNGLCONVOLUTIONPARAMETERIEXTPROC
+    typedef void (APIENTRY * PFNGLCONVOLUTIONPARAMETERIEXTPROC) (GLenum target, GLenum pname, GLint param);
+    #endif
+    std::cout << "Successfully defined PFNGLCONVOLUTIONPARAMETERIEXTPROC" << std::endl;
+} catch (...) {
+    std::cout << "Error defining PFNGLCONVOLUTIONPARAMETERIEXTPROC" << std::endl;
+    Debugger::GetInstance().LogError("Error defining PFNGLCONVOLUTIONPARAMETERIEXTPROC", "gl_definitions.h", "Define Types", -1);
+}
 
-#ifndef PFNGLCONVOLUTIONPARAMETERIVEXTPROC
-typedef void (APIENTRY * PFNGLCONVOLUTIONPARAMETERIVEXTPROC) (GLenum target, GLenum pname, const GLint *params);
-#endif
+try {
+    #ifndef PFNGLCONVOLUTIONPARAMETERIVEXTPROC
+    typedef void (APIENTRY * PFNGLCONVOLUTIONPARAMETERIVEXTPROC) (GLenum target, GLenum pname, const GLint *params);
+    #endif
+    std::cout << "Successfully defined PFNGLCONVOLUTIONPARAMETERIVEXTPROC" << std::endl;
+} catch (...) {
+    std::cout << "Error defining PFNGLCONVOLUTIONPARAMETERIVEXTPROC" << std::endl;
+    Debugger::GetInstance().LogError("Error defining PFNGLCONVOLUTIONPARAMETERIVEXTPROC", "gl_definitions.h", "Define Types", -1);
+}
 
-#ifndef PFNGLGETHISTOGRAMPARAMETERFVEXTPROC
-typedef void (APIENTRY * PFNGLGETHISTOGRAMPARAMETERFVEXTPROC) (GLenum target, GLenum pname, GLfloat *params);
-#endif
+try {
+    #ifndef PFNGLGETHISTOGRAMPARAMETERFVEXTPROC
+    typedef void (APIENTRY * PFNGLGETHISTOGRAMPARAMETERFVEXTPROC) (GLenum target, GLenum pname, GLfloat *params);
+    #endif
+    std::cout << "Successfully defined PFNGLGETHISTOGRAMPARAMETERFVEXTPROC" << std::endl;
+} catch (...) {
+    std::cout << "Error defining PFNGLGETHISTOGRAMPARAMETERFVEXTPROC" << std::endl;
+    Debugger::GetInstance().LogError("Error defining PFNGLGETHISTOGRAMPARAMETERFVEXTPROC", "gl_definitions.h", "Define Types", -1);
+}
 
-#ifndef PFNGLGETHISTOGRAMPARAMETERIVEXTPROC
-typedef void (APIENTRY * PFNGLGETHISTOGRAMPARAMETERIVEXTPROC) (GLenum target, GLenum pname, GLint *params);
-#endif
+try {
+    #ifndef PFNGLGETHISTOGRAMPARAMETERIVEXTPROC
+    typedef void (APIENTRY * PFNGLGETHISTOGRAMPARAMETERIVEXTPROC) (GLenum target, GLenum pname, GLint *params);
+    #endif
+    std::cout << "Successfully defined PFNGLGETHISTOGRAMPARAMETERIVEXTPROC" << std::endl;
+} catch (...) {
+    std::cout << "Error defining PFNGLGETHISTOGRAMPARAMETERIVEXTPROC" << std::endl;
+    Debugger::GetInstance().LogError("Error defining PFNGLGETHISTOGRAMPARAMETERIVEXTPROC", "gl_definitions.h", "Define Types", -1);
+}
 
-#ifndef PFNGLGETMINMAXPARAMETERFVEXTPROC
-typedef void (APIENTRY * PFNGLGETMINMAXPARAMETERFVEXTPROC) (GLenum target, GLenum pname, GLfloat *params);
-#endif
+try {
+    #ifndef PFNGLGETMINMAXPARAMETERFVEXTPROC
+    typedef void (APIENTRY * PFNGLGETMINMAXPARAMETERFVEXTPROC) (GLenum target, GLenum pname, GLfloat *params);
+    #endif
+    std::cout << "Successfully defined PFNGLGETMINMAXPARAMETERFVEXTPROC" << std::endl;
+} catch (...) {
+    std::cout << "Error defining PFNGLGETMINMAXPARAMETERFVEXTPROC" << std::endl;
+    Debugger::GetInstance().LogError("Error defining PFNGLGETMINMAXPARAMETERFVEXTPROC", "gl_definitions.h", "Define Types", -1);
+}
 
-#ifndef PFNGLGETMINMAXPARAMETERIVEXTPROC
-typedef void (APIENTRY * PFNGLGETMINMAXPARAMETERIVEXTPROC) (GLenum target, GLenum pname, GLint *params);
-#endif
+try {
+    #ifndef PFNGLGETMINMAXPARAMETERIVEXTPROC
+    typedef void (APIENTRY * PFNGLGETMINMAXPARAMETERIVEXTPROC) (GLenum target, GLenum pname, GLint *params);
+    #endif
+    std::cout << "Successfully defined PFNGLGETMINMAXPARAMETERIVEXTPROC" << std::endl;
+} catch (...) {
+    std::cout << "Error defining PFNGLGETMINMAXPARAMETERIVEXTPROC" << std::endl;
+    Debugger::GetInstance().LogError("Error defining PFNGLGETMINMAXPARAMETERIVEXTPROC", "gl_definitions.h", "Define Types", -1);
+}
 
-#ifndef PFNGLHISTOGRAMEXTPROC
-typedef void (APIENTRY * PFNGLHISTOGRAMEXTPROC) (GLenum target, GLsizei width, GLenum internalformat, GLboolean sink);
-#endif
+try {
+    #ifndef PFNGLHISTOGRAMEXTPROC
+    typedef void (APIENTRY * PFNGLHISTOGRAMEXTPROC) (GLenum target, GLsizei width, GLenum internalformat, GLboolean sink);
+    #endif
+    std::cout << "Successfully defined PFNGLHISTOGRAMEXTPROC" << std::endl;
+} catch (...) {
+    std::cout << "Error defining PFNGLHISTOGRAMEXTPROC" << std::endl;
+    Debugger::GetInstance().LogError("Error defining PFNGLHISTOGRAMEXTPROC", "gl_definitions.h", "Define Types", -1);
+}
 
-#ifndef PFNGLMINMAXEXTPROC
-typedef void (APIENTRY * PFNGLMINMAXEXTPROC) (GLenum target, GLenum internalformat, GLboolean sink);
-#endif
+try {
+    #ifndef PFNGLMINMAXEXTPROC
+    typedef void (APIENTRY * PFNGLMINMAXEXTPROC) (GLenum target, GLenum internalformat, GLboolean sink);
+    #endif
+    std::cout << "Successfully defined PFNGLMINMAXEXTPROC" << std::endl;
+} catch (...) {
+    std::cout << "Error defining PFNGLMINMAXEXTPROC" << std::endl;
+    Debugger::GetInstance().LogError("Error defining PFNGLMINMAXEXTPROC", "gl_definitions.h", "Define Types", -1);
+}
 
-#ifndef PFNGLRESETHISTOGRAMEXTPROC
-typedef void (APIENTRY * PFNGLRESETHISTOGRAMEXTPROC) (GLenum target);
-#endif
+try {
+    #ifndef PFNGLRESETHISTOGRAMEXTPROC
+    typedef void (APIENTRY * PFNGLRESETHISTOGRAMEXTPROC) (GLenum target);
+    #endif
+    std::cout << "Successfully defined PFNGLRESETHISTOGRAMEXTPROC" << std::endl;
+} catch (...) {
+    std::cout << "Error defining PFNGLRESETHISTOGRAMEXTPROC" << std::endl;
+    Debugger::GetInstance().LogError("Error defining PFNGLRESETHISTOGRAMEXTPROC", "gl_definitions.h", "Define Types", -1);
+}
 
-#ifndef PFNGLRESETMINMAXEXTPROC
-typedef void (APIENTRY * PFNGLRESETMINMAXEXTPROC) (GLenum target);
-#endif
+try {
+    #ifndef PFNGLRESETMINMAXEXTPROC
+    typedef void (APIENTRY * PFNGLRESETMINMAXEXTPROC) (GLenum target);
+    #endif
+    std::cout << "Successfully defined PFNGLRESETMINMAXEXTPROC" << std::endl;
+} catch (...) {
+    std::cout << "Error defining PFNGLRESETMINMAXEXTPROC" << std::endl;
+    Debugger::GetInstance().LogError("Error defining PFNGLRESETMINMAXEXTPROC", "gl_definitions.h", "Define Types", -1);
+}
 
-#ifndef PFNGLSEPARABLEFILTER2DEXTPROC
-typedef void (APIENTRY * PFNGLSEPARABLEFILTER2DEXTPROC) (GLenum target, GLenum internalformat, GLsizei width, GLsizei height, GLenum format, GLenum type, const void *row, const void *column);
-#endif
+try {
+    #ifndef PFNGLSEPARABLEFILTER2DEXTPROC
+    typedef void (APIENTRY * PFNGLSEPARABLEFILTER2DEXTPROC) (GLenum target, GLenum internalformat, GLsizei width, GLsizei height, GLenum format, GLenum type, const void *row, const void *column);
+    #endif
+    std::cout << "Successfully defined PFNGLSEPARABLEFILTER2DEXTPROC" << std::endl;
+} catch (...) {
+    std::cout << "Error defining PFNGLSEPARABLEFILTER2DEXTPROC" << std::endl;
+    Debugger::GetInstance().LogError("Error defining PFNGLSEPARABLEFILTER2DEXTPROC", "gl_definitions.h", "Define Types", -1);
+}
 
-#ifndef PFNGLGETMINMAXEXTPROC
-typedef void (APIENTRY * PFNGLGETMINMAXEXTPROC) (GLenum target, GLenum internalformat, GLboolean sink, GLvoid *values);
-#endif
+try {
+    #ifndef PFNGLGETMINMAXEXTPROC
+    typedef void (APIENTRY * PFNGLGETMINMAXEXTPROC) (GLenum target, GLenum internalformat, GLboolean sink, GLvoid *values);
+    #endif
+    std::cout << "Successfully defined PFNGLGETMINMAXEXTPROC" << std::endl;
+} catch (...) {
+    std::cout << "Error defining PFNGLGETMINMAXEXTPROC" << std::endl;
+    Debugger::GetInstance().LogError("Error defining PFNGLGETMINMAXEXTPROC", "gl_definitions.h", "Define Types", -1);
+}
 
-#ifndef PFNGLGETHISTOGRAMEXTPROC
-typedef void (APIENTRY * PFNGLGETHISTOGRAMEXTPROC) (GLenum target, GLboolean reset, GLenum format, GLenum type, GLvoid *values);
-#endif
+try {
+    #ifndef PFNGLGETHISTOGRAMEXTPROC
+    typedef void (APIENTRY * PFNGLGETHISTOGRAMEXTPROC) (GLenum target, GLboolean reset, GLenum format, GLenum type, GLvoid *values);
+    #endif
+    std::cout << "Successfully defined PFNGLGETHISTOGRAMEXTPROC" << std::endl;
+} catch (...) {
+    std::cout << "Error defining PFNGLGETHISTOGRAMEXTPROC" << std::endl;
+    Debugger::GetInstance().LogError("Error defining PFNGLGETHISTOGRAMEXTPROC", "gl_definitions.h", "Define Types", -1);
+}
 
-#ifndef PFNGLCOLORTABLEEXTPROC
-typedef void (APIENTRY * PFNGLCOLORTABLEEXTPROC) (GLenum target, GLenum internalFormat, GLsizei width, GLenum format, GLenum type, const GLvoid *table);
-#endif
+try {
+    #ifndef PFNGLCOLORTABLEEXTPROC
+    typedef void (APIENTRY * PFNGLCOLORTABLEEXTPROC) (GLenum target, GLenum internalFormat, GLsizei width, GLenum format, GLenum type, const GLvoid *table);
+    #endif
+    std::cout << "Successfully defined PFNGLCOLORTABLEEXTPROC" << std::endl;
+} catch (...) {
+    std::cout << "Error defining PFNGLCOLORTABLEEXTPROC" << std::endl;
+    Debugger::GetInstance().LogError("Error defining PFNGLCOLORTABLEEXTPROC", "gl_definitions.h", "Define Types", -1);
+}
 
 #else
 // Windows-specific DirectX headers are included in DirectXGraphicsAPI.h
