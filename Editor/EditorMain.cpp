@@ -1,13 +1,9 @@
-// Define GLEW_STATIC before including glew.h
-#define GLEW_STATIC
-
-// Include GLEW first
-#include <GL/glew.h>
-
 #include <iostream>
 #include <string>
 #include <vector>
-#include <GL/gl.h>
+
+// Include our centralized OpenGL header
+#include "../ThirdParty/OpenGL/include/GL/gl_definitions.h"
 
 #include "EditorMain.h"
 #include "../Scene.h"
