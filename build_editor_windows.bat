@@ -1,51 +1,38 @@
 @echo off
+REM Create build directory if it doesn't exist
+if not exist build mkdir build
 
-REM Create bin directory if it doesn't exist
-if not exist bin\windows mkdir bin\windows
-
-REM Build the editor
-g++ -std=c++11 -o bin\windows\Editor.exe ^
+REM Compile the editor
+echo Building editor...
+g++ -o build\editor.exe ^
     Editor\EditorMain.cpp ^
-    Editor\Editor.cpp ^
-    Editor\HierarchyPanel.cpp ^
-    Editor\InspectorPanel.cpp ^
-    Editor\ProjectPanel.cpp ^
-    Editor\SceneViewPanel.cpp ^
-    Editor\Vector3Field.cpp ^
+    Scene.cpp ^
     GameObject.cpp ^
     Vector3.cpp ^
     Matrix4x4.cpp ^
     Camera.cpp ^
-    Model.cpp ^
-    MonoBehaviourLike.cpp ^
-    TimeManager.cpp ^
-    Time.cpp ^
-    EngineTime.cpp ^
-    Raycast.cpp ^
-    RigidBody.cpp ^
-    CollisionSystem.cpp ^
-    PhysicsSystem.cpp ^
-    Scene.cpp ^
-    PointLight.cpp ^
     CameraManager.cpp ^
-    Shaders\Core\ShaderProgram.cpp ^
-    Shaders\Core\Shader.cpp ^
-    Shaders\Core\ShaderError.cpp ^
-    Editor\TextField.cpp ^
+    Model.cpp ^
     Texture.cpp ^
-    EngineCondition.cpp ^
+    PointLight.cpp ^
+    Debugger.cpp ^
     FrameCapture.cpp ^
-    ProjectSettings\ProjectSettings.cpp ^
-    ProjectSettings\ProjectManager.cpp ^
-    Profiler.cpp ^
+    FrameCapture_png.cpp ^
+    -std=c++11 ^
     -I. ^
     -IThirdParty\OpenGL\include ^
     -DGL_GLEXT_PROTOTYPES ^
-    -lopengl32 -lglu32 -lglut32
+    -lopengl32 -lglu32 -lfreeglut
 
 REM Check if build was successful
 if %ERRORLEVEL% EQU 0 (
     echo Editor build successful.
+    echo Run the editor with: build\editor.exe
 ) else (
     echo Editor build failed.
+)
+
+REM Run the editor if build was successful
+if %ERRORLEVEL% EQU 0 (
+    build\editor.exe
 )
