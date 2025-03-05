@@ -5,7 +5,7 @@
 
 #include "platform.h"
 #include "ThirdParty/OpenGL/include/GL/gl_definitions.h"
-#ifdef PLATFORM_WINDOWS
+#if defined(PLATFORM_WINDOWS)
 #ifndef CALLBACK
 #define CALLBACK __stdcall
 #endif
@@ -53,8 +53,8 @@ inline float toRadians(float degrees) {
 // Global GUI instance
 std::unique_ptr<GUI> gui;
 
-#ifdef PLATFORM_WINDOWS
 // Forward declarations for Windows-specific functions
+#if defined(PLATFORM_WINDOWS)
 LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
 void EnableOpenGL(HWND hWnd, HDC* hDC, HGLRC* hRC);
 void DisableOpenGL(HWND hWnd, HDC hDC, HGLRC hRC);
@@ -65,18 +65,19 @@ void DisableOpenGL(HWND hWnd, HDC hDC, HGLRC hRC);
  *
  **************************/
 
-#ifdef PLATFORM_WINDOWS
+#if defined(PLATFORM_WINDOWS)
 int WINAPI WinMain(HINSTANCE hInstance,
             HINSTANCE hPrevInstance,
             LPSTR lpCmdLine,
             int nCmdShow)
+{
 #else
 int main(int argc, char** argv)
-#endif
 {
+#endif
     // Set the initial engine condition based on command line arguments
     // This would normally be set by the editor or build system
-    #ifdef DEBUG_BUILD
+    #if defined(DEBUG_BUILD)
     // Using available EngineCondition API
     EngineCondition::isInEditor = true;
     std::cout << "Starting engine in DEBUG mode" << std::endl;
@@ -88,7 +89,7 @@ int main(int argc, char** argv)
 
     // Check for editor mode command line arguments
     // In a real implementation, this would be handled by the editor
-    #ifdef PLATFORM_WINDOWS
+    #if defined(PLATFORM_WINDOWS)
     if (lpCmdLine && strstr(lpCmdLine, "-editor")) {
         EngineCondition::isInEditor = true;
         std::cout << "Starting in editor mode" << std::endl;
@@ -103,6 +104,19 @@ int main(int argc, char** argv)
     }
     #endif
 
+    // Initialize graphics API
+    if (!GraphicsAPIFactory::GetInstance().Initialize()) {
+        std::cout << "Failed to initialize graphics API" << std::endl;
+        return 1;
+    }
+    
+    // Get the graphics API
+    auto graphics = GraphicsAPIFactory::GetInstance().GetGraphicsAPI();
+    if (!graphics) {
+        std::cout << "Failed to get graphics API" << std::endl;
+        return 1;
+    }
+    
     // Initialize GUI
     // Use C++11 compatible way to create unique_ptr
     gui.reset(new GUI());
@@ -125,7 +139,7 @@ int main(int argc, char** argv)
     editorPanel->AddElement(std::move(playButton));
     gui->AddElement(std::move(editorPanel));
 
-    #ifdef PLATFORM_WINDOWS
+    #if defined(PLATFORM_WINDOWS)
     WNDCLASS wc = {};
     HWND hWnd;
     HDC hDC;
@@ -187,8 +201,11 @@ int main(int argc, char** argv)
             // Draw GUI
             gui->Draw();
             
-            // Swap buffers
-            SwapBuffers(hDC);
+            // Swap buffers using the graphics API
+            auto graphics = GraphicsAPIFactory::GetInstance().GetGraphicsAPI();
+            if (graphics) {
+                graphics->SwapBuffers();
+            }
         }
     }
 
@@ -227,7 +244,7 @@ int main(int argc, char** argv)
     #endif
 }
 
-#ifdef PLATFORM_WINDOWS
+#if defined(PLATFORM_WINDOWS)
 /********************
  * Window Procedure
  *
@@ -313,6 +330,9 @@ void EnableOpenGL(HWND hWnd, HDC* hDC, HGLRC* hRC)
     /* create and enable the render context (RC) */
     *hRC = wglCreateContext(*hDC);
     wglMakeCurrent(*hDC, *hRC);
+    
+    // Initialize graphics API
+    GraphicsAPIFactory::GetInstance().Initialize();
 }
 
 /******************
@@ -322,6 +342,12 @@ void EnableOpenGL(HWND hWnd, HDC* hDC, HGLRC* hRC)
 
 void DisableOpenGL(HWND hWnd, HDC hDC, HGLRC hRC)
 {
+    // Shutdown graphics API
+    auto graphics = GraphicsAPIFactory::GetInstance().GetGraphicsAPI();
+    if (graphics) {
+        graphics->Shutdown();
+    }
+    
     wglMakeCurrent(NULL, NULL);
     wglDeleteContext(hRC);
     ReleaseDC(hWnd, hDC);
