@@ -19,13 +19,6 @@ REM Compile the engine components in the correct order
 echo Compiling engine components...
 
 REM First, compile the graphics API components
-echo Compiling OpenGLGraphicsAPI...
-g++ %CFLAGS% %INCLUDES% -c Graphics\Core\OpenGLGraphicsAPI.cpp -o bin\windows\OpenGLGraphicsAPI.o
-if %ERRORLEVEL% NEQ 0 (
-    echo Error: OpenGLGraphicsAPI compilation failed
-    exit /b 1
-)
-
 echo Compiling DirectXGraphicsAPI...
 g++ %CFLAGS% %INCLUDES% -c Graphics\Core\DirectXGraphicsAPI.cpp -o bin\windows\DirectXGraphicsAPI.o
 if %ERRORLEVEL% NEQ 0 (
@@ -160,7 +153,7 @@ if %ERRORLEVEL% NEQ 0 (
 
 REM Create a static library with the components that compiled successfully
 echo Creating static library...
-ar rcs bin\windows\libGameEngineSavi.a bin\windows\OpenGLGraphicsAPI.o bin\windows\DirectXGraphicsAPI.o bin\windows\GraphicsAPIFactory.o bin\windows\Vector3.o bin\windows\Matrix4x4.o bin\windows\Model.o bin\windows\GameObject.o bin\windows\Camera.o bin\windows\Raycast.o bin\windows\TimeManager.o bin\windows\NavMesh.o bin\windows\NavMeshManager.o bin\windows\AIEntity.o bin\windows\ProjectSettings.o
+ar rcs bin\windows\libGameEngineSavi.a bin\windows\DirectXGraphicsAPI.o bin\windows\GraphicsAPIFactory.o bin\windows\Vector3.o bin\windows\Matrix4x4.o bin\windows\Model.o bin\windows\GameObject.o bin\windows\Camera.o bin\windows\Raycast.o bin\windows\TimeManager.o bin\windows\NavMesh.o bin\windows\NavMeshManager.o bin\windows\AIEntity.o bin\windows\ProjectSettings.o
 
 REM Add optional components if they compiled successfully
 if exist bin\windows\RigidBody.o (
@@ -247,8 +240,8 @@ g++ %CFLAGS% %INCLUDES% -o bin\windows\editor.exe ^
     ProjectSettings\ProjectSettings.cpp ^
     ProjectSettings\ProjectManager.cpp ^
     Profiler.cpp ^
-    -DGL_GLEXT_PROTOTYPES ^
-    -lopengl32 -lglu32 -lglut32
+    -DPLATFORM_WINDOWS ^
+    -ld3d11 -ldxgi -ld3dcompiler
 if %ERRORLEVEL% NEQ 0 (
     echo Warning: Editor build failed, but continuing...
 ) else (

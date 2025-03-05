@@ -2,6 +2,9 @@
 #define OPENGL_GRAPHICS_API_H
 
 #include "IGraphicsAPI.h"
+#include "../../platform.h"
+
+#ifndef PLATFORM_WINDOWS
 #include "../../ThirdParty/OpenGL/include/GL/gl_definitions.h"
 
 class OpenGLGraphicsAPI : public IGraphicsAPI {

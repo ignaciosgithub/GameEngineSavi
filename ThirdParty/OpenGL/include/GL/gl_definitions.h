@@ -3,7 +3,10 @@
 
 // Include standard headers
 #include <cstdint>
+#include "../../platform.h"
 
+// Only include OpenGL headers for non-Windows platforms
+#ifndef PLATFORM_WINDOWS
 // Define GLEW_STATIC before including glew.h
 #ifndef GLEW_STATIC
 #define GLEW_STATIC
@@ -20,11 +23,9 @@ typedef struct __GLsync* GLsync;
 #include <GL/glew.h>
 
 // Then include other OpenGL headers
-#ifdef _WIN32
-    #include <windows.h>
-    #include <GL/gl.h>
+#include <GL/gl.h>
 #else
-    #include <GL/gl.h>
+// Windows-specific DirectX headers are included in DirectXGraphicsAPI.h
 #endif
 
 #endif // GAME_ENGINE_SAVI_GL_DEFINITIONS_H

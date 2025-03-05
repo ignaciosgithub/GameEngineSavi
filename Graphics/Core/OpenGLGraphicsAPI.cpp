@@ -2,6 +2,8 @@
 #include "../../Shaders/Core/ShaderProgram.h"
 #include <iostream>
 
+#ifndef PLATFORM_WINDOWS
+
 OpenGLGraphicsAPI::OpenGLGraphicsAPI() 
     : currentVAO(0), currentBuffer(0), currentShader(0) {
 }
@@ -184,3 +186,5 @@ GLenum OpenGLGraphicsAPI::ConvertDrawMode(DrawMode mode) const {
         default: return GL_TRIANGLES;
     }
 }
+
+#endif // !PLATFORM_WINDOWS
