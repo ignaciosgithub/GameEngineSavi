@@ -67,4 +67,6 @@ private:
     GLuint currentShader;
 };
 
+#endif // !PLATFORM_WINDOWS
+
 #endif // OPENGL_GRAPHICS_API_H
