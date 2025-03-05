@@ -1,5 +1,10 @@
 #include <iostream>
+// Use system GLUT instead of local GLUT
+#ifdef PLATFORM_WINDOWS
 #include <GL/glut.h>
+#else
+#include <GL/glut.h>
+#endif
 #include "FrameCapture.h"
 
 // Simple OpenGL rendering function

@@ -5,21 +5,55 @@
 #include <sstream>
 #include <vector>
 
-// Platform-specific OpenGL includes
-#ifdef PLATFORM_WINDOWS
-#include <windows.h>
-#include <gl/gl.h>
-#else
-#include <GL/gl.h>
-#endif
-
-// Include OpenGL extension headers
-#include "ThirdParty/OpenGL/include/GL/glext.h"
-
 // Define GL_GLEXT_PROTOTYPES to ensure function prototypes are declared
 #ifndef GL_GLEXT_PROTOTYPES
 #define GL_GLEXT_PROTOTYPES 1
 #endif
+
+// Define OpenGL constants that might be missing
+#ifndef GL_ARRAY_BUFFER
+#define GL_ARRAY_BUFFER 0x8892
+#endif
+
+#ifndef GL_STATIC_DRAW
+#define GL_STATIC_DRAW 0x88E4
+#endif
+
+// Platform-specific OpenGL includes
+#ifdef PLATFORM_WINDOWS
+#include <windows.h>
+#endif
+
+// Use system GLUT instead of local GLUT
+#ifdef PLATFORM_WINDOWS
+#include <GL/glut.h>
+#else
+#include <GL/glut.h>
+#endif
+
+// Include OpenGL headers
+#include <GL/gl.h>
+#include <GL/glu.h>
+#include "ThirdParty/OpenGL/include/GL/glext.h"
+
+// Define missing types if needed
+#ifndef GLsizeiptr
+typedef ptrdiff_t GLsizeiptr;
+#endif
+
+// Define OpenGL function prototypes if not already defined
+extern "C" {
+    // OpenGL 2.0+ VAO/VBO functions
+    extern void glBindVertexArray(GLuint array);
+    extern void glDeleteVertexArrays(GLsizei n, const GLuint *arrays);
+    extern void glGenVertexArrays(GLsizei n, GLuint *arrays);
+    extern void glGenBuffers(GLsizei n, GLuint *buffers);
+    extern void glBindBuffer(GLenum target, GLuint buffer);
+    extern void glBufferData(GLenum target, GLsizeiptr size, const void *data, GLenum usage);
+    extern void glDeleteBuffers(GLsizei n, const GLuint *buffers);
+    extern void glVertexAttribPointer(GLuint index, GLint size, GLenum type, GLboolean normalized, GLsizei stride, const void *pointer);
+    extern void glEnableVertexAttribArray(GLuint index);
+}
 
 // Constructor
 Model::Model() {
@@ -117,13 +151,12 @@ void Model::Render(const std::vector<PointLight>& lights) {
     Matrix4x4 modelMatrix;
     modelMatrix.identity();
     
-    // Apply translation
-    modelMatrix.translate(position.x, position.y, position.z);
+    // Apply rotation using Matrix4x4::createRotation
+    Matrix4x4 rotationMatrix = Matrix4x4::createRotation(rotation.x, rotation.y, rotation.z);
+    modelMatrix = rotationMatrix;
     
-    // Apply rotation
-    modelMatrix.rotateX(rotation.x);
-    modelMatrix.rotateY(rotation.y);
-    modelMatrix.rotateZ(rotation.z);
+    // TODO: Apply translation when Matrix4x4 has translate method
+    // For now, position is applied in shader
     
     // Set model matrix uniform
     shaderProgram->SetUniform("model", modelMatrix);
@@ -138,19 +171,19 @@ void Model::Render(const std::vector<PointLight>& lights) {
         
         // Set light position
         std::string posName = "pointLights[" + std::to_string(i) + "].position";
-        shaderProgram->SetUniform(posName, light.GetPosition());
+        shaderProgram->SetUniform(posName, light.position);
         
         // Set light color
         std::string colorName = "pointLights[" + std::to_string(i) + "].color";
-        shaderProgram->SetUniform(colorName, light.GetColor());
+        shaderProgram->SetUniform(colorName, light.color);
         
         // Set light intensity
         std::string intensityName = "pointLights[" + std::to_string(i) + "].intensity";
-        shaderProgram->SetUniform(intensityName, light.GetIntensity());
+        shaderProgram->SetUniform(intensityName, light.intensity);
         
         // Set light range
         std::string rangeName = "pointLights[" + std::to_string(i) + "].range";
-        shaderProgram->SetUniform(rangeName, light.GetRange());
+        shaderProgram->SetUniform(rangeName, light.range);
     }
     
     // Bind textures if available
@@ -403,13 +436,12 @@ void Model::UpdateUniforms(const Matrix4x4& viewMatrix, const Matrix4x4& project
     Matrix4x4 modelMatrix;
     modelMatrix.identity();
     
-    // Apply translation
-    modelMatrix.translate(position.x, position.y, position.z);
+    // Apply rotation using Matrix4x4::createRotation
+    Matrix4x4 rotationMatrix = Matrix4x4::createRotation(rotation.x, rotation.y, rotation.z);
+    modelMatrix = rotationMatrix;
     
-    // Apply rotation
-    modelMatrix.rotateX(rotation.x);
-    modelMatrix.rotateY(rotation.y);
-    modelMatrix.rotateZ(rotation.z);
+    // TODO: Apply translation when Matrix4x4 has translate method
+    // For now, position is applied in shader
     
     // Set model matrix uniform
     shaderProgram->SetUniform("model", modelMatrix);
@@ -885,6 +917,26 @@ void Model::rotate() {
     }
     
     std::cout << "Rotated model to (" << rotation.x << ", " << rotation.y << ", " << rotation.z << ")" << std::endl;
+}
+
+// Rotate model with specific angles
+void Model::Rotate(float x, float y, float z) {
+    // Set the rotation values directly
+    rotation.x = x;
+    rotation.y = y;
+    rotation.z = z;
+    
+    // Normalize rotation values to 0-360 range
+    while (rotation.x >= 360.0f) rotation.x -= 360.0f;
+    while (rotation.x < 0.0f) rotation.x += 360.0f;
+    
+    while (rotation.y >= 360.0f) rotation.y -= 360.0f;
+    while (rotation.y < 0.0f) rotation.y += 360.0f;
+    
+    while (rotation.z >= 360.0f) rotation.z -= 360.0f;
+    while (rotation.z < 0.0f) rotation.z += 360.0f;
+    
+    std::cout << "Set model rotation to (" << rotation.x << ", " << rotation.y << ", " << rotation.z << ")" << std::endl;
 }
 
 // Set texture path

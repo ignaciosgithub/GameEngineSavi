@@ -264,6 +264,10 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam) 
 #else
 // Linux entry point
 int main(int argc, char** argv) {
+    // Prevent unused parameter warnings
+    (void)argc;
+    (void)argv;
+    
     // Initialize editor
     InitializeEditor();
     
