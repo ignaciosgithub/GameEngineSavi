@@ -295,11 +295,10 @@ BOOL wglDeleteContext(HGLRC hglrc);
 
 // Forward declarations for Windows-specific functions
 #ifdef PLATFORM_WINDOWS
-// Windows-specific function declarations
 LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
 void EnableOpenGL(HWND hWnd, HDC* hDC, HGLRC* hRC);
 void DisableOpenGL(HWND hWnd, HDC hDC, HGLRC hRC);
-#endif // End of Windows-specific function declarations
+#endif
 
 /**************************
  * Main Entry Point
@@ -308,12 +307,10 @@ void DisableOpenGL(HWND hWnd, HDC hDC, HGLRC hRC);
 
 // Platform-specific main function declarations
 #ifdef PLATFORM_WINDOWS
-// Windows entry point
 int WinMain(void* hInstance, void* hPrevInstance, char* lpCmdLine, int iCmdShow)
 #else
-// Linux/Mac entry point
 int main(int argc, char** argv)
-#endif // End of platform-specific main function declarations
+#endif
 {
     // Set the initial engine condition based on command line arguments
     // This would normally be set by the editor or build system
@@ -467,11 +464,8 @@ int main(int argc, char** argv)
 
 // Windows-specific function implementations
 #ifdef PLATFORM_WINDOWS
-// WndProc function implementation
-LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
-{
-    switch (message)
-    {
+LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam) {
+    switch (message) {
     case WM_CREATE:
         return 0;
         
@@ -483,8 +477,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
         return 0;
         
     case WM_KEYDOWN:
-        switch (wParam)
-        {
+        switch (wParam) {
         case VK_ESCAPE:
             PostQuitMessage(0);
             return 0;
@@ -503,7 +496,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
         return DefWindowProc(hWnd, message, wParam, lParam);
     }
 }
-#endif // End of WndProc function
+#endif
 
 /******************
  * Enable OpenGL
@@ -511,9 +504,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
  *******************/
 
 #ifdef PLATFORM_WINDOWS
-// EnableOpenGL function implementation
-void EnableOpenGL(HWND hWnd, HDC* hDC, HGLRC* hRC)
-{
+void EnableOpenGL(HWND hWnd, HDC* hDC, HGLRC* hRC) {
     PIXELFORMATDESCRIPTOR pfd;
     int iFormat;
     
@@ -537,7 +528,7 @@ void EnableOpenGL(HWND hWnd, HDC* hDC, HGLRC* hRC)
     *hRC = wglCreateContext(*hDC);
     wglMakeCurrent(*hDC, *hRC);
 }
-#endif // End of EnableOpenGL function
+#endif
 
 /******************
  * Disable OpenGL
@@ -545,11 +536,9 @@ void EnableOpenGL(HWND hWnd, HDC* hDC, HGLRC* hRC)
  ******************/
 
 #ifdef PLATFORM_WINDOWS
-// DisableOpenGL function implementation
-void DisableOpenGL(HWND hWnd, HDC hDC, HGLRC hRC)
-{
+void DisableOpenGL(HWND hWnd, HDC hDC, HGLRC hRC) {
     wglMakeCurrent(NULL, NULL);
     wglDeleteContext(hRC);
     ReleaseDC(hWnd, hDC);
 }
-#endif // End of DisableOpenGL function
+#endif
