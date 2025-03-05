@@ -18,7 +18,6 @@ g++ -o build\editor.exe ^
     Debugger.cpp ^
     FrameCapture.cpp ^
     FrameCapture_png.cpp ^
-    Graphics\Core\OpenGLGraphicsAPI.cpp ^
     Graphics\Core\DirectXGraphicsAPI.cpp ^
     Graphics\Core\GraphicsAPIFactory.cpp ^
     Shaders\Core\ShaderProgram.cpp ^
@@ -26,9 +25,8 @@ g++ -o build\editor.exe ^
     Shaders\Core\ShaderError.cpp ^
     -std=c++11 ^
     -I. ^
-    -IThirdParty\OpenGL\include ^
-    -DGL_GLEXT_PROTOTYPES ^
-    -lopengl32 -lglu32 -lfreeglut
+    -DPLATFORM_WINDOWS ^
+    -ld3d11 -ldxgi -ld3dcompiler
 
 REM Check if build was successful
 if %ERRORLEVEL% EQU 0 (
