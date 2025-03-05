@@ -24,3 +24,7 @@ float TimeManager::GetTime() const {
 float TimeManager::DeltaTime() const {
     return 0.016f; // Stub implementation (60 FPS)
 }
+
+float TimeManager::GetDeltaTime() const {
+    return DeltaTime(); // Call the existing DeltaTime method
+}
