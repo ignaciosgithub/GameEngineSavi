@@ -96,6 +96,24 @@ typedef void* HBRUSH;
 #ifndef BOOL
 typedef int BOOL;
 #endif
+#ifndef HGDIOBJ
+typedef void* HGDIOBJ;
+#endif
+#ifndef ATOM
+typedef unsigned short ATOM;
+#endif
+#ifndef UINT_PTR
+typedef unsigned long long UINT_PTR;
+#endif
+#ifndef __stdcall
+#define __stdcall
+#endif
+
+// Forward declaration for WNDPROC typedef
+#ifndef WNDPROC
+typedef void* WNDPROC;
+#endif
+
 #ifndef WNDCLASS
 typedef struct {
     UINT      style;
@@ -291,21 +309,6 @@ BOOL wglDeleteContext(HGLRC hglrc);
 #ifndef FALSE
 #define FALSE 0
 #endif
-#ifndef HGDIOBJ
-typedef void* HGDIOBJ;
-#endif
-#ifndef WNDPROC
-typedef LRESULT (*WNDPROC)(HWND, UINT, WPARAM, LPARAM);
-#endif
-#ifndef ATOM
-typedef unsigned short ATOM;
-#endif
-#ifndef UINT_PTR
-typedef unsigned long long UINT_PTR;
-#endif
-#ifndef __stdcall
-#define __stdcall
-#endif
 
 // Forward declarations for Windows-specific functions
 LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
@@ -318,11 +321,10 @@ void DisableOpenGL(HWND hWnd, HDC hDC, HGLRC hRC);
  **************************/
 
 // Platform-specific main function declarations
-int 
 #ifdef PLATFORM_WINDOWS
-WinMain(void* hInstance, void* hPrevInstance, char* lpCmdLine, int iCmdShow)
+int WinMain(void* hInstance, void* hPrevInstance, char* lpCmdLine, int iCmdShow)
 #else
-main(int argc, char** argv)
+int main(int argc, char** argv)
 #endif
 {
     // Set the initial engine condition based on command line arguments
@@ -365,7 +367,7 @@ main(int argc, char** argv)
     // Register the window class
     WNDCLASS wc;
     wc.style = CS_OWNDC;
-    wc.lpfnWndProc = (WNDPROC)WndProc;
+    wc.lpfnWndProc = (void*)WndProc;
     wc.cbClsExtra = 0;
     wc.cbWndExtra = 0;
     wc.hInstance = (HINSTANCE)hInstance;
