@@ -1,0 +1,241 @@
+#include "ShaderProgram.h"
+#include "Shader.h"
+#include "ShaderError.h"
+#include "../../Graphics/Core/GraphicsAPIFactory.h"
+#include "../../ThirdParty/OpenGL/include/GL/gl_definitions.h"
+#include <iostream>
+#include <vector>
+
+// Constructor
+ShaderProgram::ShaderProgram() : handle(0) {
+    // Create a new shader program
+    auto graphics = GraphicsAPIFactory::GetInstance().GetGraphicsAPI();
+    if (graphics) {
+        handle = graphics->CreateProgram();
+    }
+}
+
+// Destructor
+ShaderProgram::~ShaderProgram() {
+    if (handle != 0) {
+        auto graphics = GraphicsAPIFactory::GetInstance().GetGraphicsAPI();
+        if (graphics) {
+            graphics->DeleteProgram(handle);
+            handle = 0;
+        }
+    }
+}
+
+// Attach a shader to the program
+bool ShaderProgram::AttachShader(Shader* shader) {
+    if (!shader || shader->GetHandle() == 0) {
+        std::cerr << "Error: Cannot attach invalid shader to program" << std::endl;
+        return false;
+    }
+    
+    // Attach the shader to the program
+    auto graphics = GraphicsAPIFactory::GetInstance().GetGraphicsAPI();
+    if (graphics) {
+        graphics->AttachShader(handle, shader->GetHandle());
+    }
+    
+    return true;
+}
+
+// Link the program
+bool ShaderProgram::Link() {
+    auto graphics = GraphicsAPIFactory::GetInstance().GetGraphicsAPI();
+    if (!graphics) {
+        return false;
+    }
+    
+    // Link the program
+    graphics->LinkProgram(handle);
+    
+    // Check if linking was successful
+    if (!graphics->GetProgramLinkStatus(handle)) {
+        // Get the error message
+        std::string errorMessage = graphics->GetProgramInfoLog(handle);
+        
+        // Print the error message
+        std::cerr << "Error linking shader program: " << errorMessage << std::endl;
+        
+        return false;
+    }
+    
+    return true;
+}
+
+// Use the program
+void ShaderProgram::Use() const {
+    if (handle != 0) {
+        auto graphics = GraphicsAPIFactory::GetInstance().GetGraphicsAPI();
+        if (graphics) {
+            graphics->UseShaderProgram(const_cast<ShaderProgram*>(this));
+        }
+    }
+}
+
+// Get the location of a uniform
+GLint ShaderProgram::GetUniformLocation(const std::string& name) {
+    // Check if we already have the location cached
+    auto it = uniformLocations.find(name);
+    if (it != uniformLocations.end()) {
+        return it->second;
+    }
+    
+    // Get the location using the graphics API
+    auto graphics = GraphicsAPIFactory::GetInstance().GetGraphicsAPI();
+    GLint location = -1;
+    
+    if (graphics) {
+        // For now, we'll use a temporary solution until we implement GetUniformLocation in the graphics API
+        #ifndef PLATFORM_WINDOWS
+        location = glGetUniformLocation(handle, name.c_str());
+        #endif
+    }
+    
+    // Cache the location
+    uniformLocations[name] = location;
+    
+    return location;
+}
+
+// Set a float uniform
+void ShaderProgram::SetUniform(const std::string& name, float value) {
+    auto graphics = GraphicsAPIFactory::GetInstance().GetGraphicsAPI();
+    if (graphics) {
+        graphics->SetUniform1f(handle, name, value);
+    }
+}
+
+// Set an int uniform
+void ShaderProgram::SetUniform(const std::string& name, int value) {
+    auto graphics = GraphicsAPIFactory::GetInstance().GetGraphicsAPI();
+    if (graphics) {
+        graphics->SetUniform1i(handle, name, value);
+    }
+}
+
+// Set a bool uniform
+void ShaderProgram::SetUniform(const std::string& name, bool value) {
+    auto graphics = GraphicsAPIFactory::GetInstance().GetGraphicsAPI();
+    if (graphics) {
+        graphics->SetUniform1i(handle, name, value ? 1 : 0);
+    }
+}
+
+// Set a vec3 uniform
+void ShaderProgram::SetUniform(const std::string& name, float x, float y, float z) {
+    auto graphics = GraphicsAPIFactory::GetInstance().GetGraphicsAPI();
+    if (graphics) {
+        graphics->SetUniform3f(handle, name, x, y, z);
+    }
+}
+
+// Set a vec4 uniform
+void ShaderProgram::SetUniform(const std::string& name, float x, float y, float z, float w) {
+    auto graphics = GraphicsAPIFactory::GetInstance().GetGraphicsAPI();
+    if (graphics) {
+        graphics->SetUniform4f(handle, name, x, y, z, w);
+    }
+}
+
+// Set a Vector3 uniform
+void ShaderProgram::SetUniform(const std::string& name, const Vector3& value) {
+    auto graphics = GraphicsAPIFactory::GetInstance().GetGraphicsAPI();
+    if (graphics) {
+        graphics->SetUniform3f(handle, name, value.x, value.y, value.z);
+    }
+}
+
+// Set a Matrix4x4 uniform
+void ShaderProgram::SetUniform(const std::string& name, const Matrix4x4& value) {
+    auto graphics = GraphicsAPIFactory::GetInstance().GetGraphicsAPI();
+    if (graphics) {
+        graphics->SetUniformMatrix4fv(handle, name, &value.elements[0][0]);
+    }
+}
+
+// Set a matrix uniform
+void ShaderProgram::SetUniform(const std::string& name, const float* matrix, bool transpose) {
+    auto graphics = GraphicsAPIFactory::GetInstance().GetGraphicsAPI();
+    if (graphics) {
+        graphics->SetUniformMatrix4fv(handle, name, matrix, transpose);
+    }
+}
+
+// Set a texture uniform
+void ShaderProgram::SetUniform(const std::string& name, GLuint textureID, GLuint textureUnit) {
+    auto graphics = GraphicsAPIFactory::GetInstance().GetGraphicsAPI();
+    if (graphics) {
+        graphics->BindTexture(textureID, textureUnit);
+        graphics->SetUniform1i(handle, name, textureUnit);
+    }
+}
+
+// Set a float array uniform
+void ShaderProgram::SetUniformArray(const std::string& name, const float* values, int count) {
+    GLint location = GetUniformLocation(name);
+    if (location != -1) {
+        // For now, we'll use a temporary solution until we implement SetUniformArray in the graphics API
+        #ifndef PLATFORM_WINDOWS
+        glUniform1fv(location, count, values);
+        #endif
+    }
+}
+
+// Set an int array uniform
+void ShaderProgram::SetUniformArray(const std::string& name, const int* values, int count) {
+    GLint location = GetUniformLocation(name);
+    if (location != -1) {
+        // For now, we'll use a temporary solution until we implement SetUniformArray in the graphics API
+        #ifndef PLATFORM_WINDOWS
+        glUniform1iv(location, count, values);
+        #endif
+    }
+}
+
+// Set a Vector3 array uniform
+void ShaderProgram::SetUniformArray(const std::string& name, const Vector3* values, int count) {
+    GLint location = GetUniformLocation(name);
+    if (location != -1) {
+        // Convert Vector3 array to float array
+        float* floatValues = new float[count * 3];
+        for (int i = 0; i < count; i++) {
+            floatValues[i * 3 + 0] = values[i].x;
+            floatValues[i * 3 + 1] = values[i].y;
+            floatValues[i * 3 + 2] = values[i].z;
+        }
+        
+        // For now, we'll use a temporary solution until we implement SetUniformArray in the graphics API
+        #ifndef PLATFORM_WINDOWS
+        glUniform3fv(location, count, floatValues);
+        #endif
+        
+        delete[] floatValues;
+    }
+}
+
+// Set a Matrix4x4 array uniform
+void ShaderProgram::SetUniformArray(const std::string& name, const Matrix4x4* values, int count) {
+    GLint location = GetUniformLocation(name);
+    if (location != -1) {
+        // Convert Matrix4x4 array to float array
+        float* floatValues = new float[count * 16];
+        for (int i = 0; i < count; i++) {
+            for (int row = 0; row < 4; row++) {
+                for (int col = 0; col < 4; col++) {
+                    floatValues[i * 16 + row * 4 + col] = values[i].elements[row][col];
+                }
+            }
+        }
+        
+        // For now, we'll use a temporary solution until we implement SetUniformArray in the graphics API
+        #ifndef PLATFORM_WINDOWS
+        glUniformMatrix4fv(location, count, GL_FALSE, floatValues);
+        #endif
+        
+        delete[] floatValues;
+    }
+}

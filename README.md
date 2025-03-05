@@ -16,8 +16,7 @@ GameEngineSavi is a lightweight C++ game engine designed for creating 3D games w
 - **Texture System**: Support for texture mapping with tiling, opacity, and normal maps
 - **Engine Condition System**: Different engine states for editing, playing, and compiling
 - **Debugger System**: Comprehensive error handling for script errors
-- **Animation System**: Vertex based linear interpolation in memory of loaded obj files, keyframes supported.
-- -**NavMeshDynamic System**: NavMesh refreshes to account for moving obstacles, also basic AI pathfinding
+
 ## Architecture
 
 The engine is structured around these core components:
@@ -1562,3 +1561,52 @@ This will compile the DirectX implementation and verify that it works correctly.
 
 ## JSON Serialization
 The engine uses nlohmann/json 3.11.3 for object serialization. See [JSON Library Notes](docs/json_library.md) for implementation details and guidelines.
+
+## Project Structure
+
+The GameEngineSavi engine is organized into the following directory structure:
+
+```
+GameEngineSavi/
+├── Assets/                 # Engine assets (textures, models, etc.)
+├── Editor/                 # Editor implementation
+│   ├── Panels/            # Editor UI panels
+│   └── Tools/             # Editor tools
+├── Graphics/               # Graphics system
+│   ├── Core/              # Graphics API abstraction layer
+│   └── Renderers/         # Specialized renderers
+├── Physics/                # Physics system
+├── Scripting/              # Scripting system
+├── Shaders/                # Shader system
+│   └── Core/              # Core shader functionality
+├── ThirdParty/             # Third-party libraries
+│   ├── DirectX/           # DirectX headers and libraries (Windows)
+│   └── OpenGL/            # OpenGL headers and libraries (Linux)
+├── Tools/                  # Build and utility tools
+├── bin/                    # Compiled binaries
+│   ├── linux/             # Linux binaries
+│   └── windows/           # Windows binaries
+└── project.json           # Project configuration
+```
+
+This structure provides a clean separation of concerns and makes it easy to navigate the codebase. The engine is designed to be modular, with each directory containing related functionality:
+
+### Core Engine Components
+- **Root Directory**: Contains core engine classes like Scene, GameObject, Model, etc.
+- **Graphics/**: Contains the graphics system, including the API abstraction layer
+- **Physics/**: Contains the physics system, including collision detection and response
+- **Shaders/**: Contains the shader system, including shader programs and error handling
+
+### Platform-Specific Components
+- **ThirdParty/DirectX/**: Contains DirectX headers and libraries for Windows
+- **ThirdParty/OpenGL/**: Contains OpenGL headers and libraries for Linux
+
+### Tools and Utilities
+- **Editor/**: Contains the editor implementation, including UI panels and tools
+- **Tools/**: Contains build and utility tools
+
+### Build Outputs
+- **bin/linux/**: Contains compiled binaries for Linux
+- **bin/windows/**: Contains compiled binaries for Windows
+
+This modular structure allows for easy maintenance and extension of the engine, as well as clear separation between platform-specific and platform-independent code.

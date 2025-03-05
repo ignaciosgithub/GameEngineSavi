@@ -1,20 +1,28 @@
 #include "ShaderProgram.h"
 #include "Shader.h"
 #include "ShaderError.h"
+#include "../../Graphics/Core/GraphicsAPIFactory.h"
+#include "../../ThirdParty/OpenGL/include/GL/gl_definitions.h"
 #include <iostream>
 #include <vector>
 
 // Constructor
 ShaderProgram::ShaderProgram() : handle(0) {
     // Create a new shader program
-    handle = glCreateProgram();
+    auto graphics = GraphicsAPIFactory::GetInstance().GetGraphicsAPI();
+    if (graphics) {
+        handle = graphics->CreateProgram();
+    }
 }
 
 // Destructor
 ShaderProgram::~ShaderProgram() {
     if (handle != 0) {
-        glDeleteProgram(handle);
-        handle = 0;
+        auto graphics = GraphicsAPIFactory::GetInstance().GetGraphicsAPI();
+        if (graphics) {
+            graphics->DeleteProgram(handle);
+            handle = 0;
+        }
     }
 }
 
@@ -26,23 +34,28 @@ bool ShaderProgram::AttachShader(Shader* shader) {
     }
     
     // Attach the shader to the program
-    glAttachShader(handle, shader->GetHandle());
+    auto graphics = GraphicsAPIFactory::GetInstance().GetGraphicsAPI();
+    if (graphics) {
+        graphics->AttachShader(handle, shader->GetHandle());
+    }
     
     return true;
 }
 
 // Link the program
 bool ShaderProgram::Link() {
+    auto graphics = GraphicsAPIFactory::GetInstance().GetGraphicsAPI();
+    if (!graphics) {
+        return false;
+    }
+    
     // Link the program
-    glLinkProgram(handle);
+    graphics->LinkProgram(handle);
     
     // Check if linking was successful
-    GLint success = 0;
-    glGetProgramiv(handle, GL_LINK_STATUS, &success);
-    
-    if (success == GL_FALSE) {
+    if (!graphics->GetProgramLinkStatus(handle)) {
         // Get the error message
-        std::string errorMessage = ShaderError::HandleLinkError(handle);
+        std::string errorMessage = graphics->GetProgramInfoLog(handle);
         
         // Print the error message
         std::cerr << "Error linking shader program: " << errorMessage << std::endl;
@@ -56,20 +69,29 @@ bool ShaderProgram::Link() {
 // Use the program
 void ShaderProgram::Use() const {
     if (handle != 0) {
-        glUseProgram(handle);
+        auto graphics = GraphicsAPIFactory::GetInstance().GetGraphicsAPI();
+        if (graphics) {
+            graphics->UseShaderProgram(const_cast<ShaderProgram*>(this));
+        }
     }
 }
 
 // Get the location of a uniform
-GLint ShaderProgram::GetUniformLocation(const std::string& name) {
+int ShaderProgram::GetUniformLocation(const std::string& name) {
     // Check if we already have the location cached
     auto it = uniformLocations.find(name);
     if (it != uniformLocations.end()) {
         return it->second;
     }
     
-    // Get the location from OpenGL
-    GLint location = glGetUniformLocation(handle, name.c_str());
+    // Get the location using the graphics API
+    auto graphics = GraphicsAPIFactory::GetInstance().GetGraphicsAPI();
+    int location = -1;
+    
+    if (graphics) {
+        // Use the graphics API to get the uniform location
+        location = graphics->GetUniformLocation(handle, name);
+    }
     
     // Cache the location
     uniformLocations[name] = location;
@@ -79,97 +101,102 @@ GLint ShaderProgram::GetUniformLocation(const std::string& name) {
 
 // Set a float uniform
 void ShaderProgram::SetUniform(const std::string& name, float value) {
-    GLint location = GetUniformLocation(name);
-    if (location != -1) {
-        glUniform1f(location, value);
+    auto graphics = GraphicsAPIFactory::GetInstance().GetGraphicsAPI();
+    if (graphics) {
+        graphics->SetUniform1f(handle, name, value);
     }
 }
 
 // Set an int uniform
 void ShaderProgram::SetUniform(const std::string& name, int value) {
-    GLint location = GetUniformLocation(name);
-    if (location != -1) {
-        glUniform1i(location, value);
+    auto graphics = GraphicsAPIFactory::GetInstance().GetGraphicsAPI();
+    if (graphics) {
+        graphics->SetUniform1i(handle, name, value);
     }
 }
 
 // Set a bool uniform
 void ShaderProgram::SetUniform(const std::string& name, bool value) {
-    GLint location = GetUniformLocation(name);
-    if (location != -1) {
-        glUniform1i(location, value ? 1 : 0);
+    auto graphics = GraphicsAPIFactory::GetInstance().GetGraphicsAPI();
+    if (graphics) {
+        graphics->SetUniform1i(handle, name, value ? 1 : 0);
     }
 }
 
 // Set a vec3 uniform
 void ShaderProgram::SetUniform(const std::string& name, float x, float y, float z) {
-    GLint location = GetUniformLocation(name);
-    if (location != -1) {
-        glUniform3f(location, x, y, z);
+    auto graphics = GraphicsAPIFactory::GetInstance().GetGraphicsAPI();
+    if (graphics) {
+        graphics->SetUniform3f(handle, name, x, y, z);
     }
 }
 
 // Set a vec4 uniform
 void ShaderProgram::SetUniform(const std::string& name, float x, float y, float z, float w) {
-    GLint location = GetUniformLocation(name);
-    if (location != -1) {
-        glUniform4f(location, x, y, z, w);
+    auto graphics = GraphicsAPIFactory::GetInstance().GetGraphicsAPI();
+    if (graphics) {
+        graphics->SetUniform4f(handle, name, x, y, z, w);
     }
 }
 
 // Set a Vector3 uniform
 void ShaderProgram::SetUniform(const std::string& name, const Vector3& value) {
-    GLint location = GetUniformLocation(name);
-    if (location != -1) {
-        glUniform3f(location, value.x, value.y, value.z);
+    auto graphics = GraphicsAPIFactory::GetInstance().GetGraphicsAPI();
+    if (graphics) {
+        graphics->SetUniform3f(handle, name, value.x, value.y, value.z);
     }
 }
 
 // Set a Matrix4x4 uniform
 void ShaderProgram::SetUniform(const std::string& name, const Matrix4x4& value) {
-    GLint location = GetUniformLocation(name);
-    if (location != -1) {
-        glUniformMatrix4fv(location, 1, GL_FALSE, &value.elements[0][0]);
+    auto graphics = GraphicsAPIFactory::GetInstance().GetGraphicsAPI();
+    if (graphics) {
+        graphics->SetUniformMatrix4fv(handle, name, &value.elements[0][0]);
     }
 }
 
 // Set a matrix uniform
 void ShaderProgram::SetUniform(const std::string& name, const float* matrix, bool transpose) {
-    GLint location = GetUniformLocation(name);
-    if (location != -1) {
-        glUniformMatrix4fv(location, 1, transpose ? GL_TRUE : GL_FALSE, matrix);
+    auto graphics = GraphicsAPIFactory::GetInstance().GetGraphicsAPI();
+    if (graphics) {
+        graphics->SetUniformMatrix4fv(handle, name, matrix, transpose);
     }
 }
 
 // Set a texture uniform
 void ShaderProgram::SetUniform(const std::string& name, GLuint textureID, GLuint textureUnit) {
-    GLint location = GetUniformLocation(name);
-    if (location != -1) {
-        glActiveTexture(GL_TEXTURE0 + textureUnit);
-        glBindTexture(GL_TEXTURE_2D, textureID);
-        glUniform1i(location, textureUnit);
+    auto graphics = GraphicsAPIFactory::GetInstance().GetGraphicsAPI();
+    if (graphics) {
+        graphics->BindTexture(textureID, textureUnit);
+        graphics->SetUniform1i(handle, name, textureUnit);
     }
 }
 
 // Set a float array uniform
 void ShaderProgram::SetUniformArray(const std::string& name, const float* values, int count) {
-    GLint location = GetUniformLocation(name);
+    int location = GetUniformLocation(name);
     if (location != -1) {
-        glUniform1fv(location, count, values);
+        auto graphics = GraphicsAPIFactory::GetInstance().GetGraphicsAPI();
+        if (graphics) {
+            graphics->SetUniformFloatArray(handle, name, values, count);
+        }
     }
 }
 
 // Set an int array uniform
 void ShaderProgram::SetUniformArray(const std::string& name, const int* values, int count) {
-    GLint location = GetUniformLocation(name);
+    int location = GetUniformLocation(name);
     if (location != -1) {
-        glUniform1iv(location, count, values);
+        auto graphics = GraphicsAPIFactory::GetInstance().GetGraphicsAPI();
+        if (graphics) {
+            graphics->SetUniformIntArray(handle, name, values, count);
+        }
     }
 }
 
 // Set a Vector3 array uniform
 void ShaderProgram::SetUniformArray(const std::string& name, const Vector3* values, int count) {
-    GLint location = GetUniformLocation(name);
+    int location = GetUniformLocation(name);
     if (location != -1) {
         // Convert Vector3 array to float array
         float* floatValues = new float[count * 3];
@@ -179,7 +206,10 @@ void ShaderProgram::SetUniformArray(const std::string& name, const Vector3* valu
             floatValues[i * 3 + 2] = values[i].z;
         }
         
-        glUniform3fv(location, count, floatValues);
+        auto graphics = GraphicsAPIFactory::GetInstance().GetGraphicsAPI();
+        if (graphics) {
+            graphics->SetUniformVec3Array(handle, name, floatValues, count);
+        }
         
         delete[] floatValues;
     }
@@ -187,7 +217,7 @@ void ShaderProgram::SetUniformArray(const std::string& name, const Vector3* valu
 
 // Set a Matrix4x4 array uniform
 void ShaderProgram::SetUniformArray(const std::string& name, const Matrix4x4* values, int count) {
-    GLint location = GetUniformLocation(name);
+    int location = GetUniformLocation(name);
     if (location != -1) {
         // Convert Matrix4x4 array to float array
         float* floatValues = new float[count * 16];
@@ -199,7 +229,10 @@ void ShaderProgram::SetUniformArray(const std::string& name, const Matrix4x4* va
             }
         }
         
-        glUniformMatrix4fv(location, count, GL_FALSE, floatValues);
+        auto graphics = GraphicsAPIFactory::GetInstance().GetGraphicsAPI();
+        if (graphics) {
+            graphics->SetUniformMatrix4Array(handle, name, floatValues, count, false);
+        }
         
         delete[] floatValues;
     }

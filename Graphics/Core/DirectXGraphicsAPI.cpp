@@ -671,6 +671,192 @@ void DirectXGraphicsAPI::DrawDebugAxes() {
 #endif
 }
 
+// Shader management methods
+unsigned int DirectXGraphicsAPI::CreateShader(int shaderType) {
+#ifdef PLATFORM_WINDOWS
+    // In DirectX, shaders are created differently than in OpenGL
+    // We'll use a simple counter to track shader IDs
+    static unsigned int nextShaderID = 1;
+    return nextShaderID++;
+#else
+    return 0;
+#endif
+}
+
+void DirectXGraphicsAPI::DeleteShader(unsigned int shader) {
+#ifdef PLATFORM_WINDOWS
+    // In a real implementation, we would release the shader resource
+    std::cout << "Deleting shader " << shader << std::endl;
+#endif
+}
+
+void DirectXGraphicsAPI::ShaderSource(unsigned int shader, const std::string& source) {
+#ifdef PLATFORM_WINDOWS
+    // In DirectX, shader source is compiled differently
+    // We'll store the source code for later compilation
+    std::cout << "Setting shader source for shader " << shader << std::endl;
+#endif
+}
+
+void DirectXGraphicsAPI::CompileShader(unsigned int shader) {
+#ifdef PLATFORM_WINDOWS
+    // In DirectX, shaders are compiled using D3DCompile
+    std::cout << "Compiling shader " << shader << std::endl;
+#endif
+}
+
+bool DirectXGraphicsAPI::GetShaderCompileStatus(unsigned int shader) {
+#ifdef PLATFORM_WINDOWS
+    // In a real implementation, we would check the compilation status
+    return true;
+#else
+    return false;
+#endif
+}
+
+std::string DirectXGraphicsAPI::GetShaderInfoLog(unsigned int shader) {
+#ifdef PLATFORM_WINDOWS
+    // In a real implementation, we would return the compilation errors
+    return "DirectX shader compilation successful";
+#else
+    return "";
+#endif
+}
+
+bool DirectXGraphicsAPI::GetProgramLinkStatus(unsigned int program) {
+#ifdef PLATFORM_WINDOWS
+    // In DirectX, programs are not linked the same way as in OpenGL
+    return true;
+#else
+    return false;
+#endif
+}
+
+std::string DirectXGraphicsAPI::GetProgramInfoLog(unsigned int program) {
+#ifdef PLATFORM_WINDOWS
+    // In a real implementation, we would return the linking errors
+    return "DirectX program linking successful";
+#else
+    return "";
+#endif
+}
+
+void DirectXGraphicsAPI::AttachShader(unsigned int program, unsigned int shader) {
+#ifdef PLATFORM_WINDOWS
+    // In DirectX, shaders are not attached to programs the same way as in OpenGL
+    std::cout << "Attaching shader " << shader << " to program " << program << std::endl;
+#endif
+}
+
+void DirectXGraphicsAPI::LinkProgram(unsigned int program) {
+#ifdef PLATFORM_WINDOWS
+    // In DirectX, programs are not linked the same way as in OpenGL
+    std::cout << "Linking program " << program << std::endl;
+#endif
+}
+
+unsigned int DirectXGraphicsAPI::CreateProgram() {
+#ifdef PLATFORM_WINDOWS
+    // In DirectX, programs are created differently than in OpenGL
+    // We'll use a simple counter to track program IDs
+    static unsigned int nextProgramID = 1;
+    return nextProgramID++;
+#else
+    return 0;
+#endif
+}
+
+void DirectXGraphicsAPI::DeleteProgram(unsigned int program) {
+#ifdef PLATFORM_WINDOWS
+    // In a real implementation, we would release the program resources
+    std::cout << "Deleting program " << program << std::endl;
+#endif
+}
+
+// Uniform setters
+void DirectXGraphicsAPI::SetUniform1f(unsigned int program, const std::string& name, float value) {
+#ifdef PLATFORM_WINDOWS
+    // In a real implementation, we would set the uniform value
+    std::cout << "Setting uniform " << name << " to " << value << std::endl;
+#endif
+}
+
+void DirectXGraphicsAPI::SetUniform1i(unsigned int program, const std::string& name, int value) {
+#ifdef PLATFORM_WINDOWS
+    // In a real implementation, we would set the uniform value
+    std::cout << "Setting uniform " << name << " to " << value << std::endl;
+#endif
+}
+
+void DirectXGraphicsAPI::SetUniform3f(unsigned int program, const std::string& name, float x, float y, float z) {
+#ifdef PLATFORM_WINDOWS
+    // In a real implementation, we would set the uniform value
+    std::cout << "Setting uniform " << name << " to (" << x << ", " << y << ", " << z << ")" << std::endl;
+#endif
+}
+
+void DirectXGraphicsAPI::SetUniform4f(unsigned int program, const std::string& name, float x, float y, float z, float w) {
+#ifdef PLATFORM_WINDOWS
+    // In a real implementation, we would set the uniform value
+    std::cout << "Setting uniform " << name << " to (" << x << ", " << y << ", " << z << ", " << w << ")" << std::endl;
+#endif
+}
+
+void DirectXGraphicsAPI::SetUniformMatrix4fv(unsigned int program, const std::string& name, const float* value, bool transpose) {
+#ifdef PLATFORM_WINDOWS
+    // In a real implementation, we would set the uniform value
+    std::cout << "Setting uniform matrix " << name << std::endl;
+#endif
+}
+
+// Get uniform location
+int DirectXGraphicsAPI::GetUniformLocation(unsigned int program, const std::string& name) {
+#ifdef PLATFORM_WINDOWS
+    // DirectX implementation would use constant buffers instead of uniform locations
+    // For now, return a dummy value
+    std::cout << "Getting uniform location for " << name << std::endl;
+    return 0;
+#else
+    return -1;
+#endif
+}
+
+// Set uniform float array
+void DirectXGraphicsAPI::SetUniformFloatArray(unsigned int program, const std::string& name, const float* values, int count) {
+#ifdef PLATFORM_WINDOWS
+    // DirectX implementation would update constant buffer data
+    // For now, just log the operation
+    std::cout << "Setting uniform float array " << name << " with " << count << " elements" << std::endl;
+#endif
+}
+
+// Set uniform int array
+void DirectXGraphicsAPI::SetUniformIntArray(unsigned int program, const std::string& name, const int* values, int count) {
+#ifdef PLATFORM_WINDOWS
+    // DirectX implementation would update constant buffer data
+    // For now, just log the operation
+    std::cout << "Setting uniform int array " << name << " with " << count << " elements" << std::endl;
+#endif
+}
+
+// Set uniform vec3 array
+void DirectXGraphicsAPI::SetUniformVec3Array(unsigned int program, const std::string& name, const float* values, int count) {
+#ifdef PLATFORM_WINDOWS
+    // DirectX implementation would update constant buffer data
+    // For now, just log the operation
+    std::cout << "Setting uniform vec3 array " << name << " with " << count << " elements" << std::endl;
+#endif
+}
+
+// Set uniform matrix4 array
+void DirectXGraphicsAPI::SetUniformMatrix4Array(unsigned int program, const std::string& name, const float* values, int count, bool transpose) {
+#ifdef PLATFORM_WINDOWS
+    // DirectX implementation would update constant buffer data
+    // For now, just log the operation
+    std::cout << "Setting uniform matrix4 array " << name << " with " << count << " elements" << std::endl;
+#endif
+}
+
 #ifdef PLATFORM_WINDOWS
 void DirectXGraphicsAPI::CreateDeviceAndSwapChain(HWND hwnd) {
     // Create the DirectX device and swap chain

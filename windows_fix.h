@@ -3,7 +3,7 @@
 
 #ifdef PLATFORM_WINDOWS
 #include <windows.h>
-#include <gl/gl.h>
+#include "ThirdParty/OpenGL/include/GL/gl_definitions.h"
 #endif
 
 #endif // WINDOWS_FIX_H

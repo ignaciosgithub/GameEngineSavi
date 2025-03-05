@@ -1,14 +1,7 @@
 #include "CameraManager.h"
 #include <iostream>
 #include "platform.h"
-
-// Platform-specific OpenGL includes
-#ifdef PLATFORM_WINDOWS
-#include <windows.h>
-#include <gl/gl.h>
-#else
-#include <GL/gl.h>
-#endif
+#include "Graphics/Core/GraphicsAPIFactory.h"
 
 // Constructor
 CameraManager::CameraManager() : mainCamera(nullptr) {
@@ -118,8 +111,11 @@ void CameraManager::SetupViewport(Camera* camera) {
     int pixelWidth = static_cast<int>(width * windowWidth);
     int pixelHeight = static_cast<int>(height * windowHeight);
     
-    // Set the viewport
-    glViewport(pixelX, pixelY, pixelWidth, pixelHeight);
+    // Set the viewport using the graphics API
+    auto graphics = GraphicsAPIFactory::GetInstance().GetGraphicsAPI();
+    if (graphics) {
+        graphics->SetViewport(pixelX, pixelY, pixelWidth, pixelHeight);
+    }
 }
 
 // Set minimap camera (compatibility method)

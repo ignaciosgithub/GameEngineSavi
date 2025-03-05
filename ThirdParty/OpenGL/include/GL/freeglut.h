@@ -2,7 +2,7 @@
 #define __freeglut_h__
 
 /* freeglut compatibility header */
-#include <GL/gl.h>
+#include "ThirdParty/OpenGL/include/GL/gl_definitions.h"
 #include <GL/glu.h>
 
 /* GLUT API macro definitions */

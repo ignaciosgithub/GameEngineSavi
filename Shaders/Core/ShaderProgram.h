@@ -2,7 +2,7 @@
 
 #include <string>
 #include <unordered_map>
-#include "../../ThirdParty/OpenGL/include/GL/platform_gl.h"
+#include "../../Graphics/Core/IGraphicsAPI.h"
 #include "../../Vector3.h"
 #include "../../Matrix4x4.h"
 
@@ -17,10 +17,10 @@ public:
     bool Link();
     void Use() const;
     
-    GLuint GetHandle() const { return handle; }
+    unsigned int GetHandle() const { return handle; }
     
     // Uniform setters
-    GLint GetUniformLocation(const std::string& name);
+    int GetUniformLocation(const std::string& name);
     
     void SetUniform(const std::string& name, float value);
     void SetUniform(const std::string& name, int value);
@@ -30,7 +30,7 @@ public:
     void SetUniform(const std::string& name, const Vector3& value);
     void SetUniform(const std::string& name, const Matrix4x4& value);
     void SetUniform(const std::string& name, const float* matrix, bool transpose = false);
-    void SetUniform(const std::string& name, GLuint textureID, GLuint textureUnit);
+    void SetUniform(const std::string& name, unsigned int textureID, unsigned int textureUnit);
     
     // Array uniform setters
     void SetUniformArray(const std::string& name, const float* values, int count);
@@ -39,6 +39,6 @@ public:
     void SetUniformArray(const std::string& name, const Matrix4x4* values, int count);
     
 private:
-    GLuint handle;
-    std::unordered_map<std::string, GLint> uniformLocations;
+    unsigned int handle;
+    std::unordered_map<std::string, int> uniformLocations;
 };

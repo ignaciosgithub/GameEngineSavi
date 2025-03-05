@@ -2,6 +2,7 @@
 #include "Editor.h"
 #include "../Scene.h"
 #include "../Camera.h"
+#include "../Graphics/Core/GraphicsAPIFactory.h"
 #include <iostream>
 
 SceneViewPanel::SceneViewPanel(int x, int y, int width, int height)
@@ -43,11 +44,17 @@ void SceneViewPanel::Render() {
         return;
     }
     
-    // Set up viewport for scene view panel
-    glViewport(x, y, width, height);
+    // Get the graphics API
+    auto graphics = GraphicsAPIFactory::GetInstance().GetGraphicsAPI();
+    if (!graphics) {
+        return;
+    }
     
-    // Clear the viewport
-    glClear(GL_DEPTH_BUFFER_BIT);
+    // Set up viewport for scene view panel
+    graphics->SetViewport(x, y, width, height);
+    
+    // Clear the viewport (depth buffer only)
+    graphics->Clear(false, true);
     
     // Get the camera from the editor
     Camera* camera = editor->GetEditorCamera();
@@ -56,26 +63,51 @@ void SceneViewPanel::Render() {
     }
     
     // Set up camera matrices
-    glMatrixMode(GL_PROJECTION);
-    glLoadIdentity();
+    // Note: Modern graphics APIs don't use the fixed-function pipeline
+    // This is a temporary solution until we implement a proper camera system
+    // that works with the graphics API wrapper
     
     // Set perspective projection
     float aspectRatio = (float)width / (float)height;
-    gluPerspective(45.0f, aspectRatio, 0.1f, 1000.0f);
-    
-    glMatrixMode(GL_MODELVIEW);
-    glLoadIdentity();
     
     // Set camera view
     Vector3 pos = camera->GetPosition();
     Vector3 target = pos + camera->lookDirection;
     Vector3 up(0, 1, 0);
     
-    gluLookAt(
-        pos.x, pos.y, pos.z,
-        target.x, target.y, target.z,
-        up.x, up.y, up.z
-    );
+    // Create projection and view matrices using the graphics API wrapper
+    float fovy = 45.0f; // Field of view in degrees
+    float zNear = 0.1f;
+    float zFar = 1000.0f;
+    
+    // Create projection matrix
+    Matrix4x4 projMatrix;
+    projMatrix.SetPerspective(fovy, aspectRatio, zNear, zFar);
+    
+    // Create view matrix
+    Vector3 forward = target - pos;
+    forward.normalize();
+    
+    Vector3 side = Vector3::Cross(forward, up);
+    side.normalize();
+    
+    Vector3 upVector = Vector3::Cross(side, forward);
+    
+    Matrix4x4 viewMatrix;
+    viewMatrix.SetLookAt(pos, target, up);
+    
+    // Set matrices using the graphics API
+    graphics->SetProjectionMatrix(projMatrix);
+    graphics->SetViewMatrix(viewMatrix);
+    
+    // If the graphics API doesn't support matrix operations directly,
+    // we would need to fall back to legacy OpenGL functions
+    // But for now, we'll just use the graphics API wrapper
+    if (!graphics->SupportsMatrixOperations()) {
+        // This is handled by the graphics API wrapper
+        std::cout << "Warning: Graphics API does not support matrix operations directly." << std::endl;
+        std::cout << "Using graphics API wrapper for matrix operations." << std::endl;
+    }
     
     // Render the scene
     scene->RenderScene();

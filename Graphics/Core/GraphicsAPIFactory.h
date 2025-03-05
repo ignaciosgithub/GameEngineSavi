@@ -1,30 +1,28 @@
 #ifndef GRAPHICS_API_FACTORY_H
 #define GRAPHICS_API_FACTORY_H
 
-#include "IGraphicsAPI.h"
 #include <memory>
+#include "IGraphicsAPI.h"
 
 class GraphicsAPIFactory {
 public:
-    // Get the singleton instance
     static GraphicsAPIFactory& GetInstance();
     
-    // Create the appropriate graphics API for the current platform
-    std::shared_ptr<IGraphicsAPI> CreateGraphicsAPI();
+    // Initialize the appropriate graphics API based on platform
+    bool Initialize();
     
-    // Get the current graphics API instance
+    // Get the current graphics API
     std::shared_ptr<IGraphicsAPI> GetGraphicsAPI();
     
 private:
-    GraphicsAPIFactory() = default;
-    ~GraphicsAPIFactory() = default;
+    GraphicsAPIFactory();
+    ~GraphicsAPIFactory();
     
-    // Delete copy constructor and assignment operator
-    GraphicsAPIFactory(const GraphicsAPIFactory&) = delete;
-    GraphicsAPIFactory& operator=(const GraphicsAPIFactory&) = delete;
+    // Singleton instance
+    static GraphicsAPIFactory* instance;
     
-    // Current graphics API instance
-    std::shared_ptr<IGraphicsAPI> currentAPI;
+    // Current graphics API
+    std::shared_ptr<IGraphicsAPI> graphicsAPI;
 };
 
 #endif // GRAPHICS_API_FACTORY_H

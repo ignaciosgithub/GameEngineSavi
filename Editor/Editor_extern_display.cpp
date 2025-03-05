@@ -1,6 +1,6 @@
 #include "Editor_extern_display.h"
 #include "../EngineCondition.h"
-#include "../ThirdParty/OpenGL/include/GL/platform_gl.h"
+#include "../Graphics/Core/GraphicsAPIFactory.h"
 #include <iostream>
 
 // Initialize static instance
@@ -74,31 +74,34 @@ void Editor_extern_display::Update(float deltaTime) {
 }
 
 void Editor_extern_display::Render() {
+    // Get the graphics API
+    auto graphics = GraphicsAPIFactory::GetInstance().GetGraphicsAPI();
+    if (!graphics) {
+        return;
+    }
+    
     // Clear the screen
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    graphics->SetClearColor(0.2f, 0.2f, 0.2f, 1.0f);
+    graphics->Clear(true, true);
     
     // Set up viewport
-    glViewport(0, 0, width, height);
+    graphics->SetViewport(0, 0, width, height);
     
     // Set up projection matrix
-    glMatrixMode(GL_PROJECTION);
-    glLoadIdentity();
-    gluPerspective(60.0f, (float)width / (float)height, 0.1f, 1000.0f);
+    Matrix4x4 projMatrix;
+    projMatrix.SetPerspective(60.0f, (float)width / (float)height, 0.1f, 1000.0f);
     
-    // Set up modelview matrix
-    glMatrixMode(GL_MODELVIEW);
-    glLoadIdentity();
-    
-    // Set camera view
+    // Set up view matrix
     Vector3 pos = camera->GetPosition();
     Vector3 target = Vector3(0, 0, 0);  // Look at origin
     Vector3 up(0, 1, 0);
     
-    gluLookAt(
-        pos.x, pos.y, pos.z,
-        target.x, target.y, target.z,
-        up.x, up.y, up.z
-    );
+    Matrix4x4 viewMatrix;
+    viewMatrix.SetLookAt(pos, target, up);
+    
+    // Set matrices using the graphics API
+    graphics->SetProjectionMatrix(projMatrix);
+    graphics->SetViewMatrix(viewMatrix);
     
     // Render scene
     if (scene) {
@@ -110,11 +113,17 @@ void Editor_extern_display::Resize(int newWidth, int newHeight) {
     width = newWidth;
     height = newHeight;
     
+    // Get the graphics API
+    auto graphics = GraphicsAPIFactory::GetInstance().GetGraphicsAPI();
+    if (!graphics) {
+        return;
+    }
+    
     // Update viewport
-    glViewport(0, 0, width, height);
+    graphics->SetViewport(0, 0, width, height);
     
     // Update projection matrix
-    glMatrixMode(GL_PROJECTION);
-    glLoadIdentity();
-    gluPerspective(60.0f, (float)width / (float)height, 0.1f, 1000.0f);
+    Matrix4x4 projMatrix;
+    projMatrix.SetPerspective(60.0f, (float)width / (float)height, 0.1f, 1000.0f);
+    graphics->SetProjectionMatrix(projMatrix);
 }

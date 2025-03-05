@@ -10,7 +10,6 @@
 #define CALLBACK __stdcall
 #endif
 #include <windows.h>
-#include <gl/gl.h>
 #include "ThirdParty/OpenGL/include/GL/win_types.h"
 #endif
 #include <vector>

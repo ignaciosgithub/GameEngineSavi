@@ -4,9 +4,8 @@
 // Platform-specific includes
 #ifdef _WIN32
     #include <windows.h>
-    #include <GL/gl.h>
+    #include "ThirdParty/OpenGL/include/GL/gl_definitions.h"
 #else
-    #include <GL/gl.h>
 #endif
 
 #endif // PLATFORM_GL_H

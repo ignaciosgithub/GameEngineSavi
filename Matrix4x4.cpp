@@ -138,3 +138,59 @@ void Matrix4x4::rotateZ(float angle)
     
     *this = rotationMatrix * (*this);
 }
+
+// Set up a perspective projection matrix
+void Matrix4x4::SetPerspective(float fovy, float aspectRatio, float zNear, float zFar) {
+    // Clear the matrix
+    for (int i = 0; i < 4; i++) {
+        for (int j = 0; j < 4; j++) {
+            elements[i][j] = 0.0f;
+        }
+    }
+    
+    // Calculate perspective matrix elements
+    float f = 1.0f / tan(fovy * 0.5f * 3.14159f / 180.0f);
+    float rangeInv = 1.0f / (zNear - zFar);
+    
+    elements[0][0] = f / aspectRatio;
+    elements[1][1] = f;
+    elements[2][2] = (zNear + zFar) * rangeInv;
+    elements[2][3] = -1.0f;
+    elements[3][2] = 2.0f * zNear * zFar * rangeInv;
+    elements[3][3] = 0.0f;
+}
+
+// Set up a view matrix using look-at parameters
+void Matrix4x4::SetLookAt(const Vector3& eye, const Vector3& center, const Vector3& up) {
+    // Calculate forward, right, and up vectors
+    Vector3 forward = center - eye;
+    forward.normalize();
+    
+    Vector3 right = forward.cross(up);
+    right.normalize();
+    
+    Vector3 upVector = right.cross(forward);
+    upVector.normalize();
+    
+    // Clear the matrix
+    for (int i = 0; i < 4; i++) {
+        for (int j = 0; j < 4; j++) {
+            elements[i][j] = 0.0f;
+        }
+    }
+    
+    // Set matrix elements
+    elements[0][0] = right.x;
+    elements[0][1] = right.y;
+    elements[0][2] = right.z;
+    elements[1][0] = upVector.x;
+    elements[1][1] = upVector.y;
+    elements[1][2] = upVector.z;
+    elements[2][0] = -forward.x;
+    elements[2][1] = -forward.y;
+    elements[2][2] = -forward.z;
+    elements[3][0] = -right.dot(eye);
+    elements[3][1] = -upVector.dot(eye);
+    elements[3][2] = forward.dot(eye);
+    elements[3][3] = 1.0f;
+}

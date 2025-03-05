@@ -7,11 +7,11 @@ if ! dpkg -l | grep -q libglew-dev; then
     sudo apt-get install -y libglew-dev
 fi
 
-# Check if GLUT is installed (use glut instead of freeglut)
-if ! dpkg -l | grep -q libglut3-dev; then
+# Check if GLUT is installed
+if ! dpkg -l | grep -q freeglut3-dev; then
     echo "GLUT development package not found. Installing..."
     sudo apt-get update
-    sudo apt-get install -y libglut3-dev
+    sudo apt-get install -y freeglut3-dev
 fi
 
 # Create build directory if it doesn't exist
