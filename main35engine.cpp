@@ -289,12 +289,14 @@ typedef struct {
 #ifndef FALSE
 #define FALSE 0
 #endif
+#endif // End of PLATFORM_WINDOWS block for Windows types
 
+#ifdef PLATFORM_WINDOWS
 // Forward declarations for Windows-specific functions
 LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
 void EnableOpenGL(HWND hWnd, HDC* hDC, HGLRC* hRC);
 void DisableOpenGL(HWND hWnd, HDC hDC, HGLRC hRC);
-#endif
+#endif // End of PLATFORM_WINDOWS block for forward declarations
 
 /**************************
  * Main Entry Point
@@ -310,7 +312,7 @@ int WinMain(void* hInstance,
 #else
 int main(int argc, char** argv)
 {
-#endif
+#endif // End of platform-specific main function declaration
     // Set the initial engine condition based on command line arguments
     // This would normally be set by the editor or build system
     #ifdef DEBUG_BUILD
@@ -464,12 +466,12 @@ int main(int argc, char** argv)
     #endif
 }
 
-#ifdef PLATFORM_WINDOWS
 /********************
  * Window Procedure
  *
  ********************/
 
+#ifdef PLATFORM_WINDOWS
 LRESULT CALLBACK WndProc(HWND hWnd, UINT message,
                          WPARAM wParam, LPARAM lParam)
 {
@@ -520,12 +522,14 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message,
         return DefWindowProc(hWnd, message, wParam, lParam);
     }
 }
+#endif // End of WndProc function
 
 /*******************
  * Enable OpenGL
  *
  *******************/
 
+#ifdef PLATFORM_WINDOWS
 void EnableOpenGL(HWND hWnd, HDC* hDC, HGLRC* hRC)
 {
     PIXELFORMATDESCRIPTOR pfd;
@@ -551,16 +555,18 @@ void EnableOpenGL(HWND hWnd, HDC* hDC, HGLRC* hRC)
     *hRC = wglCreateContext(*hDC);
     wglMakeCurrent(*hDC, *hRC);
 }
+#endif // End of EnableOpenGL function
 
 /******************
  * Disable OpenGL
  *
  ******************/
 
+#ifdef PLATFORM_WINDOWS
 void DisableOpenGL(HWND hWnd, HDC hDC, HGLRC hRC)
 {
     wglMakeCurrent(NULL, NULL);
     wglDeleteContext(hRC);
     ReleaseDC(hWnd, hDC);
 }
-#endif
+#endif // End of DisableOpenGL function
