@@ -117,7 +117,7 @@ int main(int argc, char** argv) {
         
         // Clear the screen
         graphics->SetClearColor(0.2f, 0.3f, 0.3f, 1.0f);
-        graphics->Clear(0x00004000 | 0x00000100); // GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT
+        graphics->Clear(true, true); // Clear color and depth buffers
         
         // Update editor
         if (editor) {
@@ -169,13 +169,13 @@ int main(int argc, char** argv) {
         
         // Create vertex buffer
         unsigned int vbo = graphics->CreateBuffer();
-        graphics->BindBuffer(0x8892, vbo); // GL_ARRAY_BUFFER
-        graphics->BufferData(0x8892, sizeof(vertices), vertices, 0x88E4); // GL_ARRAY_BUFFER, GL_STATIC_DRAW
+        graphics->BindBuffer(BufferType::VERTEX_BUFFER, vbo);
+        graphics->BufferData(BufferType::VERTEX_BUFFER, vertices, sizeof(vertices), false);
         
         // Create index buffer
         unsigned int ibo = graphics->CreateBuffer();
-        graphics->BindBuffer(0x8893, ibo); // GL_ELEMENT_ARRAY_BUFFER
-        graphics->BufferData(0x8893, sizeof(indices), indices, 0x88E4); // GL_ELEMENT_ARRAY_BUFFER, GL_STATIC_DRAW
+        graphics->BindBuffer(BufferType::INDEX_BUFFER, ibo);
+        graphics->BufferData(BufferType::INDEX_BUFFER, indices, sizeof(indices), false);
         
         // Create and compile vertex shader
         unsigned int vertexShader = graphics->CreateShader(0x8B31); // GL_VERTEX_SHADER
@@ -221,9 +221,9 @@ int main(int argc, char** argv) {
         graphics->UseShaderProgram(program);
         
         // Set up vertex attributes
-        graphics->VertexAttribPointer(0, 3, 0x1406, 0, 6 * sizeof(float), (void*)0); // GL_FLOAT, GL_FALSE
+        graphics->VertexAttribPointer(0, 3, false, 6 * sizeof(float), (void*)0);
         graphics->EnableVertexAttrib(0);
-        graphics->VertexAttribPointer(1, 3, 0x1406, 0, 6 * sizeof(float), (void*)(3 * sizeof(float))); // GL_FLOAT, GL_FALSE
+        graphics->VertexAttribPointer(1, 3, false, 6 * sizeof(float), (void*)(3 * sizeof(float)));
         graphics->EnableVertexAttrib(1);
         
         // Set up transformation matrices
@@ -264,7 +264,7 @@ int main(int argc, char** argv) {
         graphics->SetUniformMatrix4fv(shaderProgram, "projection", projection, false);
         
         // Draw the cube
-        graphics->DrawElements(0x0004, 36, 0x1405, 0); // GL_TRIANGLES, GL_UNSIGNED_INT
+        graphics->DrawElements(DrawMode::TRIANGLES, 36, nullptr);
         
         // Clean up
         graphics->DeleteBuffer(vbo);
