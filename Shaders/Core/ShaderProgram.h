@@ -18,6 +18,8 @@ public:
     void Use() const;
     
     unsigned int GetHandle() const { return handle; }
+    void SetHandle(unsigned int h) { handle = h; }
+    void SetProgramId(unsigned int id) { handle = id; }
     
     // Uniform setters
     int GetUniformLocation(const std::string& name);

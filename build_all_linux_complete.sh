@@ -10,7 +10,10 @@ CFLAGS="-std=c++11 -Wall -Wextra -g"
 INCLUDES="-I. -IThirdParty/OpenGL/include"
 
 # Set preprocessor definitions
-DEFINES="-DGL_GLEXT_PROTOTYPES -DGLEW_STATIC"
+DEFINES="-DGL_GLEXT_PROTOTYPES -DGLEW_STATIC -DPLATFORM_LINUX"
+
+# Set library paths
+LIBS="-lGL -lGLU -lglut -lX11"
 
 # Create output directory if it doesn't exist
 mkdir -p bin/linux
@@ -167,6 +170,16 @@ if [ -f build_tilted_navmesh_demo.sh ]; then
     ./build_tilted_navmesh_demo.sh
     if [ $? -ne 0 ]; then
         echo "Warning: Tilted NavMesh demo build failed, but continuing..."
+    fi
+fi
+
+# Build emergency red cube renderer
+if [ -f build_emergency_red_cube.sh ]; then
+    echo "Building Emergency Red Cube Renderer..."
+    chmod +x build_emergency_red_cube.sh
+    ./build_emergency_red_cube.sh
+    if [ $? -ne 0 ]; then
+        echo "Warning: Emergency Red Cube Renderer build failed, but continuing..."
     fi
 fi
 

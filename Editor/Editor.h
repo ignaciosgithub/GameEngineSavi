@@ -29,6 +29,12 @@ public:
     
     void Initialize();
     
+    // Window management methods
+    bool CreateWindow(const char* title = "GameEngineSavi Editor");
+    void DestroyWindow();
+    bool IsWindowOpen() const;
+    void RunMainLoop();
+    
 private:
     int width;
     int height;
@@ -44,4 +50,7 @@ private:
     SceneViewPanel* sceneViewPanel;
     
     GameObject* selectedGameObject;
+    
+    // Window management
+    bool windowOpen;
 };

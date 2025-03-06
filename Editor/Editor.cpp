@@ -7,12 +7,16 @@
 #include "../Scene.h"
 #include "../GameObject.h"
 #include "../EngineCondition.h"
+#include "../Graphics/Core/GraphicsAPIFactory.h"
+#include "../TimeManager.h"
 #include <iostream>
+#include <thread>
+#include <chrono>
 
 // Initialize static instance
 Editor* Editor::instance = nullptr;
 
-Editor::Editor(int width, int height) : width(width), height(height), selectedGameObject(nullptr) {
+Editor::Editor(int width, int height) : width(width), height(height), selectedGameObject(nullptr), windowOpen(false) {
     std::cout << "Creating editor..." << std::endl;
     
     // Set instance
@@ -89,6 +93,12 @@ void Editor::Initialize() {
     if (scene) {
         scene->CreateDefaultObjects();
     }
+    
+    // Initialize graphics API
+    if (!GraphicsAPIFactory::GetInstance().Initialize()) {
+        std::cout << "Failed to initialize graphics API" << std::endl;
+        return;
+    }
 }
 
 void Editor::Update(float deltaTime) {
@@ -121,6 +131,17 @@ void Editor::Update(float deltaTime) {
 }
 
 void Editor::Render() {
+    // Get the graphics API
+    auto graphics = GraphicsAPIFactory::GetInstance().GetGraphicsAPI();
+    if (!graphics) {
+        std::cout << "Failed to get graphics API" << std::endl;
+        return;
+    }
+    
+    // Clear the screen
+    graphics->SetClearColor(0.2f, 0.3f, 0.3f, 1.0f);
+    graphics->Clear(true, true); // Clear color and depth buffers
+    
     // Render scene
     if (scene) {
         scene->RenderScene();
@@ -172,5 +193,80 @@ void Editor::SetSelectedGameObject(GameObject* gameObject) {
     // Update inspector panel
     if (inspectorPanel) {
         inspectorPanel->SetSelectedGameObject(gameObject);
+    }
+}
+
+bool Editor::CreateWindow(const char* title) {
+    // Get the graphics API
+    auto graphics = GraphicsAPIFactory::GetInstance().GetGraphicsAPI();
+    if (!graphics) {
+        std::cout << "Failed to get graphics API" << std::endl;
+        return false;
+    }
+    
+    // Create window
+    if (!graphics->CreateWindow(width, height, title)) {
+        std::cout << "Failed to create window" << std::endl;
+        return false;
+    }
+    
+    // Set up the viewport
+    graphics->SetViewport(0, 0, width, height);
+    
+    windowOpen = true;
+    return true;
+}
+
+void Editor::DestroyWindow() {
+    // Get the graphics API
+    auto graphics = GraphicsAPIFactory::GetInstance().GetGraphicsAPI();
+    if (!graphics) {
+        std::cout << "Failed to get graphics API" << std::endl;
+        return;
+    }
+    
+    // Destroy window
+    graphics->DestroyWindow();
+    windowOpen = false;
+}
+
+bool Editor::IsWindowOpen() const {
+    return windowOpen;
+}
+
+void Editor::RunMainLoop() {
+    // Get the graphics API
+    auto graphics = GraphicsAPIFactory::GetInstance().GetGraphicsAPI();
+    if (!graphics) {
+        std::cout << "Failed to get graphics API" << std::endl;
+        return;
+    }
+    
+    // Initialize time manager
+    TimeManager timeManager;
+    
+    // Main loop
+    while (windowOpen) {
+        // Poll events
+        graphics->PollEvents();
+        
+        // Check if window is still open
+        if (!graphics->IsWindowOpen()) {
+            windowOpen = false;
+            break;
+        }
+        
+        // Update time
+        timeManager.Update();
+        float deltaTime = timeManager.GetDeltaTime();
+        
+        // Update editor
+        Update(deltaTime);
+        
+        // Render editor
+        Render();
+        
+        // Swap buffers
+        graphics->SwapBuffers();
     }
 }

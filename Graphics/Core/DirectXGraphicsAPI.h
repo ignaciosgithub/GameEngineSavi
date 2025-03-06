@@ -84,6 +84,16 @@ public:
     void DrawDebugLine(const Vector3& start, const Vector3& end, const Vector3& color) override;
     void DrawDebugAxes() override;
     
+    // Window management
+    bool CreateWindow(int width, int height, const char* title) override;
+    void DestroyWindow() override;
+    void MakeContextCurrent() override;
+    bool IsWindowOpen() override;
+    void PollEvents() override;
+    
+    // Platform-specific operations
+    void SwapBuffers() override;
+    
     // Get API name for debugging
     const char* GetAPIName() const override { return "DirectX"; }
     
@@ -108,6 +118,10 @@ private:
     // DirectX state tracking
     ID3D11Buffer* currentVertexBuffer;
     ID3D11Buffer* currentIndexBuffer;
+    
+    // Window management
+    HWND hWnd;
+    bool windowOpen;
     
     // Helper methods
     void CreateDeviceAndSwapChain(HWND hwnd);

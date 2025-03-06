@@ -23,6 +23,8 @@ DirectXGraphicsAPI::DirectXGraphicsAPI()
     depthStencilView = nullptr;
     currentVertexBuffer = nullptr;
     currentIndexBuffer = nullptr;
+    hWnd = NULL;
+    windowOpen = false;
 #endif
 }
 
@@ -925,6 +927,141 @@ void DirectXGraphicsAPI::DrawDebugAxes() {
         DrawDebugLine(Vector3(0, 0, 0), Vector3(0, 0, 1), Vector3(0, 0, 1));
         
         std::cout << "Drawing debug axes" << std::endl;
+    }
+#endif
+}
+
+// Window management
+bool DirectXGraphicsAPI::CreateWindow(int width, int height, const char* title) {
+#ifdef PLATFORM_WINDOWS
+    // Windows-specific window creation code
+    WNDCLASSEX wc;
+    wc.cbSize = sizeof(WNDCLASSEX);
+    wc.style = CS_HREDRAW | CS_VREDRAW;
+    wc.lpfnWndProc = DefWindowProc;
+    wc.cbClsExtra = 0;
+    wc.cbWndExtra = 0;
+    wc.hInstance = GetModuleHandle(NULL);
+    wc.hIcon = LoadIcon(NULL, IDI_APPLICATION);
+    wc.hCursor = LoadCursor(NULL, IDC_ARROW);
+    wc.hbrBackground = (HBRUSH)(COLOR_WINDOW + 1);
+    wc.lpszMenuName = NULL;
+    wc.lpszClassName = "DirectXWindowClass";
+    wc.hIconSm = LoadIcon(NULL, IDI_APPLICATION);
+    
+    if (!RegisterClassEx(&wc)) {
+        std::cout << "Failed to register window class" << std::endl;
+        return false;
+    }
+    
+    hWnd = CreateWindow(
+        "DirectXWindowClass", title,
+        WS_OVERLAPPEDWINDOW,
+        CW_USEDEFAULT, CW_USEDEFAULT,
+        width, height,
+        NULL, NULL,
+        GetModuleHandle(NULL), NULL
+    );
+    
+    if (!hWnd) {
+        std::cout << "Failed to create window" << std::endl;
+        return false;
+    }
+    
+    // Create DirectX device and swap chain
+    CreateDeviceAndSwapChain(hWnd);
+    
+    // Create render target view
+    CreateRenderTargetView();
+    
+    // Create depth stencil view
+    CreateDepthStencilView(width, height);
+    
+    // Set up the viewport
+    D3D11_VIEWPORT viewport = {};
+    viewport.Width = static_cast<float>(width);
+    viewport.Height = static_cast<float>(height);
+    viewport.MinDepth = 0.0f;
+    viewport.MaxDepth = 1.0f;
+    viewport.TopLeftX = 0;
+    viewport.TopLeftY = 0;
+    
+    if (context) {
+        context->RSSetViewports(1, &viewport);
+    }
+    
+    ShowWindow(hWnd, SW_SHOW);
+    UpdateWindow(hWnd);
+    
+    windowOpen = true;
+    return (device != nullptr && context != nullptr);
+#else
+    std::cout << "DirectX is only supported on Windows" << std::endl;
+    return false;
+#endif
+}
+
+void DirectXGraphicsAPI::DestroyWindow() {
+#ifdef PLATFORM_WINDOWS
+    // Release DirectX resources
+    if (renderTargetView) renderTargetView->Release();
+    if (depthStencilView) depthStencilView->Release();
+    if (swapChain) swapChain->Release();
+    if (context) context->Release();
+    if (device) device->Release();
+    
+    renderTargetView = nullptr;
+    depthStencilView = nullptr;
+    swapChain = nullptr;
+    context = nullptr;
+    device = nullptr;
+    
+    // Destroy the window
+    if (hWnd) {
+        ::DestroyWindow(hWnd);
+        hWnd = NULL;
+    }
+    
+    // Unregister window class
+    UnregisterClass("DirectXWindowClass", GetModuleHandle(NULL));
+    
+    windowOpen = false;
+#endif
+}
+
+void DirectXGraphicsAPI::MakeContextCurrent() {
+#ifdef PLATFORM_WINDOWS
+    // DirectX doesn't have an equivalent to MakeContextCurrent
+    // This method is included for API compatibility
+#endif
+}
+
+bool DirectXGraphicsAPI::IsWindowOpen() {
+    return windowOpen;
+}
+
+void DirectXGraphicsAPI::PollEvents() {
+#ifdef PLATFORM_WINDOWS
+    MSG msg;
+    while (PeekMessage(&msg, NULL, 0, 0, PM_REMOVE)) {
+        TranslateMessage(&msg);
+        DispatchMessage(&msg);
+        if (msg.message == WM_QUIT) {
+            windowOpen = false;
+        }
+    }
+#endif
+}
+
+void DirectXGraphicsAPI::SwapBuffers() {
+#ifdef PLATFORM_WINDOWS
+    if (swapChain) {
+        // Present the back buffer to the screen
+        HRESULT hr = swapChain->Present(0, 0);
+        if (FAILED(hr)) {
+            std::cout << "Failed to present swap chain" << std::endl;
+            windowOpen = false;
+        }
     }
 #endif
 }
