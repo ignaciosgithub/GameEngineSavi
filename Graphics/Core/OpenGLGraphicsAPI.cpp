@@ -15,6 +15,11 @@
 #include <GL/glew.h>
 #endif
 
+#ifndef PLATFORM_WINDOWS
+// Function pointer type for glXCreateContextAttribsARB
+typedef GLXContext (*PFNGLXCREATECONTEXTATTRIBSARBPROC)(Display*, GLXFBConfig, GLXContext, Bool, const int*);
+#endif
+
 OpenGLGraphicsAPI::OpenGLGraphicsAPI()
     : currentVAO(0), currentBuffer(0), currentShader(0), currentTexture(0), windowOpen(false)
 {
@@ -603,10 +608,32 @@ bool OpenGLGraphicsAPI::CreateWindow(int width, int height, const char* title) {
     
     Window root = DefaultRootWindow(display);
     
-    GLint att[] = { GLX_RGBA, GLX_DEPTH_SIZE, 24, GLX_DOUBLEBUFFER, None };
-    XVisualInfo* vi = glXChooseVisual(display, 0, att);
+    // First get a framebuffer config using glXChooseFBConfig
+    int fbAttribs[] = {
+        GLX_RENDER_TYPE, GLX_RGBA_BIT,
+        GLX_DRAWABLE_TYPE, GLX_WINDOW_BIT,
+        GLX_DOUBLEBUFFER, True,
+        GLX_RED_SIZE, 8,
+        GLX_GREEN_SIZE, 8,
+        GLX_BLUE_SIZE, 8,
+        GLX_ALPHA_SIZE, 8,
+        GLX_DEPTH_SIZE, 24,
+        None
+    };
+    
+    int numFBConfigs = 0;
+    GLXFBConfig* fbConfigs = glXChooseFBConfig(display, DefaultScreen(display), fbAttribs, &numFBConfigs);
+    
+    if (!fbConfigs || numFBConfigs == 0) {
+        std::cout << "Failed to get framebuffer configs" << std::endl;
+        return false;
+    }
+    
+    // Get the visual from the framebuffer config
+    XVisualInfo* vi = glXGetVisualFromFBConfig(display, fbConfigs[0]);
     if (!vi) {
         std::cout << "No appropriate visual found" << std::endl;
+        XFree(fbConfigs);
         return false;
     }
     
@@ -626,8 +653,45 @@ bool OpenGLGraphicsAPI::CreateWindow(int width, int height, const char* title) {
     XMapWindow(display, window);
     XStoreName(display, window, title);
     
-    context = glXCreateContext(display, vi, NULL, GL_TRUE);
+    // Set up attributes for modern OpenGL context (3.3 core profile)
+    int contextAttribs[] = {
+        GLX_CONTEXT_MAJOR_VERSION_ARB, 3,
+        GLX_CONTEXT_MINOR_VERSION_ARB, 3,
+        GLX_CONTEXT_PROFILE_MASK_ARB, GLX_CONTEXT_CORE_PROFILE_BIT_ARB,
+        None
+    };
+    
+    // Get the function pointer for glXCreateContextAttribsARB
+    PFNGLXCREATECONTEXTATTRIBSARBPROC glXCreateContextAttribsARB = 
+        (PFNGLXCREATECONTEXTATTRIBSARBPROC)glXGetProcAddress((const GLubyte*)"glXCreateContextAttribsARB");
+    
+    if (glXCreateContextAttribsARB) {
+        // Try to create a modern OpenGL context
+        context = glXCreateContextAttribsARB(display, fbConfigs[0], NULL, True, contextAttribs);
+        
+        if (!context) {
+            std::cout << "Failed to create modern OpenGL context, falling back to legacy context" << std::endl;
+            context = glXCreateContext(display, vi, NULL, GL_TRUE);
+        } else {
+            std::cout << "Created modern OpenGL context (3.3 core profile)" << std::endl;
+        }
+    } else {
+        // Fall back to legacy context creation if the extension is not available
+        std::cout << "glXCreateContextAttribsARB not available, using legacy context" << std::endl;
+        context = glXCreateContext(display, vi, NULL, GL_TRUE);
+    }
+    
+    if (!context) {
+        std::cout << "Failed to create OpenGL context" << std::endl;
+        XFree(fbConfigs);
+        XFree(vi);
+        return false;
+    }
+    
     glXMakeCurrent(display, window, context);
+    
+    // Clean up
+    XFree(fbConfigs);
     
     // Initialize GLEW after context is created
     glewExperimental = GL_TRUE;
@@ -638,8 +702,28 @@ bool OpenGLGraphicsAPI::CreateWindow(int width, int height, const char* title) {
         return false;
     }
     
-    std::cout << "OpenGL version: " << glGetString(GL_VERSION) << std::endl;
+    // Check OpenGL version
+    const char* versionStr = (const char*)glGetString(GL_VERSION);
+    const char* rendererStr = (const char*)glGetString(GL_RENDERER);
+    const char* vendorStr = (const char*)glGetString(GL_VENDOR);
+    
+    std::cout << "OpenGL version: " << (versionStr ? versionStr : "Unknown") << std::endl;
+    std::cout << "OpenGL renderer: " << (rendererStr ? rendererStr : "Unknown") << std::endl;
+    std::cout << "OpenGL vendor: " << (vendorStr ? vendorStr : "Unknown") << std::endl;
     std::cout << "GLEW version: " << glewGetString(GLEW_VERSION) << std::endl;
+    
+    // Verify we have at least OpenGL 3.3
+    if (versionStr) {
+        int major = 0, minor = 0;
+        sscanf(versionStr, "%d.%d", &major, &minor);
+        
+        if (major < 3 || (major == 3 && minor < 3)) {
+            std::cout << "Warning: OpenGL 3.3 or higher is required for all shaders to work correctly." << std::endl;
+            std::cout << "Current version: " << major << "." << minor << std::endl;
+        } else {
+            std::cout << "OpenGL version " << major << "." << minor << " is compatible with shader requirements." << std::endl;
+        }
+    }
     
     windowOpen = true;
     return true;
