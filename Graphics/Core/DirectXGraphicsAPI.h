@@ -84,6 +84,10 @@ public:
     void DrawDebugLine(const Vector3& start, const Vector3& end, const Vector3& color) override;
     void DrawDebugAxes() override;
     
+    // Framebuffer operations
+    void ReadPixels(int x, int y, int width, int height, unsigned char* pixels) override;
+    void GetViewport(int* viewport) override;
+    
     // Window management
     bool CreateWindow(int width, int height, const char* title) override;
     void DestroyWindow() override;

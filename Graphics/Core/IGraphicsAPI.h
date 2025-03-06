@@ -104,6 +104,10 @@ public:
     virtual void DrawDebugLine(const Vector3& start, const Vector3& end, const Vector3& color) = 0;
     virtual void DrawDebugAxes() = 0;
     
+    // Framebuffer operations
+    virtual void ReadPixels(int x, int y, int width, int height, unsigned char* pixels) = 0;
+    virtual void GetViewport(int* viewport) = 0;
+    
     // Window management
     virtual bool CreateWindow(int width, int height, const char* title) = 0;
     virtual void DestroyWindow() = 0;

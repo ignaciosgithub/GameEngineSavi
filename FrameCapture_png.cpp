@@ -25,11 +25,12 @@ bool FrameCapture_PNG::CaptureViewportToFile(const std::string& filename, int wi
     }
     
     // Use default dimensions if not specified
-    if (width <= 0) {
-        width = 800;
-    }
-    if (height <= 0) {
-        height = 600;
+    if (width <= 0 || height <= 0) {
+        // Get the current viewport dimensions from the graphics API
+        int viewport[4];
+        graphics->GetViewport(viewport);
+        width = viewport[2];
+        height = viewport[3];
     }
     
     // Validate dimensions
@@ -42,34 +43,28 @@ bool FrameCapture_PNG::CaptureViewportToFile(const std::string& filename, int wi
     
     std::cout << "Capturing viewport to file: " << filename << " (" << width << "x" << height << ")" << std::endl;
     
-    // Ensure all rendering commands are completed
-    // This would normally be done through the graphics API, but for now we'll just wait
+    // Read the pixels from the framebuffer using the graphics API
+    std::vector<unsigned char> pixels(width * height * 4);
+    graphics->ReadPixels(0, 0, width, height, pixels.data());
     
-    // Create a buffer for the pixels
-    std::vector<unsigned char> pixels(width * height * 3, 0);
-    
-    // In a real implementation, we would use the graphics API to read the pixels
-    // For now, we'll just create a simple pattern for testing
+    // Flip the image vertically (OpenGL has origin at bottom-left, PNG at top-left)
+    std::vector<unsigned char> flipped(width * height * 4);
     for (int y = 0; y < height; y++) {
         for (int x = 0; x < width; x++) {
-            int index = (y * width + x) * 3;
-            pixels[index] = static_cast<unsigned char>(x % 256);     // R
-            pixels[index + 1] = static_cast<unsigned char>(y % 256); // G
-            pixels[index + 2] = static_cast<unsigned char>(128);     // B
+            for (int c = 0; c < 4; c++) {
+                flipped[(y * width + x) * 4 + c] = pixels[((height - 1 - y) * width + x) * 4 + c];
+            }
         }
     }
     
-    // No need to flip the image since we're generating it directly
-    
     // Write the PNG file using stb_image_write
-    // Note: stb_image_write.h handles opening and closing the file internally
     int result = stbi_write_png(
         filename.c_str(),
         width,
         height,
-        3,  // RGB components
-        pixels.data(),
-        width * 3  // Stride in bytes
+        4,  // RGBA components
+        flipped.data(),
+        width * 4  // Stride in bytes
     );
     
     if (result == 0) {
