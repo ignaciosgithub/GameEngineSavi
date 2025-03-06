@@ -139,8 +139,8 @@ void Editor::Render() {
     }
     
     // Clear the screen
-    graphics->ClearColor(0.2f, 0.3f, 0.3f, 1.0f);
-    graphics->Clear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    graphics->SetClearColor(0.2f, 0.3f, 0.3f, 1.0f);
+    graphics->Clear(true, true); // Clear color and depth buffers
     
     // Render scene
     if (scene) {
