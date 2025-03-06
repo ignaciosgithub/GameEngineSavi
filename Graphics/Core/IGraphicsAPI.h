@@ -104,6 +104,13 @@ public:
     virtual void DrawDebugLine(const Vector3& start, const Vector3& end, const Vector3& color) = 0;
     virtual void DrawDebugAxes() = 0;
     
+    // Window management
+    virtual bool CreateWindow(int width, int height, const char* title) = 0;
+    virtual void DestroyWindow() = 0;
+    virtual void MakeContextCurrent() = 0;
+    virtual bool IsWindowOpen() = 0;
+    virtual void PollEvents() = 0;
+    
     // Platform-specific operations
     virtual void SwapBuffers() = 0;
     

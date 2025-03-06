@@ -86,6 +86,13 @@ public:
     virtual void DrawDebugLine(const Vector3& start, const Vector3& end, const Vector3& color) override;
     virtual void DrawDebugAxes() override;
     
+    // Window management
+    virtual bool CreateWindow(int width, int height, const char* title) override;
+    virtual void DestroyWindow() override;
+    virtual void MakeContextCurrent() override;
+    virtual bool IsWindowOpen() override;
+    virtual void PollEvents() override;
+    
     // Platform-specific operations
     virtual void SwapBuffers() override;
     
@@ -116,6 +123,18 @@ private:
     unsigned int currentBuffer;
     unsigned int currentShader;
     unsigned int currentTexture;
+    
+    // Window management
+    #ifdef PLATFORM_WINDOWS
+    HWND hWnd;
+    HDC hDC;
+    HGLRC hRC;
+    #else
+    Display* display;
+    Window window;
+    GLXContext context;
+    #endif
+    bool windowOpen;
 };
 
 #endif // GAME_ENGINE_SAVI_OPENGL_GRAPHICS_API_H

@@ -1,9 +1,32 @@
 #include "OpenGLGraphicsAPI.h"
 #include <iostream>
 
+#ifdef PLATFORM_WINDOWS
+#include <windows.h>
+#include <gl/GL.h>
+#include <gl/GLU.h>
+#else
+#include <X11/X.h>
+#include <X11/Xlib.h>
+#include <GL/gl.h>
+#include <GL/glx.h>
+#include <GL/glu.h>
+#endif
+
 OpenGLGraphicsAPI::OpenGLGraphicsAPI()
-    : currentVAO(0), currentBuffer(0), currentShader(0) {
+    : currentVAO(0), currentBuffer(0), currentShader(0), currentTexture(0), windowOpen(false)
+{
     std::cout << "OpenGLGraphicsAPI constructor called" << std::endl;
+    
+#ifdef PLATFORM_WINDOWS
+    hWnd = NULL;
+    hDC = NULL;
+    hRC = NULL;
+#else
+    display = NULL;
+    window = 0;
+    context = NULL;
+#endif
 }
 
 OpenGLGraphicsAPI::~OpenGLGraphicsAPI() {
@@ -515,13 +538,165 @@ void OpenGLGraphicsAPI::SetCullFaceMode(int mode) {
 #endif
 }
 
+// Window management
+bool OpenGLGraphicsAPI::CreateWindow(int width, int height, const char* title) {
+#ifdef PLATFORM_WINDOWS
+    // Windows-specific window creation code
+    WNDCLASSEX wc;
+    wc.cbSize = sizeof(WNDCLASSEX);
+    wc.style = CS_HREDRAW | CS_VREDRAW;
+    wc.lpfnWndProc = DefWindowProc;
+    wc.cbClsExtra = 0;
+    wc.cbWndExtra = 0;
+    wc.hInstance = GetModuleHandle(NULL);
+    wc.hIcon = LoadIcon(NULL, IDI_APPLICATION);
+    wc.hCursor = LoadCursor(NULL, IDC_ARROW);
+    wc.hbrBackground = (HBRUSH)(COLOR_WINDOW + 1);
+    wc.lpszMenuName = NULL;
+    wc.lpszClassName = "OpenGLWindowClass";
+    wc.hIconSm = LoadIcon(NULL, IDI_APPLICATION);
+    
+    if (!RegisterClassEx(&wc)) {
+        std::cout << "Failed to register window class" << std::endl;
+        return false;
+    }
+    
+    hWnd = CreateWindow(
+        "OpenGLWindowClass", title,
+        WS_OVERLAPPEDWINDOW,
+        CW_USEDEFAULT, CW_USEDEFAULT,
+        width, height,
+        NULL, NULL,
+        GetModuleHandle(NULL), NULL
+    );
+    
+    if (!hWnd) {
+        std::cout << "Failed to create window" << std::endl;
+        return false;
+    }
+    
+    hDC = GetDC(hWnd);
+    
+    PIXELFORMATDESCRIPTOR pfd;
+    ZeroMemory(&pfd, sizeof(pfd));
+    pfd.nSize = sizeof(pfd);
+    pfd.nVersion = 1;
+    pfd.dwFlags = PFD_DRAW_TO_WINDOW | PFD_SUPPORT_OPENGL | PFD_DOUBLEBUFFER;
+    pfd.iPixelType = PFD_TYPE_RGBA;
+    pfd.cColorBits = 32;
+    pfd.cDepthBits = 24;
+    pfd.cStencilBits = 8;
+    pfd.iLayerType = PFD_MAIN_PLANE;
+    
+    int format = ChoosePixelFormat(hDC, &pfd);
+    SetPixelFormat(hDC, format, &pfd);
+    
+    hRC = wglCreateContext(hDC);
+    wglMakeCurrent(hDC, hRC);
+    
+    ShowWindow(hWnd, SW_SHOW);
+    UpdateWindow(hWnd);
+    
+    windowOpen = true;
+    return true;
+#else
+    // Linux-specific window creation code
+    display = XOpenDisplay(NULL);
+    if (!display) {
+        std::cout << "Failed to open X display" << std::endl;
+        return false;
+    }
+    
+    Window root = DefaultRootWindow(display);
+    
+    GLint att[] = { GLX_RGBA, GLX_DEPTH_SIZE, 24, GLX_DOUBLEBUFFER, None };
+    XVisualInfo* vi = glXChooseVisual(display, 0, att);
+    if (!vi) {
+        std::cout << "No appropriate visual found" << std::endl;
+        return false;
+    }
+    
+    Colormap cmap = XCreateColormap(display, root, vi->visual, AllocNone);
+    
+    XSetWindowAttributes swa;
+    swa.colormap = cmap;
+    swa.event_mask = ExposureMask | KeyPressMask;
+    
+    window = XCreateWindow(
+        display, root,
+        0, 0, width, height, 0,
+        vi->depth, InputOutput,
+        vi->visual, CWColormap | CWEventMask, &swa
+    );
+    
+    XMapWindow(display, window);
+    XStoreName(display, window, title);
+    
+    context = glXCreateContext(display, vi, NULL, GL_TRUE);
+    glXMakeCurrent(display, window, context);
+    
+    windowOpen = true;
+    return true;
+#endif
+}
+
+void OpenGLGraphicsAPI::DestroyWindow() {
+#ifdef PLATFORM_WINDOWS
+    wglMakeCurrent(NULL, NULL);
+    wglDeleteContext(hRC);
+    ReleaseDC(hWnd, hDC);
+    DestroyWindow(hWnd);
+#else
+    glXMakeCurrent(display, None, NULL);
+    glXDestroyContext(display, context);
+    XDestroyWindow(display, window);
+    XCloseDisplay(display);
+#endif
+    windowOpen = false;
+}
+
+void OpenGLGraphicsAPI::MakeContextCurrent() {
+#ifdef PLATFORM_WINDOWS
+    wglMakeCurrent(hDC, hRC);
+#else
+    glXMakeCurrent(display, window, context);
+#endif
+}
+
+bool OpenGLGraphicsAPI::IsWindowOpen() {
+    return windowOpen;
+}
+
+void OpenGLGraphicsAPI::PollEvents() {
+#ifdef PLATFORM_WINDOWS
+    MSG msg;
+    while (PeekMessage(&msg, NULL, 0, 0, PM_REMOVE)) {
+        TranslateMessage(&msg);
+        DispatchMessage(&msg);
+        if (msg.message == WM_QUIT) {
+            windowOpen = false;
+        }
+    }
+#else
+    XEvent event;
+    while (XPending(display)) {
+        XNextEvent(display, &event);
+        if (event.type == KeyPress) {
+            KeySym key = XLookupKeysym(&event.xkey, 0);
+            if (key == XK_Escape) {
+                windowOpen = false;
+            }
+        }
+    }
+#endif
+}
+
 // Platform-specific operations
 void OpenGLGraphicsAPI::SwapBuffers() {
-#ifndef PLATFORM_WINDOWS
-    // This is typically handled by the window system (GLFW, SDL, etc.)
-    // and not directly by OpenGL
-    // For this implementation, we'll just log that it was called
-    std::cout << "OpenGLGraphicsAPI::SwapBuffers called" << std::endl;
+#ifdef PLATFORM_WINDOWS
+    ::SwapBuffers(hDC);
+#else
+    glXSwapBuffers(display, window);
 #endif
 }
 

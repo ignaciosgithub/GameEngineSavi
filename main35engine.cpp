@@ -5,6 +5,7 @@
 
 #include "platform.h"
 #include "ThirdParty/OpenGL/include/GL/gl_definitions.h"
+#include "Graphics/Core/GraphicsAPIFactory.h"
 #if defined(PLATFORM_WINDOWS)
 #ifndef CALLBACK
 #define CALLBACK __stdcall
@@ -53,28 +54,15 @@ inline float toRadians(float degrees) {
 // Global GUI instance
 std::unique_ptr<GUI> gui;
 
-// Forward declarations for Windows-specific functions
-#if defined(PLATFORM_WINDOWS)
-LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
-void EnableOpenGL(HWND hWnd, HDC* hDC, HGLRC* hRC);
-void DisableOpenGL(HWND hWnd, HDC hDC, HGLRC hRC);
-#endif
+// No forward declarations needed for platform-independent implementation
 
 /**************************
  * Main Entry Point
  *
  **************************/
 
-#if defined(PLATFORM_WINDOWS)
-int WINAPI WinMain(HINSTANCE hInstance,
-            HINSTANCE hPrevInstance,
-            LPSTR lpCmdLine,
-            int nCmdShow)
-{
-#else
 int main(int argc, char** argv)
 {
-#endif
     // Set the initial engine condition based on command line arguments
     // This would normally be set by the editor or build system
     #if defined(DEBUG_BUILD)
@@ -139,92 +127,32 @@ int main(int argc, char** argv)
     editorPanel->AddElement(std::move(playButton));
     gui->AddElement(std::move(editorPanel));
 
-    #if defined(PLATFORM_WINDOWS)
-    WNDCLASS wc = {};
-    HWND hWnd;
-    HDC hDC;
-    HGLRC hRC;        
-    MSG msg;
-    BOOL bQuit = FALSE;
-    float theta = 0.0f;
-
-    /* register window class */
-    wc.style = CS_OWNDC;
-    wc.lpfnWndProc = WndProc;
-    wc.cbClsExtra = 0;
-    wc.cbWndExtra = 0;
-    wc.hInstance = hInstance;
-    wc.hIcon = LoadIcon(NULL, IDI_APPLICATION);
-    wc.hCursor = LoadCursor(NULL, IDC_ARROW);
-    wc.hbrBackground = (HBRUSH)GetStockObject(BLACK_BRUSH);
-    wc.lpszMenuName = NULL;
-    wc.lpszClassName = "GLSample";
-    RegisterClass(&wc);
-
-    /* create main window */
-    hWnd = CreateWindow(
-      "GLSample", "OpenGL Sample", 
-      WS_CAPTION | WS_POPUPWINDOW | WS_VISIBLE,
-      0, 0, 256, 256,
-      NULL, NULL, hInstance, NULL);
-
-    /* enable OpenGL for the window */
-    EnableOpenGL(hWnd, &hDC, &hRC);
-
-    /* program main loop */
-    while (!bQuit)
-    {
-        /* check for messages */
-        if (PeekMessage(&msg, NULL, 0, 0, PM_REMOVE))
-        {
-            /* handle or dispatch messages */
-            if (msg.message == WM_QUIT)
-            {
-                bQuit = TRUE;
-            }
-            else
-            {
-                TranslateMessage(&msg);
-                DispatchMessage(&msg);
-            }
-        }
-        else
-        {
-            // If we're in editor mode, show a message
-            if (EngineCondition::IsInEditor()) {
-                std::cout << "In editor mode..." << std::endl;
-                // In a real implementation, this would trigger the compilation process
-                // For now, we'll just wait a bit
-                std::this_thread::sleep_for(std::chrono::seconds(2));
-            }
-            
-            // Draw GUI
-            gui->Draw();
-            
-            // Swap buffers using the graphics API
-            auto graphics = GraphicsAPIFactory::GetInstance().GetGraphicsAPI();
-            if (graphics) {
-                graphics->SwapBuffers();
-            }
-        }
+    // Create window using the graphics API wrapper
+    if (!graphics->CreateWindow(800, 600, "GameEngineSavi Engine")) {
+        std::cout << "Failed to create window" << std::endl;
+        return 1;
     }
-
-    /* shutdown OpenGL */
-    DisableOpenGL(hWnd, hDC, hRC);
-
-    /* destroy the window explicitly */
-    DestroyWindow(hWnd);
-
-    return msg.wParam;
-    #else
-    // Linux/Mac implementation would go here
-    std::cout << "Engine running in " << 
-        (EngineCondition::IsInEditor() ? "editor mode" : "unknown mode") 
-        << std::endl;
     
-    // Simulate some engine activity
-    for (int i = 0; i < 5; i++) {
-        std::cout << "Engine tick " << i << std::endl;
+    // Set up the viewport
+    graphics->SetViewport(0, 0, 800, 600);
+    
+    // Main loop
+    bool running = true;
+    TimeManager timeManager;
+    
+    while (running) {
+        // Poll events
+        graphics->PollEvents();
+        
+        // Check if window is still open
+        if (!graphics->IsWindowOpen()) {
+            running = false;
+            continue;
+        }
+        
+        // Update time
+        timeManager.Update();
+        float deltaTime = timeManager.GetDeltaTime();
         
         // If we're in editor mode, show a message
         if (EngineCondition::IsInEditor()) {
@@ -234,122 +162,72 @@ int main(int argc, char** argv)
             std::this_thread::sleep_for(std::chrono::seconds(2));
         }
         
-        // In a real implementation, we would draw the GUI here
-        // gui->Draw();
+        // Clear the screen
+        graphics->ClearColor(0.2f, 0.3f, 0.3f, 1.0f);
+        graphics->Clear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         
-        std::this_thread::sleep_for(std::chrono::seconds(1));
+        // Draw GUI
+        gui->Draw();
+        
+        // Swap buffers
+        graphics->SwapBuffers();
     }
+    
+    // Cleanup
+    graphics->DestroyWindow();
     
     return 0;
-    #endif
-}
-
-#if defined(PLATFORM_WINDOWS)
-/********************
- * Window Procedure
- *
- ********************/
-
-LRESULT CALLBACK WndProc(HWND hWnd, UINT message,
-                         WPARAM wParam, LPARAM lParam)
-{
-    switch (message)
-    {
-    case WM_CREATE:
-        return 0;
-    case WM_CLOSE:
-        PostQuitMessage(0);
-        return 0;
-
-    case WM_DESTROY:
-        return 0;
-
-    case WM_KEYDOWN:
-        switch (wParam)
-        {
-        case VK_ESCAPE:
-            PostQuitMessage(0);
-            return 0;
-        case 'P': // Press P to toggle play mode in editor
-            if (EngineCondition::IsInEditor()) {
-                // Using available EngineCondition API
-                std::cout << "Entering play mode" << std::endl;
-            } else {
-                // Using available EngineCondition API
-                std::cout << "Entering edit mode" << std::endl;
-            }
-            return 0;
-        case 'C': // Press C to toggle compile mode in editor
-            if (EngineCondition::IsInEditor()) {
-                // Using available EngineCondition API
-                std::cout << "Entering compile mode" << std::endl;
-            }
-            return 0;
+    #else
+    // Create window using the graphics API wrapper
+    if (!graphics->CreateWindow(800, 600, "GameEngineSavi Engine")) {
+        std::cout << "Failed to create window" << std::endl;
+        return 1;
+    }
+    
+    // Set up the viewport
+    graphics->SetViewport(0, 0, 800, 600);
+    
+    // Main loop
+    bool running = true;
+    TimeManager timeManager;
+    
+    while (running) {
+        // Poll events
+        graphics->PollEvents();
+        
+        // Check if window is still open
+        if (!graphics->IsWindowOpen()) {
+            running = false;
+            continue;
         }
-        return 0;
         
-    case WM_LBUTTONDOWN:
-        gui->HandleInput(LOWORD(lParam), HIWORD(lParam), true);
-        return 0;
+        // Update time
+        timeManager.Update();
+        float deltaTime = timeManager.GetDeltaTime();
         
-    case WM_MOUSEMOVE:
-        gui->HandleInput(LOWORD(lParam), HIWORD(lParam), false);
-        return 0;
-
-    default:
-        return DefWindowProc(hWnd, message, wParam, lParam);
-    }
-}
-
-/*******************
- * Enable OpenGL
- *
- *******************/
-
-void EnableOpenGL(HWND hWnd, HDC* hDC, HGLRC* hRC)
-{
-    PIXELFORMATDESCRIPTOR pfd;
-    int iFormat;
-
-    /* get the device context (DC) */
-    *hDC = GetDC(hWnd);
-
-    /* set the pixel format for the DC */
-    ZeroMemory(&pfd, sizeof(pfd));
-    pfd.nSize = sizeof(pfd);
-    pfd.nVersion = 1;
-    pfd.dwFlags = PFD_DRAW_TO_WINDOW | 
-      PFD_SUPPORT_OPENGL | PFD_DOUBLEBUFFER;
-    pfd.iPixelType = PFD_TYPE_RGBA;
-    pfd.cColorBits = 24;
-    pfd.cDepthBits = 16;
-    pfd.iLayerType = PFD_MAIN_PLANE;
-    iFormat = ChoosePixelFormat(*hDC, &pfd);
-    SetPixelFormat(*hDC, iFormat, &pfd);
-
-    /* create and enable the render context (RC) */
-    *hRC = wglCreateContext(*hDC);
-    wglMakeCurrent(*hDC, *hRC);
-    
-    // Initialize graphics API
-    GraphicsAPIFactory::GetInstance().Initialize();
-}
-
-/******************
- * Disable OpenGL
- *
- ******************/
-
-void DisableOpenGL(HWND hWnd, HDC hDC, HGLRC hRC)
-{
-    // Shutdown graphics API
-    auto graphics = GraphicsAPIFactory::GetInstance().GetGraphicsAPI();
-    if (graphics) {
-        graphics->Shutdown();
+        // If we're in editor mode, show a message
+        if (EngineCondition::IsInEditor()) {
+            std::cout << "In editor mode..." << std::endl;
+            // In a real implementation, this would trigger the compilation process
+            // For now, we'll just wait a bit
+            std::this_thread::sleep_for(std::chrono::seconds(2));
+        }
+        
+        // Clear the screen
+        graphics->ClearColor(0.2f, 0.3f, 0.3f, 1.0f);
+        graphics->Clear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+        
+        // Draw GUI
+        gui->Draw();
+        
+        // Swap buffers
+        graphics->SwapBuffers();
     }
     
-    wglMakeCurrent(NULL, NULL);
-    wglDeleteContext(hRC);
-    ReleaseDC(hWnd, hDC);
+    // Cleanup
+    graphics->DestroyWindow();
+    
+    return 0;
 }
-#endif
+
+// End of main function
