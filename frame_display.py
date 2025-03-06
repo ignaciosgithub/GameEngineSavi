@@ -11,7 +11,13 @@ import os
 import sys
 import time
 import pygame
-from pygame.locals import *
+from pygame.locals import QUIT, KEYDOWN, K_ESCAPE
+
+# Handle XDG_RUNTIME_DIR environment variable
+if 'XDG_RUNTIME_DIR' not in os.environ:
+    temp_dir = "/tmp"
+    os.environ['XDG_RUNTIME_DIR'] = temp_dir
+    print(f"XDG_RUNTIME_DIR not set, using {temp_dir} as fallback")
 
 # Constants
 WINDOW_WIDTH = 800
