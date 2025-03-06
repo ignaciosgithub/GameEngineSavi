@@ -36,16 +36,8 @@ OpenGLGraphicsAPI::~OpenGLGraphicsAPI() {
 bool OpenGLGraphicsAPI::Initialize() {
     std::cout << "Initializing OpenGL graphics API" << std::endl;
     
-    // Initialize GLEW
-    glewExperimental = GL_TRUE;
-    GLenum err = glewInit();
-    if (err != GLEW_OK) {
-        std::cout << "GLEW initialization failed: " << glewGetErrorString(err) << std::endl;
-        return false;
-    }
-    
-    std::cout << "OpenGL version: " << glGetString(GL_VERSION) << std::endl;
-    std::cout << "GLEW version: " << glewGetString(GLEW_VERSION) << std::endl;
+    // Note: GLEW initialization should happen after OpenGL context creation
+    // This will be done in CreateWindow method after context is created
     
     return true;
 }
@@ -634,6 +626,18 @@ bool OpenGLGraphicsAPI::CreateWindow(int width, int height, const char* title) {
     
     context = glXCreateContext(display, vi, NULL, GL_TRUE);
     glXMakeCurrent(display, window, context);
+    
+    // Initialize GLEW after context is created
+    glewExperimental = GL_TRUE;
+    GLenum err = glewInit();
+    if (err != GLEW_OK) {
+        std::cout << "GLEW initialization failed: " << glewGetErrorString(err) << std::endl;
+        std::cout << "Failed to initialize OpenGL" << std::endl;
+        return false;
+    }
+    
+    std::cout << "OpenGL version: " << glGetString(GL_VERSION) << std::endl;
+    std::cout << "GLEW version: " << glewGetString(GLEW_VERSION) << std::endl;
     
     windowOpen = true;
     return true;
