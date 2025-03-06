@@ -34,7 +34,6 @@
 #endif
 
 // Include stb_image_write.h for direct PNG writing
-#define STB_IMAGE_WRITE_IMPLEMENTATION
 #include "../ThirdParty/stb/stb_image_write.h"
 
 #ifdef _WIN32
