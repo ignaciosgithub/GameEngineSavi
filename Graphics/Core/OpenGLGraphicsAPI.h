@@ -6,6 +6,15 @@
 #include "../../Shaders/Core/ShaderProgram.h"
 #include <iostream>
 
+#ifdef PLATFORM_WINDOWS
+#include <windows.h>
+#else
+// X11 and GLX includes for Linux
+#include <X11/Xlib.h>
+#include <X11/Xutil.h>
+#include <GL/glx.h>
+#endif
+
 // OpenGL implementation of the IGraphicsAPI interface
 // This is used on Linux platforms
 class OpenGLGraphicsAPI : public IGraphicsAPI {

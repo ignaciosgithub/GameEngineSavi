@@ -12,6 +12,7 @@
 #include "../TimeManager.h"
 #include "../Graphics/Core/GraphicsAPIFactory.h"
 #include "../Camera.h"
+#include "../Shaders/Core/ShaderProgram.h"
 #include <iostream>
 #include <memory>
 #include <thread>
@@ -71,7 +72,7 @@ int main(int argc, char** argv) {
         bool running = true;
         TimeManager timeManager;
         
-        while (running && timeManager.GetTotalTime() < 5.0f) { // Run for 5 seconds
+        while (running && timeManager.GetDeltaTime() * 60 < 5.0f) { // Run for 5 seconds
             // Update time
             timeManager.Update();
             float deltaTime = timeManager.GetDeltaTime();
@@ -81,7 +82,7 @@ int main(int argc, char** argv) {
                 editor->Update(deltaTime);
                 editor->Render();
                 
-                std::cout << "Rendered frame at time " << timeManager.GetTotalTime() << std::endl;
+                std::cout << "Rendered frame at time " << timeManager.GetDeltaTime() * 60 << std::endl;
             }
             
             // Small delay to not overwhelm the system
@@ -115,8 +116,8 @@ int main(int argc, char** argv) {
         float deltaTime = timeManager.GetDeltaTime();
         
         // Clear the screen
-        graphics->ClearColor(0.2f, 0.3f, 0.3f, 1.0f);
-        graphics->Clear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+        graphics->SetClearColor(0.2f, 0.3f, 0.3f, 1.0f);
+        graphics->Clear(0x00004000 | 0x00000100); // GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT
         
         // Update editor
         if (editor) {
@@ -168,16 +169,16 @@ int main(int argc, char** argv) {
         
         // Create vertex buffer
         unsigned int vbo = graphics->CreateBuffer();
-        graphics->BindBuffer(GL_ARRAY_BUFFER, vbo);
-        graphics->BufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
+        graphics->BindBuffer(0x8892, vbo); // GL_ARRAY_BUFFER
+        graphics->BufferData(0x8892, sizeof(vertices), vertices, 0x88E4); // GL_ARRAY_BUFFER, GL_STATIC_DRAW
         
         // Create index buffer
         unsigned int ibo = graphics->CreateBuffer();
-        graphics->BindBuffer(GL_ELEMENT_ARRAY_BUFFER, ibo);
-        graphics->BufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
+        graphics->BindBuffer(0x8893, ibo); // GL_ELEMENT_ARRAY_BUFFER
+        graphics->BufferData(0x8893, sizeof(indices), indices, 0x88E4); // GL_ELEMENT_ARRAY_BUFFER, GL_STATIC_DRAW
         
         // Create and compile vertex shader
-        unsigned int vertexShader = graphics->CreateShader(GL_VERTEX_SHADER);
+        unsigned int vertexShader = graphics->CreateShader(0x8B31); // GL_VERTEX_SHADER
         const char* vertexShaderSource = 
             "#version 330 core\n"
             "layout (location = 0) in vec3 aPos;\n"
@@ -191,11 +192,11 @@ int main(int argc, char** argv) {
             "   gl_Position = projection * view * model * vec4(aPos, 1.0);\n"
             "   ourColor = aColor;\n"
             "}\0";
-        graphics->ShaderSource(vertexShader, 1, &vertexShaderSource, NULL);
+        graphics->ShaderSource(vertexShader, std::string(vertexShaderSource));
         graphics->CompileShader(vertexShader);
         
         // Create and compile fragment shader
-        unsigned int fragmentShader = graphics->CreateShader(GL_FRAGMENT_SHADER);
+        unsigned int fragmentShader = graphics->CreateShader(0x8B30); // GL_FRAGMENT_SHADER
         const char* fragmentShaderSource = 
             "#version 330 core\n"
             "in vec3 ourColor;\n"
@@ -204,7 +205,7 @@ int main(int argc, char** argv) {
             "{\n"
             "   FragColor = vec4(ourColor, 1.0);\n"
             "}\0";
-        graphics->ShaderSource(fragmentShader, 1, &fragmentShaderSource, NULL);
+        graphics->ShaderSource(fragmentShader, std::string(fragmentShaderSource));
         graphics->CompileShader(fragmentShader);
         
         // Create shader program
@@ -214,16 +215,19 @@ int main(int argc, char** argv) {
         graphics->LinkProgram(shaderProgram);
         
         // Use shader program
-        graphics->UseShaderProgram(shaderProgram);
+        // Create a ShaderProgram object to pass to UseShaderProgram
+        ShaderProgram* program = new ShaderProgram();
+        program->SetProgramId(shaderProgram);
+        graphics->UseShaderProgram(program);
         
         // Set up vertex attributes
-        graphics->VertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)0);
-        graphics->EnableVertexAttribArray(0);
-        graphics->VertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)(3 * sizeof(float)));
-        graphics->EnableVertexAttribArray(1);
+        graphics->VertexAttribPointer(0, 3, 0x1406, 0, 6 * sizeof(float), (void*)0); // GL_FLOAT, GL_FALSE
+        graphics->EnableVertexAttrib(0);
+        graphics->VertexAttribPointer(1, 3, 0x1406, 0, 6 * sizeof(float), (void*)(3 * sizeof(float))); // GL_FLOAT, GL_FALSE
+        graphics->EnableVertexAttrib(1);
         
         // Set up transformation matrices
-        float time = timeManager.GetTotalTime();
+        float time = timeManager.GetDeltaTime() * 60;
         
         // Model matrix (rotate the cube)
         float model[16] = {
@@ -260,7 +264,7 @@ int main(int argc, char** argv) {
         graphics->SetUniformMatrix4fv(shaderProgram, "projection", projection, false);
         
         // Draw the cube
-        graphics->DrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, 0);
+        graphics->DrawElements(0x0004, 36, 0x1405, 0); // GL_TRIANGLES, GL_UNSIGNED_INT
         
         // Clean up
         graphics->DeleteBuffer(vbo);
