@@ -89,15 +89,15 @@ Editor::~Editor() {
 }
 
 void Editor::Initialize() {
-    // Create default objects in the scene
-    if (scene) {
-        scene->CreateDefaultObjects();
-    }
-    
-    // Initialize graphics API
+    // Initialize graphics API first
     if (!GraphicsAPIFactory::GetInstance().Initialize()) {
         std::cout << "Failed to initialize graphics API" << std::endl;
         return;
+    }
+    
+    // Create default objects in the scene after graphics API is initialized
+    if (scene) {
+        scene->CreateDefaultObjects();
     }
 }
 

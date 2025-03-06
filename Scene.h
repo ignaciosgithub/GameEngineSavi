@@ -67,6 +67,8 @@ public:
     void SetGlobalShaderUniforms(ShaderProgram* program);
     void UpdateLightUniforms(ShaderProgram* program);
     
+    ShaderProgram* CreateDefaultShaderProgram();
+    
     void Reset();
     void Shutdown();
     

@@ -64,6 +64,13 @@ void Scene::CreateDefaultObjects() {
         // Load a cube model
         Model* cubeModel = new Model();
         if (cubeModel->LoadFromFile("test_assets/cube.obj")) {
+            // Create and set a default shader program for the cube
+            ShaderProgram* defaultShader = CreateDefaultShaderProgram();
+            if (defaultShader) {
+                cubeModel->SetShaderProgram(defaultShader);
+                std::cout << "Set default shader program for cube" << std::endl;
+            }
+            
             cubeObj->AddMesh(cubeModel);
             cubeObj->position = Vector3(0, 0, 0);
             AddGameObject(cubeObj);
@@ -426,6 +433,72 @@ void Scene::Shutdown() {
 // Add missing destructor implementation
 Scene::~Scene() {
     Shutdown();
+}
+
+// Create a default shader program for models without a shader
+ShaderProgram* Scene::CreateDefaultShaderProgram() {
+    auto graphics = GraphicsAPIFactory::GetInstance().GetGraphicsAPI();
+    if (!graphics) {
+        std::cerr << "Failed to get graphics API" << std::endl;
+        return nullptr;
+    }
+    
+    // Create and compile vertex shader
+    unsigned int vertexShader = graphics->CreateShader(0x8B31); // GL_VERTEX_SHADER
+    const char* vertexShaderSource = 
+        "#version 330 core\n"
+        "layout (location = 0) in vec3 aPos;\n"
+        "layout (location = 1) in vec3 aNormal;\n"
+        "out vec3 FragPos;\n"
+        "out vec3 Normal;\n"
+        "uniform mat4 model;\n"
+        "uniform mat4 view;\n"
+        "uniform mat4 projection;\n"
+        "void main()\n"
+        "{\n"
+        "   FragPos = vec3(model * vec4(aPos, 1.0));\n"
+        "   Normal = mat3(transpose(inverse(model))) * aNormal;\n"
+        "   gl_Position = projection * view * model * vec4(aPos, 1.0);\n"
+        "}\0";
+    graphics->ShaderSource(vertexShader, std::string(vertexShaderSource));
+    graphics->CompileShader(vertexShader);
+    
+    // Create and compile fragment shader
+    unsigned int fragmentShader = graphics->CreateShader(0x8B30); // GL_FRAGMENT_SHADER
+    const char* fragmentShaderSource = 
+        "#version 330 core\n"
+        "in vec3 FragPos;\n"
+        "in vec3 Normal;\n"
+        "out vec4 FragColor;\n"
+        "uniform vec3 viewPos;\n"
+        "void main()\n"
+        "{\n"
+        "   vec3 norm = normalize(Normal);\n"
+        "   vec3 lightDir = normalize(vec3(1.0, 1.0, 1.0));\n"
+        "   float diff = max(dot(norm, lightDir), 0.0);\n"
+        "   vec3 diffuse = diff * vec3(1.0, 1.0, 1.0);\n"
+        "   vec3 ambient = 0.1 * vec3(1.0, 1.0, 1.0);\n"
+        "   vec3 result = (ambient + diffuse) * vec3(0.7, 0.2, 0.2);\n"
+        "   FragColor = vec4(result, 1.0);\n"
+        "}\0";
+    graphics->ShaderSource(fragmentShader, std::string(fragmentShaderSource));
+    graphics->CompileShader(fragmentShader);
+    
+    // Create shader program
+    unsigned int shaderProgramId = graphics->CreateProgram();
+    graphics->AttachShader(shaderProgramId, vertexShader);
+    graphics->AttachShader(shaderProgramId, fragmentShader);
+    graphics->LinkProgram(shaderProgramId);
+    
+    // Create a ShaderProgram object
+    ShaderProgram* program = new ShaderProgram();
+    program->SetProgramId(shaderProgramId);
+    
+    // Clean up shader objects
+    graphics->DeleteShader(vertexShader);
+    graphics->DeleteShader(fragmentShader);
+    
+    return program;
 }
 
 // SetCreateDefaultObjects and GetCreateDefaultObjects are now inline in Scene.h
