@@ -27,15 +27,15 @@ int main(int argc, char** argv) {
     // Create editor
     Editor* editor = new Editor(WINDOW_WIDTH, WINDOW_HEIGHT);
     
-    // Initialize editor
-    editor->Initialize();
-    
-    // Create window
+    // Create window first
     if (!editor->CreateWindow("GameEngineSavi Editor")) {
         std::cout << "Failed to create window" << std::endl;
         delete editor;
         return 1;
     }
+    
+    // Initialize editor after window creation
+    editor->Initialize();
     
     // Run main loop
     editor->RunMainLoop();

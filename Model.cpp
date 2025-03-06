@@ -266,6 +266,7 @@ void Model::Render(const std::vector<PointLight>& lights) {
         graphics->UseShaderProgram(shaderProgram);
     } else {
         std::cerr << "Warning: No shader program set for model" << std::endl;
+        return; // Return early if no shader program is set to prevent segmentation fault
     }
     
     graphics->BindVertexArray(vao);
