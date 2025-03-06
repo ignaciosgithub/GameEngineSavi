@@ -474,6 +474,15 @@ void OpenGLGraphicsAPI::DrawDebugLine(const Vector3& start, const Vector3& end, 
 #endif
 }
 
+// Framebuffer operations
+void OpenGLGraphicsAPI::ReadPixels(int x, int y, int width, int height, unsigned char* pixels) {
+    glReadPixels(x, y, width, height, GL_RGBA, GL_UNSIGNED_BYTE, pixels);
+}
+
+void OpenGLGraphicsAPI::GetViewport(int* viewport) {
+    glGetIntegerv(GL_VIEWPORT, viewport);
+}
+
 void OpenGLGraphicsAPI::DrawDebugAxes() {
 #ifndef PLATFORM_WINDOWS
     // X axis - Red

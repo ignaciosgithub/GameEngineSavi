@@ -1443,3 +1443,140 @@ void DirectXGraphicsAPI::CreateDepthStencilView(int width, int height) {
     }
 }
 #endif
+
+// Framebuffer operations
+void DirectXGraphicsAPI::ReadPixels(int x, int y, int width, int height, unsigned char* pixels) {
+#ifdef PLATFORM_WINDOWS
+    // Create a staging texture to read pixels from the render target
+    if (device && context && renderTargetView) {
+        // Get the render target texture
+        ID3D11Resource* renderTargetResource = nullptr;
+        renderTargetView->GetResource(&renderTargetResource);
+        
+        if (renderTargetResource) {
+            // Create a staging texture with CPU read access
+            D3D11_TEXTURE2D_DESC stagingDesc;
+            ZeroMemory(&stagingDesc, sizeof(stagingDesc));
+            stagingDesc.Width = width;
+            stagingDesc.Height = height;
+            stagingDesc.MipLevels = 1;
+            stagingDesc.ArraySize = 1;
+            stagingDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
+            stagingDesc.SampleDesc.Count = 1;
+            stagingDesc.SampleDesc.Quality = 0;
+            stagingDesc.Usage = D3D11_USAGE_STAGING;
+            stagingDesc.BindFlags = 0;
+            stagingDesc.CPUAccessFlags = D3D11_CPU_ACCESS_READ;
+            stagingDesc.MiscFlags = 0;
+            
+            ID3D11Texture2D* stagingTexture = nullptr;
+            HRESULT hr = device->CreateTexture2D(&stagingDesc, nullptr, &stagingTexture);
+            
+            if (SUCCEEDED(hr) && stagingTexture) {
+                // Copy data from render target to staging texture
+                context->CopyResource(stagingTexture, renderTargetResource);
+                
+                // Map the staging texture to read the pixel data
+                D3D11_MAPPED_SUBRESOURCE mappedResource;
+                hr = context->Map(stagingTexture, 0, D3D11_MAP_READ, 0, &mappedResource);
+                
+                if (SUCCEEDED(hr)) {
+                    // Copy the pixel data to the output buffer
+                    unsigned char* srcData = (unsigned char*)mappedResource.pData;
+                    int srcPitch = mappedResource.RowPitch;
+                    
+                    for (int row = 0; row < height; row++) {
+                        memcpy(
+                            pixels + row * width * 4,
+                            srcData + row * srcPitch,
+                            width * 4
+                        );
+                    }
+                    
+                    // Unmap the resource
+                    context->Unmap(stagingTexture, 0);
+                } else {
+                    std::cerr << "Failed to map staging texture" << std::endl;
+                    // Fill with red color as fallback
+                    for (int i = 0; i < width * height * 4; i += 4) {
+                        pixels[i] = 255;     // R
+                        pixels[i + 1] = 0;   // G
+                        pixels[i + 2] = 0;   // B
+                        pixels[i + 3] = 255; // A
+                    }
+                }
+                
+                // Release the staging texture
+                stagingTexture->Release();
+            } else {
+                std::cerr << "Failed to create staging texture" << std::endl;
+                // Fill with red color as fallback
+                for (int i = 0; i < width * height * 4; i += 4) {
+                    pixels[i] = 255;     // R
+                    pixels[i + 1] = 0;   // G
+                    pixels[i + 2] = 0;   // B
+                    pixels[i + 3] = 255; // A
+                }
+            }
+            
+            // Release the render target resource
+            renderTargetResource->Release();
+        } else {
+            std::cerr << "Failed to get render target resource" << std::endl;
+            // Fill with red color as fallback
+            for (int i = 0; i < width * height * 4; i += 4) {
+                pixels[i] = 255;     // R
+                pixels[i + 1] = 0;   // G
+                pixels[i + 2] = 0;   // B
+                pixels[i + 3] = 255; // A
+            }
+        }
+    } else {
+        std::cerr << "Device, context, or render target view is null" << std::endl;
+        // Fill with red color as fallback
+        for (int i = 0; i < width * height * 4; i += 4) {
+            pixels[i] = 255;     // R
+            pixels[i + 1] = 0;   // G
+            pixels[i + 2] = 0;   // B
+            pixels[i + 3] = 255; // A
+        }
+    }
+#else
+    // Fill with red color as fallback on non-Windows platforms
+    for (int i = 0; i < width * height * 4; i += 4) {
+        pixels[i] = 255;     // R
+        pixels[i + 1] = 0;   // G
+        pixels[i + 2] = 0;   // B
+        pixels[i + 3] = 255; // A
+    }
+#endif
+}
+
+void DirectXGraphicsAPI::GetViewport(int* viewport) {
+#ifdef PLATFORM_WINDOWS
+    if (context) {
+        // Get the current viewport from DirectX
+        D3D11_VIEWPORT dx_viewport;
+        UINT num_viewports = 1;
+        context->RSGetViewports(&num_viewports, &dx_viewport);
+        
+        // Convert to the expected format
+        viewport[0] = static_cast<int>(dx_viewport.TopLeftX);
+        viewport[1] = static_cast<int>(dx_viewport.TopLeftY);
+        viewport[2] = static_cast<int>(dx_viewport.Width);
+        viewport[3] = static_cast<int>(dx_viewport.Height);
+    } else {
+        // Default viewport if context is not available
+        viewport[0] = 0;
+        viewport[1] = 0;
+        viewport[2] = 800;
+        viewport[3] = 600;
+    }
+#else
+    // Default viewport on non-Windows platforms
+    viewport[0] = 0;
+    viewport[1] = 0;
+    viewport[2] = 800;
+    viewport[3] = 600;
+#endif
+}
