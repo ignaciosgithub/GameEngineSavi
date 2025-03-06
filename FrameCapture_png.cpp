@@ -13,7 +13,6 @@
 #include "Graphics/Core/GraphicsAPIFactory.h"
 
 // Include stb_image_write.h for PNG writing
-#define STB_IMAGE_WRITE_IMPLEMENTATION
 #include "ThirdParty/stb/stb_image_write.h"
 
 bool FrameCapture_PNG::CaptureViewportToFile(const std::string& filename, int width, int height) {

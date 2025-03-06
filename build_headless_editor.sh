@@ -43,6 +43,7 @@ g++ -std=c++11 -o bin/linux/HeadlessEditor \
     RedundancyDetector.cpp \
     Graphics/Core/GraphicsAPIFactory.cpp \
     Graphics/Core/OpenGLGraphicsAPI.cpp \
+    ThirdParty/stb/stb_image_write_impl.cpp \
     -I. \
     -IThirdParty/OpenGL/include \
     -DGL_GLEXT_PROTOTYPES \

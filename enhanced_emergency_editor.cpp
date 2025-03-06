@@ -19,8 +19,7 @@
 #include <map>
 #include <functional>
 
-// Define STB_IMAGE_WRITE_IMPLEMENTATION before including stb_image_write.h
-#define STB_IMAGE_WRITE_IMPLEMENTATION
+// Include stb_image_write.h
 #include "ThirdParty/stb/stb_image_write.h"
 
 // Panel types
