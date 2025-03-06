@@ -163,59 +163,8 @@ int main(int argc, char** argv)
         }
         
         // Clear the screen
-        graphics->ClearColor(0.2f, 0.3f, 0.3f, 1.0f);
-        graphics->Clear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-        
-        // Draw GUI
-        gui->Draw();
-        
-        // Swap buffers
-        graphics->SwapBuffers();
-    }
-    
-    // Cleanup
-    graphics->DestroyWindow();
-    
-    return 0;
-    #else
-    // Create window using the graphics API wrapper
-    if (!graphics->CreateWindow(800, 600, "GameEngineSavi Engine")) {
-        std::cout << "Failed to create window" << std::endl;
-        return 1;
-    }
-    
-    // Set up the viewport
-    graphics->SetViewport(0, 0, 800, 600);
-    
-    // Main loop
-    bool running = true;
-    TimeManager timeManager;
-    
-    while (running) {
-        // Poll events
-        graphics->PollEvents();
-        
-        // Check if window is still open
-        if (!graphics->IsWindowOpen()) {
-            running = false;
-            continue;
-        }
-        
-        // Update time
-        timeManager.Update();
-        float deltaTime = timeManager.GetDeltaTime();
-        
-        // If we're in editor mode, show a message
-        if (EngineCondition::IsInEditor()) {
-            std::cout << "In editor mode..." << std::endl;
-            // In a real implementation, this would trigger the compilation process
-            // For now, we'll just wait a bit
-            std::this_thread::sleep_for(std::chrono::seconds(2));
-        }
-        
-        // Clear the screen
-        graphics->ClearColor(0.2f, 0.3f, 0.3f, 1.0f);
-        graphics->Clear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+        graphics->SetClearColor(0.2f, 0.3f, 0.3f, 1.0f);
+        graphics->Clear(true, true); // Clear color and depth buffers
         
         // Draw GUI
         gui->Draw();

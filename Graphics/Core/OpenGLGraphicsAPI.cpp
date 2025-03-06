@@ -8,9 +8,11 @@
 #else
 #include <X11/X.h>
 #include <X11/Xlib.h>
+#include <X11/keysym.h>
 #include <GL/gl.h>
 #include <GL/glx.h>
 #include <GL/glu.h>
+#include <GL/glew.h>
 #endif
 
 OpenGLGraphicsAPI::OpenGLGraphicsAPI()
