@@ -16,6 +16,7 @@
 #include <iomanip>
 #include <vector>
 #include <cstring>
+#include <fstream>
 
 #include "../platform.h"
 #include "../TimeManager.h"
@@ -33,7 +34,7 @@
 #define HEADLESS_MODE
 #endif
 
-// Include stb_image_write.h for direct PNG writing
+// Include stb_image_write.h for direct PNG writing (implementation in stb_image_write_impl.cpp)
 #include "../ThirdParty/stb/stb_image_write.h"
 
 #ifdef _WIN32
@@ -238,6 +239,7 @@ int main(int argc, char** argv) {
     createFramesDirectory();
     
     // Initialize graphics API
+    std::cout << "Initializing graphics API..." << std::endl;
     if (!GraphicsAPIFactory::GetInstance().Initialize()) {
         std::cerr << "Failed to initialize graphics API, falling back to direct image creation" << std::endl;
         
@@ -245,38 +247,45 @@ int main(int argc, char** argv) {
         for (int i = 0; i < 10; i++) {
             std::string filename = "frames/frame" + std::to_string(i) + ".png";
             createRedImageDirectly(filename, WINDOW_WIDTH, WINDOW_HEIGHT);
+            std::cout << "Created fallback frame " << i << " due to graphics API initialization failure" << std::endl;
         }
         
         return 0;
     }
+    std::cout << "Graphics API initialized successfully" << std::endl;
     
     // Get the graphics API
+    std::cout << "Getting graphics API instance..." << std::endl;
     auto graphics = GraphicsAPIFactory::GetInstance().GetGraphicsAPI();
     if (!graphics) {
-        std::cerr << "Failed to get graphics API, falling back to direct image creation" << std::endl;
+        std::cerr << "ERROR: Failed to get graphics API instance, falling back to direct image creation" << std::endl;
         
         // Create 10 frames directly
         for (int i = 0; i < 10; i++) {
             std::string filename = "frames/frame" + std::to_string(i) + ".png";
             createRedImageDirectly(filename, WINDOW_WIDTH, WINDOW_HEIGHT);
+            std::cout << "Created fallback frame " << i << " due to missing graphics API instance" << std::endl;
         }
         
         return 0;
     }
+    std::cout << "Graphics API instance obtained successfully" << std::endl;
     
     // Try to create a window, but don't require it
     bool hasWindow = false;
+    std::cout << "Attempting to create window..." << std::endl;
     if (graphics->CreateWindow(WINDOW_WIDTH, WINDOW_HEIGHT, "Frame Saving Editor")) {
         hasWindow = true;
         graphics->SetViewport(0, 0, WINDOW_WIDTH, WINDOW_HEIGHT);
         std::cout << "Created window successfully" << std::endl;
     } else {
-        std::cout << "Running in headless mode..." << std::endl;
+        std::cerr << "WARNING: Could not create window, running in headless mode..." << std::endl;
         
         // If we can't create a window, fall back to direct image creation
         for (int i = 0; i < 10; i++) {
             std::string filename = "frames/frame" + std::to_string(i) + ".png";
             createRedImageDirectly(filename, WINDOW_WIDTH, WINDOW_HEIGHT);
+            std::cout << "Created fallback frame " << i << " due to window creation failure" << std::endl;
         }
         
         return 0;
@@ -288,6 +297,16 @@ int main(int argc, char** argv) {
     
     // Create shader program
     unsigned int shaderProgram = createShaderProgram(graphics);
+    
+    // Signal that initialization is complete
+    std::ofstream statusFile("frames/status.txt");
+    if (statusFile.is_open()) {
+        statusFile << "initialized" << std::endl;
+        statusFile.close();
+        std::cout << "Created status file to indicate initialization is complete" << std::endl;
+    } else {
+        std::cerr << "WARNING: Could not create status file" << std::endl;
+    }
     
     // Main loop
     TimeManager timeManager;
@@ -383,14 +402,16 @@ int main(int argc, char** argv) {
         
         // Capture frame to file using PNG format
         std::string filename = GetFrameFilename();
+        std::cout << "Capturing frame " << frameCount << " to " << filename << "..." << std::endl;
         bool success = FrameCapture_PNG::CaptureViewportToFile(filename);
         if (success) {
-            std::cout << "Rendered frame " << frameCount << " to " << filename << std::endl;
+            std::cout << "Successfully rendered frame " << frameCount << " to " << filename << std::endl;
         } else {
-            std::cerr << "Failed to save frame " << frameCount << " to " << filename << std::endl;
+            std::cerr << "ERROR: Failed to save frame " << frameCount << " to " << filename << ", falling back to direct image creation" << std::endl;
             
             // Fall back to direct image creation
             createRedImageDirectly(filename, WINDOW_WIDTH, WINDOW_HEIGHT);
+            std::cout << "Created fallback frame " << frameCount << " due to frame capture failure" << std::endl;
         }
         
         // Increment frame counter
