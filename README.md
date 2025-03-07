@@ -500,25 +500,88 @@ This project is available for use under open-source terms.
 
 ## Animation System
 
-GameEngineSavi includes a powerful animation system that allows you to create and play animations for your game objects. The animation system is based on keyframes using separate OBJ files of the same object in different poses, with linear interpolation between keyframes.
+GameEngineSavi includes a powerful animation system that allows you to create and play animations for your game objects. The animation system supports multiple animation techniques, including keyframe-based animation, skeletal animation, and procedural animation.
 
 ### Features
 
-- **Keyframe-Based Animation**: Create animations using separate OBJ files for each keyframe
-- **Linear Interpolation**: Smooth transitions between keyframes
-- **Animation Components**: Attach animations to game objects
-- **Animation Playback Control**: Play, pause, stop, and loop animations
-- **Animation Events**: Trigger events at specific points in animations
-- **Animation Blending**: Blend between multiple animations
-- **Animation Speed Control**: Adjust animation playback speed
+- **Multiple Animation Types**:
+  - Keyframe-Based Animation: Using separate OBJ files for each pose
+  - Skeletal Animation: Bone-based animation with skinning
+  - Procedural Animation: Programmatically generated animations
+  - Morph Target Animation: Vertex-based shape interpolation
+
+- **Animation Playback**:
+  - Linear Interpolation: Smooth transitions between keyframes
+  - Cubic Interpolation: More natural motion curves
+  - Animation Components: Attach animations to game objects
+  - Playback Control: Play, pause, stop, and loop animations
+  - Speed Control: Adjust animation playback speed
+  - Time Scaling: Slow-motion or fast-forward effects
+
+- **Advanced Features**:
+  - Animation Blending: Smooth transitions between animations
+  - Animation Layering: Combine multiple animations (e.g., walk + wave)
+  - Animation Events: Trigger events at specific points in animations
+  - Animation State Machines: Complex animation logic
+  - Root Motion: Character movement driven by animations
+  - Inverse Kinematics (IK): Dynamic pose adjustments
+  - Physics Integration: Animated objects interact with physics
+
+### Animation Types
+
+#### Keyframe-Based Animation
+
+Keyframe animation uses separate mesh files for each pose, with the engine interpolating between them:
+
+```cpp
+// Create keyframe animation
+auto walkAnimation = std::make_unique<KeyframeAnimation>("walk");
+walkAnimation->AddKeyframe(0.0f, "walk/pose1.obj");
+walkAnimation->AddKeyframe(0.33f, "walk/pose2.obj");
+walkAnimation->AddKeyframe(0.66f, "walk/pose3.obj");
+walkAnimation->AddKeyframe(1.0f, "walk/pose4.obj");
+walkAnimation->SetDuration(1.0f);
+walkAnimation->SetLooping(true);
+```
+
+#### Skeletal Animation
+
+Skeletal animation uses a bone hierarchy with skinned meshes:
+
+```cpp
+// Load skeletal animation
+auto skeletalAnimation = SkeletalAnimationLoader::Load("character/walk.savanim");
+
+// Apply to skinned mesh
+skinnedMesh->SetSkeleton(skeletalAnimation->GetSkeleton());
+skinnedMesh->SetAnimation(skeletalAnimation);
+```
+
+#### Procedural Animation
+
+Create animations programmatically:
+
+```cpp
+// Create procedural animation
+auto swayAnimation = std::make_unique<ProceduralAnimation>("sway");
+swayAnimation->SetUpdateFunction([](float time, GameObject* obj) {
+    float angle = sin(time * 2.0f) * 15.0f;
+    obj->SetRotation(Vector3(0, angle, 0));
+});
+```
+
+#### Morph Target Animation
+
+Interpolate between different vertex positions:
+
+```cpp
+// Create morph target animation
+auto faceAnimation = std::make_unique<MorphTargetAnimation>("face_expression");
+faceAnimation->AddTarget("face/neutral.obj", 0.0f);
+faceAnimation->AddTarget("face/smile.obj", 1.0f);
+```
 
 ### Creating Animations
-
-To create an animation, you need to:
-
-1. Create OBJ files for each keyframe of your animation
-2. Define an animation file (.savanim) that references these keyframes
-3. Load the animation in your game
 
 #### Animation File Format
 
@@ -527,6 +590,7 @@ Animation files use a simple JSON format:
 ```json
 {
   "name": "walk",
+  "type": "keyframe",
   "keyframes": [
     {
       "time": 0.0,
@@ -543,6 +607,49 @@ Animation files use a simple JSON format:
     {
       "time": 1.0,
       "mesh": "walk/cube_pose4.obj"
+    }
+  ],
+  "events": [
+    {
+      "time": 0.25,
+      "name": "footstep_left"
+    },
+    {
+      "time": 0.75,
+      "name": "footstep_right"
+    }
+  ],
+  "loop": true,
+  "duration": 1.0,
+  "interpolation": "linear"
+}
+```
+
+#### Skeletal Animation Format
+
+For skeletal animations, the format includes bone transformations:
+
+```json
+{
+  "name": "walk",
+  "type": "skeletal",
+  "skeleton": "character/skeleton.json",
+  "keyframes": [
+    {
+      "time": 0.0,
+      "bones": {
+        "hip": { "position": [0, 1, 0], "rotation": [0, 0, 0] },
+        "spine": { "position": [0, 0, 0], "rotation": [5, 0, 0] },
+        "left_leg": { "position": [0, 0, 0], "rotation": [0, 0, 15] }
+      }
+    },
+    {
+      "time": 0.5,
+      "bones": {
+        "hip": { "position": [0, 0.9, 0], "rotation": [0, 0, 0] },
+        "spine": { "position": [0, 0, 0], "rotation": [-5, 0, 0] },
+        "left_leg": { "position": [0, 0, 0], "rotation": [30, 0, 0] }
+      }
     }
   ],
   "loop": true,
@@ -566,7 +673,7 @@ Animation* walkAnimation = AnimationLoader::LoadAnimation("test_animations/walk/
 auto character = std::make_unique<GameObject>("Character");
 
 // Add animation component
-auto animComponent = character->AddComponent(new AnimationComponent());
+auto animComponent = character->AddComponent<AnimationComponent>();
 
 // Add animation to component
 animComponent->AddAnimation("walk", walkAnimation);
@@ -584,7 +691,7 @@ You can control animation playback with these methods:
 
 ```cpp
 // Get animation component
-auto animComponent = gameObject->GetComponents<AnimationComponent>()[0];
+auto animComponent = gameObject->GetComponent<AnimationComponent>();
 
 // Play animation
 animComponent->PlayAnimation("walk");
@@ -606,6 +713,12 @@ animComponent->SetLooping(true);
 
 // Check if animation is playing
 bool isPlaying = animComponent->IsPlaying();
+
+// Jump to specific time
+animComponent->SetTime(0.5f); // Jump to middle of animation
+
+// Set playback mode
+animComponent->SetPlaybackMode(AnimationPlaybackMode::PING_PONG);
 ```
 
 ### Animation Events
@@ -618,6 +731,22 @@ animComponent->RegisterEvent("walk", 0.5f, []() {
     // This will be called halfway through the walk animation
     std::cout << "Footstep sound!" << std::endl;
 });
+
+// Register event with parameters
+animComponent->RegisterEvent("attack", 0.3f, [](const AnimationEventData& data) {
+    // Access event parameters
+    float damage = data.GetFloat("damage");
+    std::string hitEffect = data.GetString("effect");
+    
+    // Apply damage, play effect, etc.
+    std::cout << "Attack hit for " << damage << " damage!" << std::endl;
+});
+
+// Register event for specific bone
+animComponent->RegisterBoneEvent("walk", "foot_left", 0.25f, []() {
+    // Called when left foot hits the ground
+    AudioSystem::PlaySound("footstep.wav");
+});
 ```
 
 ### Animation Blending
@@ -627,27 +756,375 @@ You can blend between multiple animations for smooth transitions:
 ```cpp
 // Blend from walk to run over 0.5 seconds
 animComponent->BlendTo("run", 0.5f);
+
+// Cross-fade between animations
+animComponent->CrossFade("idle", "walk", 0.3f);
+
+// Additive blending (combine animations)
+animComponent->PlayAdditiveAnimation("wave", 1.0f); // Play wave on top of current animation
+
+// Blend tree for parameter-driven animation
+auto blendTree = std::make_unique<AnimationBlendTree>("locomotion");
+blendTree->AddAnimation("idle", idleAnimation, 0.0f); // speed = 0
+blendTree->AddAnimation("walk", walkAnimation, 0.5f); // speed = 0.5
+blendTree->AddAnimation("run", runAnimation, 1.0f);   // speed = 1.0
+blendTree->SetParameter("speed", 0.0f);               // Start with idle
+
+// Update blend parameter based on character speed
+blendTree->SetParameter("speed", character->GetVelocity().magnitude());
+```
+
+### Animation Layering
+
+You can layer animations to affect different parts of the character:
+
+```cpp
+// Set up animation layers
+animComponent->CreateLayer("base", 1.0f);           // Base layer (full body)
+animComponent->CreateLayer("upper_body", 0.8f);     // Upper body layer
+animComponent->CreateLayer("additive", 0.5f, true); // Additive layer
+
+// Play animations on different layers
+animComponent->PlayAnimation("walk", "base");
+animComponent->PlayAnimation("aim", "upper_body");
+animComponent->PlayAnimation("breathe", "additive");
+
+// Set layer masks to affect only certain bones
+animComponent->SetLayerMask("upper_body", {"spine", "left_arm", "right_arm", "neck", "head"});
+```
+
+### Animation State Machines
+
+Create complex animation logic with state machines:
+
+```cpp
+// Create animation state machine
+auto stateMachine = std::make_unique<AnimationStateMachine>("character");
+
+// Add states
+stateMachine->AddState("idle", idleAnimation);
+stateMachine->AddState("walk", walkAnimation);
+stateMachine->AddState("run", runAnimation);
+stateMachine->AddState("jump", jumpAnimation);
+
+// Add transitions
+stateMachine->AddTransition("idle", "walk", [](GameObject* obj) {
+    return obj->GetVelocity().magnitude() > 0.1f;
+});
+
+stateMachine->AddTransition("walk", "run", [](GameObject* obj) {
+    return obj->GetVelocity().magnitude() > 5.0f;
+});
+
+stateMachine->AddTransition("walk", "idle", [](GameObject* obj) {
+    return obj->GetVelocity().magnitude() < 0.1f;
+});
+
+stateMachine->AddTransition("run", "walk", [](GameObject* obj) {
+    return obj->GetVelocity().magnitude() < 5.0f;
+});
+
+// Add any-state transitions
+stateMachine->AddAnyStateTransition("jump", [](GameObject* obj) {
+    return obj->GetComponent<CharacterController>()->IsJumping();
+});
+
+// Set initial state
+stateMachine->SetInitialState("idle");
+
+// Assign state machine to animation component
+animComponent->SetStateMachine(stateMachine);
+```
+
+### Root Motion
+
+Use animation-driven movement:
+
+```cpp
+// Enable root motion
+animComponent->SetRootMotionEnabled(true);
+
+// Configure root motion options
+animComponent->SetRootMotionBone("root");
+animComponent->SetRootMotionMode(RootMotionMode::POSITION_AND_ROTATION);
+
+// Apply root motion to character controller
+auto controller = character->GetComponent<CharacterController>();
+controller->SetUseRootMotion(true);
+```
+
+### Inverse Kinematics (IK)
+
+Apply IK for dynamic pose adjustments:
+
+```cpp
+// Create IK solver
+auto ikSolver = std::make_unique<IKSolver>(IKSolverType::TWO_BONE);
+
+// Configure IK chain
+ikSolver->SetChain("left_arm", {"shoulder", "elbow", "wrist"});
+ikSolver->SetTarget("left_arm", Vector3(1, 1, 0));
+
+// Add IK component
+auto ikComponent = character->AddComponent<IKComponent>();
+ikComponent->AddSolver(std::move(ikSolver));
+
+// Set IK target dynamically
+ikComponent->SetTarget("left_arm", targetObject->GetPosition());
 ```
 
 ### Animation with Physics
 
-The animation system integrates with the physics system, allowing animated objects to interact with the physics world:
+The animation system integrates with the physics system:
 
 ```cpp
 // Create a game object with physics and animation
 auto character = std::make_unique<GameObject>("Character");
 
 // Add rigid body component
-auto rigidBody = character->AddComponent(new RigidBody());
+auto rigidBody = character->AddComponent<RigidBody>();
 rigidBody->SetMass(10.0f);
 
 // Add animation component
-auto animComponent = character->AddComponent(new AnimationComponent());
+auto animComponent = character->AddComponent<AnimationComponent>();
 animComponent->AddAnimation("walk", walkAnimation);
 animComponent->PlayAnimation("walk");
 
-// Animation will update the mesh, and physics will respond to the new shape
+// Configure physics interaction
+animComponent->SetUpdatePhysicsColliders(true);
+animComponent->SetPhysicsUpdateMode(PhysicsUpdateMode::KINEMATIC_ANIMATED);
+
+// Add to scene
+scene->AddGameObject(std::move(character));
 ```
+
+### Ragdoll Physics
+
+Switch between animation and physics-driven ragdoll:
+
+```cpp
+// Set up ragdoll
+auto ragdollComponent = character->AddComponent<RagdollComponent>();
+ragdollComponent->SetupFromSkeleton(character->GetComponent<SkinnedMeshRenderer>()->GetSkeleton());
+
+// Switch to ragdoll mode
+void EnableRagdoll() {
+    // Disable animation
+    character->GetComponent<AnimationComponent>()->SetEnabled(false);
+    
+    // Enable ragdoll physics
+    character->GetComponent<RagdollComponent>()->SetEnabled(true);
+}
+
+// Switch back to animated mode
+void DisableRagdoll() {
+    // Blend from current ragdoll pose to animation
+    auto animComponent = character->GetComponent<AnimationComponent>();
+    animComponent->SetEnabled(true);
+    animComponent->BlendFromCurrentPose("getup", 1.0f);
+    
+    // Disable ragdoll physics
+    character->GetComponent<RagdollComponent>()->SetEnabled(false);
+}
+```
+
+### Animation Editor
+
+The GameEngineSavi editor includes an animation editor that allows you to:
+
+- Create and edit animations visually
+- Preview animations in real-time
+- Set up animation events
+- Create blend trees and state machines
+- Test animations with different parameters
+- Export animations to the .savanim format
+
+To access the animation editor:
+
+1. Open the GameEngineSavi editor
+2. Select a model or character in the scene
+3. Click on the "Animation" tab in the inspector panel
+4. Use the timeline to create and edit keyframes
+5. Use the curve editor to adjust animation curves
+6. Preview the animation with the play button
+
+### Performance Optimization
+
+Tips for optimizing animation performance:
+
+- **LOD Animation**: Use simpler animations for distant characters
+- **Animation Culling**: Disable animations for off-screen objects
+- **Keyframe Reduction**: Optimize animations by removing redundant keyframes
+- **Animation Pooling**: Reuse animation instances for similar characters
+- **Batch Processing**: Update multiple animations in a single pass
+- **GPU Skinning**: Offload skinning calculations to the GPU
+
+```cpp
+// Configure animation LOD
+animComponent->SetLODLevel(3); // 3 levels of detail
+animComponent->SetLODDistance(0, 10.0f); // Full quality up to 10 units
+animComponent->SetLODDistance(1, 30.0f); // Medium quality up to 30 units
+animComponent->SetLODDistance(2, 100.0f); // Low quality beyond 30 units
+
+// Enable animation culling
+animComponent->SetCullingEnabled(true);
+animComponent->SetCullingDistance(50.0f);
+
+// Enable GPU skinning
+renderer->SetGPUSkinningEnabled(true);
+```
+
+### Scene Transitions with Animations
+
+Use animations for scene transitions:
+
+```cpp
+// Create scene transition
+auto transition = std::make_unique<SceneTransition>("fade");
+transition->SetAnimation(fadeAnimation);
+transition->SetDuration(1.0f);
+
+// Use transition when loading new scene
+SceneManager::LoadScene("level2", transition.get());
+```
+
+### Example: Character Animation System
+
+Here's a complete example of a character animation system:
+
+```cpp
+// Create character
+auto character = std::make_unique<GameObject>("Player");
+
+// Add mesh renderer
+auto meshRenderer = character->AddComponent<SkinnedMeshRenderer>();
+meshRenderer->SetMesh("character/mesh.obj");
+meshRenderer->SetSkeleton("character/skeleton.json");
+
+// Add animation component
+auto animComponent = character->AddComponent<AnimationComponent>();
+
+// Load animations
+animComponent->AddAnimation("idle", AnimationLoader::LoadAnimation("character/idle.savanim"));
+animComponent->AddAnimation("walk", AnimationLoader::LoadAnimation("character/walk.savanim"));
+animComponent->AddAnimation("run", AnimationLoader::LoadAnimation("character/run.savanim"));
+animComponent->AddAnimation("jump", AnimationLoader::LoadAnimation("character/jump.savanim"));
+animComponent->AddAnimation("attack", AnimationLoader::LoadAnimation("character/attack.savanim"));
+
+// Create state machine
+auto stateMachine = std::make_unique<AnimationStateMachine>("player");
+stateMachine->AddState("idle", "idle");
+stateMachine->AddState("walk", "walk");
+stateMachine->AddState("run", "run");
+stateMachine->AddState("jump", "jump");
+stateMachine->AddState("attack", "attack");
+
+// Add transitions
+stateMachine->AddTransition("idle", "walk", [](GameObject* obj) {
+    return obj->GetComponent<CharacterController>()->IsMoving() && 
+           obj->GetComponent<CharacterController>()->GetSpeed() < 5.0f;
+});
+
+stateMachine->AddTransition("walk", "run", [](GameObject* obj) {
+    return obj->GetComponent<CharacterController>()->GetSpeed() >= 5.0f;
+});
+
+stateMachine->AddTransition("walk", "idle", [](GameObject* obj) {
+    return !obj->GetComponent<CharacterController>()->IsMoving();
+});
+
+stateMachine->AddTransition("run", "walk", [](GameObject* obj) {
+    return obj->GetComponent<CharacterController>()->IsMoving() && 
+           obj->GetComponent<CharacterController>()->GetSpeed() < 5.0f;
+});
+
+stateMachine->AddTransition("run", "idle", [](GameObject* obj) {
+    return !obj->GetComponent<CharacterController>()->IsMoving();
+});
+
+// Add any-state transitions
+stateMachine->AddAnyStateTransition("jump", [](GameObject* obj) {
+    return obj->GetComponent<CharacterController>()->IsJumping();
+});
+
+stateMachine->AddAnyStateTransition("attack", [](GameObject* obj) {
+    return obj->GetComponent<CharacterController>()->IsAttacking();
+});
+
+// Add transition from jump/attack back to appropriate state
+stateMachine->AddTransition("jump", "idle", [](GameObject* obj) {
+    return obj->GetComponent<CharacterController>()->IsGrounded() && 
+           !obj->GetComponent<CharacterController>()->IsMoving();
+});
+
+stateMachine->AddTransition("jump", "walk", [](GameObject* obj) {
+    return obj->GetComponent<CharacterController>()->IsGrounded() && 
+           obj->GetComponent<CharacterController>()->IsMoving() && 
+           obj->GetComponent<CharacterController>()->GetSpeed() < 5.0f;
+});
+
+stateMachine->AddTransition("jump", "run", [](GameObject* obj) {
+    return obj->GetComponent<CharacterController>()->IsGrounded() && 
+           obj->GetComponent<CharacterController>()->IsMoving() && 
+           obj->GetComponent<CharacterController>()->GetSpeed() >= 5.0f;
+});
+
+stateMachine->AddTransition("attack", "idle", [](GameObject* obj) {
+    auto animComponent = obj->GetComponent<AnimationComponent>();
+    return !obj->GetComponent<CharacterController>()->IsAttacking() && 
+           !obj->GetComponent<CharacterController>()->IsMoving();
+});
+
+// Set initial state
+stateMachine->SetInitialState("idle");
+
+// Assign state machine to animation component
+animComponent->SetStateMachine(std::move(stateMachine));
+
+// Register animation events
+animComponent->RegisterEvent("attack", 0.3f, [](const AnimationEventData& data) {
+    // Deal damage at this point in the attack animation
+    float damage = data.GetFloat("damage", 10.0f);
+    float radius = data.GetFloat("radius", 1.5f);
+    
+    // Find enemies in range and apply damage
+    std::vector<GameObject*> enemies = Physics::OverlapSphere(
+        data.gameObject->GetPosition(), radius, LayerMask::GetMask("Enemy"));
+    
+    for (auto enemy : enemies) {
+        enemy->GetComponent<Health>()->TakeDamage(damage);
+    }
+});
+
+// Add to scene
+scene->AddGameObject(std::move(character));
+```
+
+### Animation Debugging
+
+The engine includes tools for debugging animations:
+
+```cpp
+// Enable animation debugging
+animComponent->SetDebugMode(true);
+
+// Visualize skeleton
+animComponent->SetSkeletonVisualization(true);
+
+// Log animation events
+animComponent->SetEventLogging(true);
+
+// Slow down animation for debugging
+TimeManager::SetTimeScale(0.25f);
+```
+
+In the editor, you can use the Animation Debug View to:
+- View the current animation state
+- See active animations and their weights
+- Inspect the skeleton hierarchy
+- View animation curves
+- Test different animation parameters
+- Record and export animation data
 
 ## Networking System
 
