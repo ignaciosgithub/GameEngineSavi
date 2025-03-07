@@ -9,6 +9,8 @@
 #include <sstream>
 #include <vector>
 #include <string>
+#include <map>
+#include <algorithm>
 
 // Constructor
 Model::Model() : vao(0), vbo(0), ebo(0), tbo(0), nbo(0), size(1, 1, 1) {
@@ -44,6 +46,11 @@ void Model::loadOBJ(std::string path) {
     std::vector<Vector2> temp_uvs;
     std::vector<unsigned int> vertexIndices, uvIndices, normalIndices;
     
+    // Material data
+    std::string mtlFilename;
+    std::map<std::string, Vector3> materials; // material name -> color
+    std::string currentMaterial;
+    
     std::ifstream file(path);
     if (!file.is_open()) {
         std::cerr << "Error: Could not open file " << path << std::endl;
@@ -52,6 +59,10 @@ void Model::loadOBJ(std::string path) {
     
     std::string line;
     while (std::getline(file, line)) {
+        // Skip empty lines and comments
+        if (line.empty() || line[0] == '#')
+            continue;
+            
         std::istringstream iss(line);
         std::string prefix;
         iss >> prefix;
@@ -72,66 +83,240 @@ void Model::loadOBJ(std::string path) {
             iss >> normal.x >> normal.y >> normal.z;
             temp_normals.push_back(normal);
         } else if (prefix == "f") {
-            // Face
-            std::string vertex1, vertex2, vertex3;
-            iss >> vertex1 >> vertex2 >> vertex3;
+            // Face - support different formats (v, v/vt, v//vn, v/vt/vn)
+            std::string vertex1, vertex2, vertex3, vertex4;
+            iss >> vertex1 >> vertex2 >> vertex3 >> vertex4;
             
-            // Parse vertex indices
-            unsigned int vertexIndex[3], uvIndex[3], normalIndex[3];
+            // Parse vertex indices for the first three vertices (triangle)
+            parseVertexIndices(vertex1, vertex2, vertex3, 
+                             vertexIndices, uvIndices, normalIndices, 
+                             temp_vertices.size(), temp_uvs.size(), temp_normals.size());
             
-            // Parse first vertex
-            sscanf(vertex1.c_str(), "%d/%d/%d", &vertexIndex[0], &uvIndex[0], &normalIndex[0]);
-            sscanf(vertex2.c_str(), "%d/%d/%d", &vertexIndex[1], &uvIndex[1], &normalIndex[1]);
-            sscanf(vertex3.c_str(), "%d/%d/%d", &vertexIndex[2], &uvIndex[2], &normalIndex[2]);
-            
-            // OBJ file indices start at 1, so subtract 1
-            vertexIndices.push_back(vertexIndex[0] - 1);
-            vertexIndices.push_back(vertexIndex[1] - 1);
-            vertexIndices.push_back(vertexIndex[2] - 1);
-            
-            if (!temp_uvs.empty()) {
-                uvIndices.push_back(uvIndex[0] - 1);
-                uvIndices.push_back(uvIndex[1] - 1);
-                uvIndices.push_back(uvIndex[2] - 1);
+            // If we have a fourth vertex, create another triangle (triangulate quad)
+            if (!vertex4.empty()) {
+                parseVertexIndices(vertex1, vertex3, vertex4, 
+                                 vertexIndices, uvIndices, normalIndices, 
+                                 temp_vertices.size(), temp_uvs.size(), temp_normals.size());
             }
-            
-            if (!temp_normals.empty()) {
-                normalIndices.push_back(normalIndex[0] - 1);
-                normalIndices.push_back(normalIndex[1] - 1);
-                normalIndices.push_back(normalIndex[2] - 1);
-            }
+        } else if (prefix == "mtllib") {
+            // Material library
+            iss >> mtlFilename;
+            loadMTL(mtlFilename, path, materials);
+        } else if (prefix == "usemtl") {
+            // Use material
+            iss >> currentMaterial;
         }
     }
     
     file.close();
     
     // Process the data
-    for (unsigned int i = 0; i < vertexIndices.size(); i++) {
-        unsigned int vertexIndex = vertexIndices[i];
+    processModelData(temp_vertices, temp_normals, temp_uvs, 
+                   vertexIndices, normalIndices, uvIndices, 
+                   materials, currentMaterial);
+    
+    // Initialize graphics buffers
+    InitializeBuffers();
+}
+
+// Helper method to parse vertex indices from face definitions
+void Model::parseVertexIndices(const std::string& v1, const std::string& v2, const std::string& v3,
+                             std::vector<unsigned int>& vertexIndices, 
+                             std::vector<unsigned int>& uvIndices, 
+                             std::vector<unsigned int>& normalIndices,
+                             size_t vertexCount, size_t uvCount, size_t normalCount) {
+    // Parse each vertex string (v, v/vt, v//vn, or v/vt/vn)
+    parseVertex(v1, vertexIndices, uvIndices, normalIndices, vertexCount, uvCount, normalCount);
+    parseVertex(v2, vertexIndices, uvIndices, normalIndices, vertexCount, uvCount, normalCount);
+    parseVertex(v3, vertexIndices, uvIndices, normalIndices, vertexCount, uvCount, normalCount);
+}
+
+// Helper method to parse a single vertex string
+void Model::parseVertex(const std::string& vertexStr, 
+                      std::vector<unsigned int>& vertexIndices, 
+                      std::vector<unsigned int>& uvIndices, 
+                      std::vector<unsigned int>& normalIndices,
+                      size_t vertexCount, size_t uvCount, size_t normalCount) {
+    // Count slashes to determine format
+    size_t slashCount = std::count(vertexStr.begin(), vertexStr.end(), '/');
+    
+    if (slashCount == 0) {
+        // Format: v
+        int vertexIndex = 0;
+        sscanf(vertexStr.c_str(), "%d", &vertexIndex);
         
-        Vector3 vertex = temp_vertices[vertexIndex];
-        vertices.push_back(vertex.x);
-        vertices.push_back(vertex.y);
-        vertices.push_back(vertex.z);
+        // OBJ indices start at 1, convert to 0-based
+        if (vertexIndex > 0) vertexIndex -= 1;
+        else if (vertexIndex < 0) vertexIndex = vertexCount + vertexIndex; // Negative indices
+        
+        vertexIndices.push_back(vertexIndex);
+    } else if (slashCount == 1) {
+        // Format: v/vt
+        int vertexIndex = 0, uvIndex = 0;
+        sscanf(vertexStr.c_str(), "%d/%d", &vertexIndex, &uvIndex);
+        
+        // Convert to 0-based
+        if (vertexIndex > 0) vertexIndex -= 1;
+        else if (vertexIndex < 0) vertexIndex = vertexCount + vertexIndex;
+        
+        if (uvIndex > 0) uvIndex -= 1;
+        else if (uvIndex < 0) uvIndex = uvCount + uvIndex;
+        
+        vertexIndices.push_back(vertexIndex);
+        uvIndices.push_back(uvIndex);
+    } else if (slashCount == 2) {
+        // Check if format is v//vn or v/vt/vn
+        if (vertexStr.find("//") != std::string::npos) {
+            // Format: v//vn
+            int vertexIndex = 0, normalIndex = 0;
+            sscanf(vertexStr.c_str(), "%d//%d", &vertexIndex, &normalIndex);
+            
+            // Convert to 0-based
+            if (vertexIndex > 0) vertexIndex -= 1;
+            else if (vertexIndex < 0) vertexIndex = vertexCount + vertexIndex;
+            
+            if (normalIndex > 0) normalIndex -= 1;
+            else if (normalIndex < 0) normalIndex = normalCount + normalIndex;
+            
+            vertexIndices.push_back(vertexIndex);
+            normalIndices.push_back(normalIndex);
+        } else {
+            // Format: v/vt/vn
+            int vertexIndex = 0, uvIndex = 0, normalIndex = 0;
+            sscanf(vertexStr.c_str(), "%d/%d/%d", &vertexIndex, &uvIndex, &normalIndex);
+            
+            // Convert to 0-based
+            if (vertexIndex > 0) vertexIndex -= 1;
+            else if (vertexIndex < 0) vertexIndex = vertexCount + vertexIndex;
+            
+            if (uvIndex > 0) uvIndex -= 1;
+            else if (uvIndex < 0) uvIndex = uvCount + uvIndex;
+            
+            if (normalIndex > 0) normalIndex -= 1;
+            else if (normalIndex < 0) normalIndex = normalCount + normalIndex;
+            
+            vertexIndices.push_back(vertexIndex);
+            uvIndices.push_back(uvIndex);
+            normalIndices.push_back(normalIndex);
+        }
+    }
+}
+
+// Load MTL file
+void Model::loadMTL(const std::string& mtlFilename, const std::string& objPath, 
+                  std::map<std::string, Vector3>& materials) {
+    // Get directory of OBJ file
+    std::string directory = objPath.substr(0, objPath.find_last_of("/\\") + 1);
+    std::string mtlPath = directory + mtlFilename;
+    
+    std::ifstream file(mtlPath);
+    if (!file.is_open()) {
+        std::cerr << "Warning: Could not open material file " << mtlPath << std::endl;
+        return;
+    }
+    
+    std::string currentMaterial;
+    Vector3 diffuseColor(1.0f, 1.0f, 1.0f); // Default white
+    
+    std::string line;
+    while (std::getline(file, line)) {
+        // Skip empty lines and comments
+        if (line.empty() || line[0] == '#')
+            continue;
+            
+        std::istringstream iss(line);
+        std::string prefix;
+        iss >> prefix;
+        
+        if (prefix == "newmtl") {
+            // New material
+            iss >> currentMaterial;
+        } else if (prefix == "Kd") {
+            // Diffuse color
+            iss >> diffuseColor.x >> diffuseColor.y >> diffuseColor.z;
+            materials[currentMaterial] = diffuseColor;
+        } else if (prefix == "map_Kd") {
+            // Diffuse texture map
+            std::string texturePath;
+            iss >> texturePath;
+            
+            // Get full path to texture
+            std::string fullTexturePath = directory + texturePath;
+            
+            // Load texture
+            loadTexture(fullTexturePath, "albedo");
+        }
+    }
+    
+    file.close();
+}
+
+// Process model data
+void Model::processModelData(const std::vector<Vector3>& temp_vertices,
+                           const std::vector<Vector3>& temp_normals,
+                           const std::vector<Vector2>& temp_uvs,
+                           const std::vector<unsigned int>& vertexIndices,
+                           const std::vector<unsigned int>& normalIndices,
+                           const std::vector<unsigned int>& uvIndices,
+                           const std::map<std::string, Vector3>& materials,
+                           const std::string& currentMaterial) {
+    // Clear existing data
+    vertices.clear();
+    normals.clear();
+    texCoords.clear();
+    indices.clear();
+    
+    // Process the data
+    for (unsigned int i = 0; i < vertexIndices.size(); i++) {
+        if (i < vertexIndices.size()) {
+            unsigned int vertexIndex = vertexIndices[i];
+            if (vertexIndex < temp_vertices.size()) {
+                Vector3 vertex = temp_vertices[vertexIndex];
+                vertices.push_back(vertex.x);
+                vertices.push_back(vertex.y);
+                vertices.push_back(vertex.z);
+            } else {
+                std::cerr << "Warning: Vertex index out of range: " << vertexIndex << std::endl;
+            }
+        }
         
         if (!temp_normals.empty() && i < normalIndices.size()) {
             unsigned int normalIndex = normalIndices[i];
-            Vector3 normal = temp_normals[normalIndex];
-            normals.push_back(normal.x);
-            normals.push_back(normal.y);
-            normals.push_back(normal.z);
+            if (normalIndex < temp_normals.size()) {
+                Vector3 normal = temp_normals[normalIndex];
+                normals.push_back(normal.x);
+                normals.push_back(normal.y);
+                normals.push_back(normal.z);
+            } else {
+                std::cerr << "Warning: Normal index out of range: " << normalIndex << std::endl;
+            }
         }
         
         if (!temp_uvs.empty() && i < uvIndices.size()) {
             unsigned int uvIndex = uvIndices[i];
-            Vector2 uv = temp_uvs[uvIndex];
-            texCoords.push_back(uv.x);
-            texCoords.push_back(uv.y);
+            if (uvIndex < temp_uvs.size()) {
+                Vector2 uv = temp_uvs[uvIndex];
+                texCoords.push_back(uv.x);
+                texCoords.push_back(uv.y);
+            } else {
+                std::cerr << "Warning: UV index out of range: " << uvIndex << std::endl;
+            }
         }
     }
     
-    // Initialize graphics buffers
-    InitializeBuffers();
+    // Set material color if available
+    if (!currentMaterial.empty() && materials.find(currentMaterial) != materials.end()) {
+        Vector3 color = materials.at(currentMaterial);
+        // Store material color for later use in shader
+        // This would typically be set as a uniform in the shader
+    }
+}
+
+// Load texture
+void Model::loadTexture(const std::string& path, const std::string& type) {
+    // Simple implementation for testing
+    std::cout << "Loading texture: " << path << " of type: " << type << std::endl;
+    // In a real implementation, this would load the texture using stb_image or similar
 }
 
 // Initialize buffers
