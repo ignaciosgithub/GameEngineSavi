@@ -1,0 +1,26 @@
+{
+  "name": "Player",
+  "position": {"x": 0, "y": 0, "z": 0},
+  "rotation": {"x": 0, "y": 0, "z": 0},
+  "scale": {"x": 1, "y": 1, "z": 1},
+  "components": [
+    {
+      "type": "PlayerController",
+      "properties": {
+        "moveSpeed": 5.0,
+        "turnSpeed": 180.0
+      }
+    },
+    {
+      "type": "Inventory",
+      "properties": {
+        "items": [
+          {"id": "sword", "count": 1},
+          {"id": "potion", "count": 2},
+          {"id": "gold", "count": 65},
+          {"id": "ancient_relic", "count": 1}
+        ]
+      }
+    }
+  ]
+}

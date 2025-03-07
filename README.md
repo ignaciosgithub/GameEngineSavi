@@ -1559,6 +1559,310 @@ build_directx_test.bat
 This will compile the DirectX implementation and verify that it works correctly.
 
 
+## Scene Transitions in RPG Games
+
+GameEngineSavi provides a powerful scene serialization system that allows for seamless transitions between different game scenes while maintaining object persistence. This is particularly useful for RPG games where players move between different areas (like a main world and a cave) while keeping their inventory and stats.
+
+### Example: RPG World-to-Cave Transition
+
+The following example demonstrates how to implement scene transitions in an RPG game, where a player can move from the main world to a cave and back, while maintaining their inventory and stats.
+
+#### Scene JSON Files
+
+**Main World Scene (main_world.json):**
+```json
+{
+  "sceneName": "MainWorld",
+  "objects": [
+    {
+      "name": "Player",
+      "position": {"x": 0, "y": 0, "z": 0},
+      "rotation": {"x": 0, "y": 0, "z": 0},
+      "scale": {"x": 1, "y": 1, "z": 1},
+      "components": [
+        {
+          "type": "PlayerController",
+          "properties": {
+            "moveSpeed": 5.0,
+            "turnSpeed": 180.0
+          }
+        },
+        {
+          "type": "Inventory",
+          "properties": {
+            "items": [
+              {"id": "sword", "count": 1},
+              {"id": "potion", "count": 3},
+              {"id": "gold", "count": 50}
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "CaveEntrance",
+      "position": {"x": 10, "y": 0, "z": 15},
+      "rotation": {"x": 0, "y": 45, "z": 0},
+      "scale": {"x": 2, "y": 3, "z": 2},
+      "components": [
+        {
+          "type": "SceneTransitionTrigger",
+          "properties": {
+            "targetScene": "cave.json",
+            "spawnPoint": "CaveEntrance"
+          }
+        }
+      ]
+    },
+    {
+      "name": "PointLight",
+      "position": {"x": 0, "y": 5, "z": 0},
+      "components": [
+        {
+          "type": "Light",
+          "properties": {
+            "type": "point",
+            "color": {"r": 1.0, "g": 0.9, "b": 0.7},
+            "intensity": 1.0,
+            "range": 20.0
+          }
+        }
+      ]
+    }
+  ],
+  "environment": {
+    "ambientLight": {"r": 0.2, "g": 0.2, "b": 0.3},
+    "skybox": "skybox_day.png"
+  }
+}
+```
+
+**Cave Scene (cave.json):**
+```json
+{
+  "sceneName": "Cave",
+  "objects": [
+    {
+      "name": "CaveEntrance",
+      "position": {"x": 0, "y": 0, "z": 10},
+      "rotation": {"x": 0, "y": 180, "z": 0},
+      "scale": {"x": 2, "y": 3, "z": 2},
+      "components": [
+        {
+          "type": "SceneTransitionTrigger",
+          "properties": {
+            "targetScene": "main_world.json",
+            "spawnPoint": "CaveEntrance"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Treasure",
+      "position": {"x": 0, "y": 0, "z": -15},
+      "rotation": {"x": 0, "y": 0, "z": 0},
+      "scale": {"x": 1, "y": 0.5, "z": 0.7},
+      "components": [
+        {
+          "type": "Interactable",
+          "properties": {
+            "interactionType": "collect",
+            "itemId": "ancient_relic",
+            "itemCount": 1
+          }
+        }
+      ]
+    },
+    {
+      "name": "PointLight",
+      "position": {"x": 0, "y": 3, "z": -5},
+      "components": [
+        {
+          "type": "Light",
+          "properties": {
+            "type": "point",
+            "color": {"r": 0.8, "g": 0.4, "b": 0.1},
+            "intensity": 0.7,
+            "range": 15.0
+          }
+        }
+      ]
+    }
+  ],
+  "environment": {
+    "ambientLight": {"r": 0.1, "g": 0.1, "b": 0.15},
+    "skybox": "skybox_cave.png"
+  }
+}
+```
+
+#### Player Persistence
+
+When transitioning between scenes, you'll want to save the player's state (position, inventory, stats, etc.) and restore it in the new scene. This is done using the `SceneSerializer` class:
+
+**Player Persistence JSON (player_persistence.json):**
+```json
+{
+  "name": "Player",
+  "position": {"x": 0, "y": 0, "z": 0},
+  "rotation": {"x": 0, "y": 0, "z": 0},
+  "scale": {"x": 1, "y": 1, "z": 1},
+  "components": [
+    {
+      "type": "PlayerController",
+      "properties": {
+        "moveSpeed": 5.0,
+        "turnSpeed": 180.0
+      }
+    },
+    {
+      "type": "Inventory",
+      "properties": {
+        "items": [
+          {"id": "sword", "count": 1},
+          {"id": "potion", "count": 2},
+          {"id": "gold", "count": 65},
+          {"id": "ancient_relic", "count": 1}
+        ]
+      }
+    }
+  ]
+}
+```
+
+#### Scene Transition Implementation
+
+Here's how to implement scene transitions using a `MonoBehaviourLike` component:
+
+```cpp
+#include "Scene.h"
+#include "GameObject.h"
+#include "SceneSerializer.h"
+#include "MonoBehaviourLike.h"
+#include <iostream>
+#include <memory>
+
+// Scene transition trigger component
+class SceneTransitionTrigger : public MonoBehaviourLike {
+private:
+    std::string targetScene;
+    std::string spawnPoint;
+    bool playerInRange;
+
+public:
+    SceneTransitionTrigger(const std::string& targetScene, const std::string& spawnPoint)
+        : targetScene(targetScene), spawnPoint(spawnPoint), playerInRange(false) {}
+
+    void OnTriggerEnter() override {
+        playerInRange = true;
+        std::cout << "Player entered transition trigger area. Press 'E' to enter " << targetScene << std::endl;
+    }
+
+    void OnTriggerExit() override {
+        playerInRange = false;
+    }
+
+    void Update(float deltaTime) override {
+        // Check if player is in range and pressed the interaction key
+        if (playerInRange && IsKeyPressed('E')) {
+            // Save player state before transition
+            GameObject* player = GetScene()->FindGameObject("Player");
+            if (player) {
+                SceneSerializer::SaveObjectToJson(player, "player_persistence.json");
+                std::cout << "Saved player state to player_persistence.json" << std::endl;
+            }
+
+            // Transition to the new scene
+            TransitionToScene(targetScene, spawnPoint);
+        }
+    }
+
+    void TransitionToScene(const std::string& scenePath, const std::string& spawnPointName) {
+        std::cout << "Transitioning to scene: " << scenePath << std::endl;
+
+        // Load the new scene
+        Scene* newScene = new Scene();
+        newScene->Load(scenePath);
+
+        // Find the spawn point in the new scene
+        GameObject* spawnPointObj = newScene->FindGameObject(spawnPointName);
+        Vector3 spawnPosition = spawnPointObj ? spawnPointObj->GetPosition() : Vector3(0, 0, 0);
+
+        // Load the persistent player data
+        GameObject* persistentPlayer = SceneSerializer::LoadObjectFromJson("player_persistence.json");
+        if (persistentPlayer) {
+            // Position the player at the spawn point
+            persistentPlayer->SetPosition(spawnPosition);
+            
+            // Add the player to the new scene
+            newScene->AddGameObject(persistentPlayer);
+            std::cout << "Loaded persistent player data at spawn point: " << spawnPointName << std::endl;
+        }
+
+        // Set the new scene as the active scene
+        // In a real implementation, this would be handled by a SceneManager
+        GetScene()->Shutdown();
+        delete GetScene();
+        SetActiveScene(newScene);
+    }
+
+    // Helper methods (would be implemented in a real game)
+    bool IsKeyPressed(char key) { return false; /* Placeholder */ }
+    Scene* GetScene() { return nullptr; /* Placeholder */ }
+    void SetActiveScene(Scene* scene) { /* Placeholder */ }
+};
+```
+
+### Scene Transition Workflow
+
+1. **Create Scene JSON Files**: Define your game scenes as JSON files, including all objects, lights, and environment settings.
+
+2. **Add Transition Triggers**: Place transition trigger objects at the points where players can move between scenes (e.g., cave entrances, doors, portals).
+
+3. **Implement Persistence**: Use the `SceneSerializer` class to save and load player data during transitions.
+
+4. **Handle Spawn Points**: Define spawn points in each scene where the player should appear when entering from another scene.
+
+5. **Manage Scene Loading**: Load the new scene and position the player at the appropriate spawn point.
+
+### Example Game Loop
+
+```cpp
+int main() {
+    // Load the initial scene (main world)
+    Scene* mainWorld = new Scene();
+    mainWorld->Load("Scenes/main_world.json");
+
+    // Add a scene transition trigger to the cave entrance
+    GameObject* caveEntrance = mainWorld->FindGameObject("CaveEntrance");
+    if (caveEntrance) {
+        caveEntrance->AddComponent(new SceneTransitionTrigger("Scenes/cave.json", "CaveEntrance"));
+    }
+
+    // Game loop
+    while (true) {
+        // Update the scene
+        mainWorld->Update(0.016f); // ~60 FPS
+
+        // Render the scene
+        mainWorld->Render();
+
+        // Check for exit condition
+        if (exitRequested) {
+            break;
+        }
+    }
+
+    // Cleanup
+    mainWorld->Shutdown();
+    delete mainWorld;
+
+    return 0;
+}
+```
+
+This example demonstrates how to create a seamless RPG experience with scene transitions while maintaining player persistence. The player can enter the cave, collect the ancient relic, and return to the main world with their updated inventory intact.
+
 ## JSON Serialization
 The engine uses nlohmann/json 3.11.3 for object serialization. See [JSON Library Notes](docs/json_library.md) for implementation details and guidelines.
 
