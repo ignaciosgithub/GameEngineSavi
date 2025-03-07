@@ -25,6 +25,11 @@ void GameObject::AddLight(PointLight light) {
     lights.push_back(light);
 }
 
+// AddDirectionalLight implementation
+void GameObject::AddDirectionalLight(DirectionalLight light) {
+    directionalLights.push_back(light);
+}
+
 void GameObject::UpdateComponents(float deltaTime) {
     // Update components
     for (auto& component : components) {

@@ -19,6 +19,7 @@ class Face;
 
 // Forward declarations
 class PointLight;
+class DirectionalLight;
 
 class Model : public MonoBehaviourLike {
 public:
@@ -77,6 +78,9 @@ public:
     
     // Render the model
     void Render(const std::vector<PointLight>& lights);
+    
+    // Render the model with directional lights
+    void Render(const std::vector<PointLight>& pointLights, const std::vector<DirectionalLight>& directionalLights);
     
     // Update uniforms
     void UpdateUniforms(const Matrix4x4& viewMatrix, const Matrix4x4& projectionMatrix);

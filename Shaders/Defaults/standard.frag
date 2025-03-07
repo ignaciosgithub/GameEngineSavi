@@ -24,9 +24,19 @@ struct PointLight {
     float range;
 };
 
+struct DirectionalLight {
+    vec3 direction;
+    vec3 color;
+    float intensity;
+};
+
 #define MAX_POINT_LIGHTS 8
 uniform PointLight pointLights[MAX_POINT_LIGHTS];
 uniform int numPointLights = 0;
+
+#define MAX_DIRECTIONAL_LIGHTS 4
+uniform DirectionalLight directionalLights[MAX_DIRECTIONAL_LIGHTS];
+uniform int numDirectionalLights = 0;
 
 // Camera position
 uniform vec3 viewPos;
@@ -54,6 +64,23 @@ vec3 calculatePointLight(PointLight light, vec3 normal, vec3 fragPos, vec3 viewD
     // Apply attenuation
     diffuse *= attenuation;
     specular *= attenuation;
+    
+    return diffuse + specular;
+}
+
+// Calculate lighting for a directional light
+vec3 calculateDirectionalLight(DirectionalLight light, vec3 normal, vec3 viewDir, vec3 albedo) {
+    // Calculate light direction (opposite of the light's direction)
+    vec3 lightDir = normalize(-light.direction);
+    
+    // Calculate diffuse lighting
+    float diff = max(dot(normal, lightDir), 0.0);
+    vec3 diffuse = diff * light.color * light.intensity;
+    
+    // Calculate specular lighting
+    vec3 reflectDir = reflect(-lightDir, normal);
+    float spec = pow(max(dot(viewDir, reflectDir), 0.0), shininess);
+    vec3 specular = spec * light.color * light.intensity;
     
     return diffuse + specular;
 }
@@ -86,6 +113,11 @@ void main() {
     
     // Calculate lighting
     vec3 lighting = vec3(0.1); // Ambient light
+    
+    // Add contribution from each directional light
+    for (int i = 0; i < numDirectionalLights && i < MAX_DIRECTIONAL_LIGHTS; i++) {
+        lighting += calculateDirectionalLight(directionalLights[i], normal, viewDir, albedoColor.rgb);
+    }
     
     // Add contribution from each point light
     for (int i = 0; i < numPointLights && i < MAX_POINT_LIGHTS; i++) {

@@ -2,6 +2,7 @@
 #include "platform.h"
 #include "Graphics/Core/GraphicsAPIFactory.h"
 #include "PointLight.h"
+#include "DirectionalLight.h"
 
 #include <iostream>
 #include <fstream>
@@ -254,8 +255,8 @@ void Model::CleanupGL() {
     }
 }
 
-// Render the model
-void Model::Render(const std::vector<PointLight>& lights) {
+// Render the model with both point lights and directional lights
+void Model::Render(const std::vector<PointLight>& pointLights, const std::vector<DirectionalLight>& directionalLights) {
     auto graphics = GraphicsAPIFactory::GetInstance().GetGraphicsAPI();
     if (!graphics || vao == 0) {
         return;
@@ -269,6 +270,29 @@ void Model::Render(const std::vector<PointLight>& lights) {
         return; // Return early if no shader program is set to prevent segmentation fault
     }
     
+    // Set point light uniforms
+    int pointLightCount = std::min((int)pointLights.size(), 8); // Limit to 8 point lights
+    shaderProgram->SetUniform("numPointLights", pointLightCount);
+    
+    for (int i = 0; i < pointLightCount; i++) {
+        std::string prefix = "pointLights[" + std::to_string(i) + "].";
+        shaderProgram->SetUniform(prefix + "position", pointLights[i].GetPosition());
+        shaderProgram->SetUniform(prefix + "color", pointLights[i].GetColor());
+        shaderProgram->SetUniform(prefix + "intensity", pointLights[i].GetIntensity());
+        shaderProgram->SetUniform(prefix + "range", pointLights[i].GetRange());
+    }
+    
+    // Set directional light uniforms
+    int dirLightCount = std::min((int)directionalLights.size(), 4); // Limit to 4 directional lights
+    shaderProgram->SetUniform("numDirectionalLights", dirLightCount);
+    
+    for (int i = 0; i < dirLightCount; i++) {
+        std::string prefix = "directionalLights[" + std::to_string(i) + "].";
+        shaderProgram->SetUniform(prefix + "direction", directionalLights[i].GetDirection());
+        shaderProgram->SetUniform(prefix + "color", directionalLights[i].GetColor());
+        shaderProgram->SetUniform(prefix + "intensity", directionalLights[i].GetIntensity());
+    }
+    
     graphics->BindVertexArray(vao);
     
     if (!indices.empty()) {
@@ -278,6 +302,13 @@ void Model::Render(const std::vector<PointLight>& lights) {
     }
     
     graphics->BindVertexArray(0);
+}
+
+// Render the model with only point lights
+void Model::Render(const std::vector<PointLight>& lights) {
+    // Call the new method with an empty directional lights vector
+    std::vector<DirectionalLight> emptyDirectionalLights;
+    Render(lights, emptyDirectionalLights);
 }
 
 // Set shader program

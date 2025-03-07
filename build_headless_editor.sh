@@ -28,6 +28,7 @@ g++ -std=c++11 -o bin/linux/HeadlessEditor \
     PhysicsSystem.cpp \
     Scene.cpp \
     PointLight.cpp \
+    DirectionalLight.cpp \
     CameraManager.cpp \
     Shaders/Core/ShaderProgram.cpp \
     Shaders/Core/Shader.cpp \

@@ -21,6 +21,7 @@
 #include "Matrix4x4.h"
 #include "Raycast.h"
 #include "PointLight.h"
+#include "DirectionalLight.h"
 #include "Camera.h"
 #include "Face.h"
 #include "Pyramid.h"
@@ -136,6 +137,58 @@ int main(int argc, char** argv)
     // Set up the viewport
     graphics->SetViewport(0, 0, 800, 600);
     
+    // Create a scene
+    Scene scene;
+    
+    // Create a camera
+    Camera* camera = new Camera();
+    camera->SetPosition(Vector3(0.0f, 0.0f, 5.0f));
+    camera->SetRotation(Vector3(0.0f, 0.0f, 0.0f));
+    
+    // Set the camera as the main camera
+    scene.SetMainCamera(camera);
+    
+    // Create a cube model
+    Model* cubeModel = new Model();
+    cubeModel->CreateCube();
+    
+    // Create a default shader program
+    ShaderProgram* defaultShader = scene.CreateDefaultShaderProgram();
+    if (defaultShader) {
+        cubeModel->SetShaderProgram(defaultShader);
+    }
+    
+    // Create a game object for the cube
+    GameObject* cubeObject = new GameObject("Cube");
+    cubeObject->SetPosition(Vector3(0.0f, 0.0f, 0.0f));
+    cubeObject->SetModel(cubeModel);
+    
+    // Add the cube to the scene
+    scene.AddGameObject(cubeObject);
+    
+    // Create a point light
+    PointLight pointLight;
+    pointLight.SetPosition(Vector3(2.0f, 2.0f, 2.0f));
+    pointLight.SetColor(Vector3(0.8f, 0.8f, 1.0f));
+    pointLight.SetIntensity(1.0f);
+    pointLight.SetRange(10.0f);
+    
+    // Create a game object for the point light
+    GameObject* pointLightObject = new GameObject("PointLight");
+    pointLightObject->AddLight(pointLight);
+    
+    // Add the point light to the scene
+    scene.AddGameObject(pointLightObject);
+    
+    // Create a directional light
+    DirectionalLight dirLight;
+    dirLight.SetDirection(Vector3(0.5f, -1.0f, 0.5f).normalized());
+    dirLight.SetColor(Vector3(1.0f, 0.9f, 0.8f)); // Warm sunlight color
+    dirLight.SetIntensity(0.8f);
+    
+    // Add the directional light to the scene
+    scene.AddDirectionalLight(dirLight);
+    
     // Main loop
     bool running = true;
     TimeManager timeManager;
@@ -154,17 +207,23 @@ int main(int argc, char** argv)
         timeManager.Update();
         float deltaTime = timeManager.GetDeltaTime();
         
+        // Update the scene
+        scene.Update(deltaTime);
+        
         // If we're in editor mode, show a message
         if (EngineCondition::IsInEditor()) {
             std::cout << "In editor mode..." << std::endl;
             // In a real implementation, this would trigger the compilation process
             // For now, we'll just wait a bit
-            std::this_thread::sleep_for(std::chrono::seconds(2));
+            std::this_thread::sleep_for(std::chrono::milliseconds(500));
         }
         
         // Clear the screen
         graphics->SetClearColor(0.2f, 0.3f, 0.3f, 1.0f);
         graphics->Clear(true, true); // Clear color and depth buffers
+        
+        // Render the scene
+        scene.Render();
         
         // Draw GUI
         gui->Draw();
@@ -174,6 +233,7 @@ int main(int argc, char** argv)
     }
     
     // Cleanup
+    scene.Shutdown();
     graphics->DestroyWindow();
     
     return 0;

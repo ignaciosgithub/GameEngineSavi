@@ -7,6 +7,7 @@
 #include "TimeManager.h"
 #include "PhysicsSystem.h"
 #include "CameraManager.h"
+#include "DirectionalLight.h"
 #include "Graphics/Core/IGraphicsAPI.h"
 
 class GameObject;
@@ -22,6 +23,7 @@ public:
     float physicsTimeStep;
     bool createDefaultObjects;
     bool isRunning;
+    std::vector<DirectionalLight> directionalLights;
     
     Scene() : physicsTimeStep(1.0f / 60.0f), physicsAccumulator(0.0f), frameCount(0), createDefaultObjects(true), isRunning(false), mainCamera(nullptr), minimapCamera(nullptr) {}
     ~Scene();
@@ -68,6 +70,10 @@ public:
     void UpdateLightUniforms(ShaderProgram* program);
     
     ShaderProgram* CreateDefaultShaderProgram();
+    
+    // Directional light methods
+    void AddDirectionalLight(const DirectionalLight& light);
+    const std::vector<DirectionalLight>& GetDirectionalLights() const;
     
     void Reset();
     void Shutdown();
