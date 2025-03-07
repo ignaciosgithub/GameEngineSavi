@@ -7,6 +7,7 @@
 #include <memory>
 #include "Vector3.h"
 #include "PointLight.h"
+#include "DirectionalLight.h"
 #include "Matrix4x4.h"
 
 // Forward declaration
@@ -23,6 +24,7 @@ public:
     Vector3 rotation;
     Vector3 size;
     std::vector<PointLight> lights;
+    std::vector<DirectionalLight> directionalLights;
     
     // Child GameObjects
     std::vector<GameObject*> childGameObjects;
@@ -82,6 +84,9 @@ public:
     
     // Add a light to the GameObject
     void AddLight(PointLight light);
+    
+    // Add a directional light to the GameObject
+    void AddDirectionalLight(DirectionalLight light);
     
     // Get the name of the GameObject
     std::string GetName() const { return name; }

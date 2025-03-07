@@ -312,8 +312,20 @@ void Scene::RenderMesh(Model* mesh, const Matrix4x4& modelMatrix, const Matrix4x
         }
     }
 
+    // Get all directional lights in the scene
+    std::vector<DirectionalLight> dirLights;
+    for (auto& gameObject : gameObjects) {
+        if (gameObject) {
+            for (auto& light : gameObject->directionalLights) {
+                dirLights.push_back(light);
+            }
+        }
+    }
+    // Add scene-level directional lights
+    dirLights.insert(dirLights.end(), directionalLights.begin(), directionalLights.end());
+
     // Render the mesh with the lights
-    mesh->Render(pointLights);
+    mesh->Render(pointLights, dirLights);
 }
 
 void Scene::DrawDebugAxes() {
@@ -433,6 +445,15 @@ void Scene::Shutdown() {
 // Add missing destructor implementation
 Scene::~Scene() {
     Shutdown();
+}
+
+// Directional light methods
+void Scene::AddDirectionalLight(const DirectionalLight& light) {
+    directionalLights.push_back(light);
+}
+
+const std::vector<DirectionalLight>& Scene::GetDirectionalLights() const {
+    return directionalLights;
 }
 
 // Create a default shader program for models without a shader

@@ -96,6 +96,13 @@ if %ERRORLEVEL% NEQ 0 (
     exit /b 1
 )
 
+echo Compiling DirectionalLight...
+g++ %CFLAGS% %INCLUDES% -c DirectionalLight.cpp -o bin\windows\DirectionalLight.o
+if %ERRORLEVEL% NEQ 0 (
+    echo Error: DirectionalLight compilation failed
+    exit /b 1
+)
+
 REM Compile physics and collision components
 echo Compiling Raycast...
 g++ %CFLAGS% %INCLUDES% -c Raycast.cpp -o bin\windows\Raycast.o
@@ -176,9 +183,9 @@ if %ERRORLEVEL% NEQ 0 (
 REM Create a static library with the components that compiled successfully
 echo Creating static library...
 if "%USE_DIRECTX%"=="true" (
-    ar rcs bin\windows\libGameEngineSavi.a bin\windows\DirectXGraphicsAPI.o bin\windows\GraphicsAPIFactory.o bin\windows\Vector3.o bin\windows\Matrix4x4.o bin\windows\Model.o bin\windows\GameObject.o bin\windows\Camera.o bin\windows\Raycast.o bin\windows\TimeManager.o bin\windows\NavMesh.o bin\windows\NavMeshManager.o bin\windows\AIEntity.o bin\windows\ProjectSettings.o
+    ar rcs bin\windows\libGameEngineSavi.a bin\windows\DirectXGraphicsAPI.o bin\windows\GraphicsAPIFactory.o bin\windows\Vector3.o bin\windows\Matrix4x4.o bin\windows\Model.o bin\windows\GameObject.o bin\windows\Camera.o bin\windows\DirectionalLight.o bin\windows\Raycast.o bin\windows\TimeManager.o bin\windows\NavMesh.o bin\windows\NavMeshManager.o bin\windows\AIEntity.o bin\windows\ProjectSettings.o
 ) else (
-    ar rcs bin\windows\libGameEngineSavi.a bin\windows\OpenGLGraphicsAPI.o bin\windows\GraphicsAPIFactory.o bin\windows\Vector3.o bin\windows\Matrix4x4.o bin\windows\Model.o bin\windows\GameObject.o bin\windows\Camera.o bin\windows\Raycast.o bin\windows\TimeManager.o bin\windows\NavMesh.o bin\windows\NavMeshManager.o bin\windows\AIEntity.o bin\windows\ProjectSettings.o
+    ar rcs bin\windows\libGameEngineSavi.a bin\windows\OpenGLGraphicsAPI.o bin\windows\GraphicsAPIFactory.o bin\windows\Vector3.o bin\windows\Matrix4x4.o bin\windows\Model.o bin\windows\GameObject.o bin\windows\Camera.o bin\windows\DirectionalLight.o bin\windows\Raycast.o bin\windows\TimeManager.o bin\windows\NavMesh.o bin\windows\NavMeshManager.o bin\windows\AIEntity.o bin\windows\ProjectSettings.o
 )
 
 REM Add optional components if they compiled successfully
