@@ -898,9 +898,9 @@ animComponent->SetPhysicsUpdateMode(PhysicsUpdateMode::KINEMATIC_ANIMATED);
 scene->AddGameObject(std::move(character));
 ```
 
-### Ragdoll Physics
+### Ragdoll Physics (Planned Feature)
 
-Switch between animation and physics-driven ragdoll:
+The engine will support switching between animation and physics-driven ragdoll:
 
 ```cpp
 // Set up ragdoll
@@ -927,6 +927,8 @@ void DisableRagdoll() {
     character->GetComponent<RagdollComponent>()->SetEnabled(false);
 }
 ```
+
+> Note: Ragdoll physics is a planned feature for future implementation.
 
 ### Animation Editor
 
