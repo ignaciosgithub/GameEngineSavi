@@ -35,6 +35,7 @@ The engine is structured around these core components:
 - **Pyramid**: Example of a built-in 3D shape
 - **Camera**: Manages the view perspective
 - **PointLight**: Implements dynamic lighting with attenuation
+- **DirectionalLight**: Implements directional lighting (like sunlight) with direction, color, and intensity
 
 ### Physics System
 
@@ -497,6 +498,308 @@ Each test outputs detailed information to the console, allowing verification of 
 ## License
 
 This project is available for use under open-source terms.
+
+## Lighting System
+
+GameEngineSavi includes a powerful lighting system that allows you to create dynamic lighting effects in your game. The lighting system supports both point lights and directional lights, providing flexibility for different lighting scenarios.
+
+### Features
+
+- **Point Lights**: Create point lights with customizable position, color, intensity, and range
+- **Directional Lights**: Create directional lights (like sunlight) with direction, color, and intensity
+- **Multiple Lights**: Support for up to 8 point lights and 4 directional lights in a scene
+- **Ambient Light**: Set global ambient light for the scene
+- **Attenuation**: Light intensity decreases with distance from the source (for point lights)
+- **Shadow Mapping**: Basic shadow mapping for lights
+- **Light Components**: Attach lights to game objects
+
+### Point Lights
+
+Point lights emit light in all directions from a specific position, similar to a light bulb or torch. The intensity of the light decreases with distance from the source.
+
+#### Creating Point Lights
+
+```cpp
+#include "PointLight.h"
+
+// Create a point light
+PointLight* light = new PointLight();
+light->SetPosition(Vector3(0, 5, 0));
+light->SetColor(Vector3(1, 1, 1));
+light->SetIntensity(1.0f);
+light->SetRange(20.0f);
+
+// Add the light to a game object
+GameObject* lightObj = new GameObject("Light");
+lightObj->AddLight(light);
+
+// Add the game object to the scene
+scene->AddGameObject(lightObj);
+```
+
+#### Point Light Properties
+
+- **Position**: The position of the light in 3D space
+- **Color**: The color of the light (RGB)
+- **Intensity**: The brightness of the light
+- **Range**: The maximum distance the light can reach
+- **Attenuation**: How quickly the light fades with distance
+
+### Directional Lights
+
+Directional lights simulate light sources that are infinitely far away, like the sun. They have a direction but no position, and they affect all objects in the scene equally regardless of distance.
+
+#### Creating Directional Lights
+
+```cpp
+#include "DirectionalLight.h"
+
+// Create a directional light (like sunlight)
+DirectionalLight* sunlight = new DirectionalLight();
+sunlight->SetDirection(Vector3(0.5f, -1.0f, 0.3f).normalized());
+sunlight->SetColor(Vector3(1.0f, 0.9f, 0.8f));
+sunlight->SetIntensity(1.2f);
+
+// Add the directional light to the scene
+scene->AddDirectionalLight(sunlight);
+
+// Or add to a game object
+GameObject* sun = new GameObject("Sun");
+sun->AddDirectionalLight(sunlight);
+scene->AddGameObject(sun);
+```
+
+#### Directional Light Properties
+
+- **Direction**: The direction the light is coming from (normalized vector)
+- **Color**: The color of the light (RGB)
+- **Intensity**: The brightness of the light
+
+### Multiple Lights
+
+You can add multiple lights to a scene to create complex lighting effects:
+
+```cpp
+// Create multiple point lights
+PointLight* redLight = new PointLight();
+redLight->SetPosition(Vector3(-5, 2, 0));
+redLight->SetColor(Vector3(1, 0, 0));
+redLight->SetIntensity(0.8f);
+redLight->SetRange(15.0f);
+
+PointLight* greenLight = new PointLight();
+greenLight->SetPosition(Vector3(5, 2, 0));
+greenLight->SetColor(Vector3(0, 1, 0));
+greenLight->SetIntensity(0.8f);
+greenLight->SetRange(15.0f);
+
+// Create a directional light
+DirectionalLight* blueLight = new DirectionalLight();
+blueLight->SetDirection(Vector3(0, -1, 0).normalized());
+blueLight->SetColor(Vector3(0, 0, 1));
+blueLight->SetIntensity(0.5f);
+
+// Add lights to the scene
+scene->AddLight(redLight);
+scene->AddLight(greenLight);
+scene->AddDirectionalLight(blueLight);
+```
+
+### Ambient Light
+
+You can set the ambient light for the scene to provide a base level of illumination:
+
+```cpp
+// Set ambient light
+scene->SetAmbientLight(Vector3(0.1f, 0.1f, 0.1f));
+```
+
+### Shadow Mapping
+
+The lighting system includes basic shadow mapping for lights:
+
+```cpp
+// Enable shadows for a light
+light->EnableShadows(true);
+```
+
+Note that shadow mapping is a performance-intensive feature and should be used sparingly.
+
+### Shader Integration
+
+The lighting system is integrated with the shader system. The standard shader includes support for both point lights and directional lights:
+
+```glsl
+// Point light structure in GLSL
+struct PointLight {
+    vec3 position;
+    vec3 color;
+    float intensity;
+    float range;
+};
+
+// Directional light structure in GLSL
+struct DirectionalLight {
+    vec3 direction;
+    vec3 color;
+    float intensity;
+};
+
+// Uniforms in the shader
+uniform PointLight pointLights[8];
+uniform int numPointLights;
+uniform DirectionalLight directionalLights[4];
+uniform int numDirectionalLights;
+```
+
+## Navigation Mesh System
+
+GameEngineSavi includes a powerful Navigation Mesh (NavMesh) system for AI pathfinding and navigation. The NavMesh system allows AI entities to navigate through complex environments, avoiding obstacles and finding optimal paths.
+
+### Features
+
+- **Automatic NavMesh Generation**: Generate navigation meshes from scene geometry
+- **Pathfinding**: Find optimal paths between points on the NavMesh
+- **Obstacle Avoidance**: Navigate around static and dynamic obstacles
+- **Volumetric Obstacles**: Support for obstacles that span multiple grid cells
+- **Runtime Updates**: Update the NavMesh as the scene changes
+- **AI Entity Integration**: Easily integrate with AI entities
+
+### Using the NavMesh System
+
+```cpp
+#include "NavMesh.h"
+#include "NavMeshManager.h"
+#include "AIEntity.h"
+
+// Create a NavMesh for the current scene
+NavMesh* navMesh = new NavMesh();
+navMesh->Generate(scene);
+
+// Find a path between two points
+Vector3 start(0, 0, 0);
+Vector3 end(10, 0, 10);
+std::vector<Vector3> path = navMesh->FindPath(start, end);
+
+// Create an AI entity that follows the path
+AIEntity* entity = new AIEntity();
+entity->SetPath(path);
+entity->SetSpeed(5.0f);
+
+// Update the entity in the game loop
+entity->Update(deltaTime);
+```
+
+### NavMesh Components
+
+- **NavMesh**: The navigation mesh itself, generated from scene geometry
+- **NavMeshManager**: Manages multiple NavMeshes and handles updates
+- **AIEntity**: Entities that can navigate using the NavMesh
+
+### Creating Invisible Collision Walls
+
+You can create invisible collision walls that affect the NavMesh but are not rendered:
+
+```cpp
+// Create an invisible wall that blocks AI navigation
+auto wall = std::make_unique<GameObject>("InvisibleWall");
+wall->SetPosition(Vector3(5, 0, 5));
+wall->SetSize(Vector3(10, 5, 1));
+
+// Add a collider but no mesh renderer
+auto collider = wall->AddComponent(new BoxCollider());
+collider->SetIsTrigger(false); // Physical collision, not just a trigger
+
+// Add to scene
+scene->AddGameObject(std::move(wall));
+
+// Update the NavMesh to include the new obstacle
+navMesh->Update();
+```
+
+### Creating Trigger Volumes
+
+You can create trigger volumes that detect when entities enter or exit an area:
+
+```cpp
+// Create a trigger volume
+auto triggerVolume = std::make_unique<GameObject>("TriggerVolume");
+triggerVolume->SetPosition(Vector3(0, 0, 0));
+triggerVolume->SetSize(Vector3(5, 5, 5));
+
+// Add a collider set as a trigger
+auto collider = triggerVolume->AddComponent(new BoxCollider());
+collider->SetIsTrigger(true); // Trigger only, no physical collision
+
+// Add a custom component to handle trigger events
+class TriggerHandler : public MonoBehaviourLike {
+public:
+    void OnTriggerEnter(GameObject* other) override {
+        std::cout << "Entity entered trigger: " << other->GetName() << std::endl;
+    }
+    
+    void OnTriggerExit(GameObject* other) override {
+        std::cout << "Entity exited trigger: " << other->GetName() << std::endl;
+    }
+};
+
+triggerVolume->AddComponent(new TriggerHandler());
+
+// Add to scene
+scene->AddGameObject(std::move(triggerVolume));
+```
+
+### Volumetric Obstacles
+
+The NavMesh system supports volumetric obstacles that span multiple grid cells:
+
+```cpp
+// Create a volumetric obstacle
+auto obstacle = std::make_unique<GameObject>("VolumetricObstacle");
+obstacle->SetPosition(Vector3(0, 0, 0));
+obstacle->SetSize(Vector3(5, 3, 5)); // Spans multiple grid cells
+
+// Add a collider
+auto collider = obstacle->AddComponent(new BoxCollider());
+
+// Add to scene
+scene->AddGameObject(std::move(obstacle));
+
+// Update the NavMesh to include the new obstacle
+navMesh->Update();
+```
+
+### NavMesh Visualization
+
+The NavMesh can be visualized in the editor for debugging purposes:
+
+```cpp
+// Enable NavMesh visualization
+navMesh->SetVisualizationEnabled(true);
+```
+
+This will display the NavMesh grid, walkable areas, and obstacles in the scene view.
+
+### Path Smoothing
+
+The NavMesh system includes path smoothing to create more natural-looking paths:
+
+```cpp
+// Find a path with smoothing
+std::vector<Vector3> path = navMesh->FindPath(start, end, true);
+```
+
+### Dynamic Obstacles
+
+The NavMesh system can handle dynamic obstacles that move during gameplay:
+
+```cpp
+// Register a dynamic obstacle
+navMesh->RegisterDynamicObstacle(gameObject);
+
+// Update the NavMesh when the obstacle moves
+navMesh->UpdateDynamicObstacles();
+```
 
 ## Animation System
 
