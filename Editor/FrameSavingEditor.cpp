@@ -28,6 +28,10 @@
 #include "../Camera.h"
 #include "../CameraManager.h"
 #include "../Shaders/Core/ShaderProgram.h"
+#include "../Editor/HierarchyPanel.h"
+#include "../Editor/InspectorPanel.h"
+#include "../Editor/ProjectPanel.h"
+#include "../Editor/SceneViewPanel.h"
 
 // Define headless mode for conditional compilation
 #ifndef HEADLESS_MODE
@@ -51,6 +55,17 @@ const int WINDOW_HEIGHT = 600;
 // Frame counter
 int frameCount = 0;
 
+// Function declarations
+std::string GetFrameFilename();
+void createFramesDirectory();
+void createRedImageDirectly(const std::string& filename, int width, int height);
+void createEditorPanelImage(const std::string& filename, int width, int height, Editor* editor);
+void drawPanel(std::vector<unsigned char>& pixels, int imgWidth, int imgHeight, 
+               int x, int y, int width, int height, const std::string& title,
+               unsigned char r, unsigned char g, unsigned char b);
+void drawCube(std::vector<unsigned char>& pixels, int imgWidth, int imgHeight,
+              int centerX, int centerY, int size, unsigned char r, unsigned char g, unsigned char b);
+
 // Function to generate frame filename
 std::string GetFrameFilename() {
     std::stringstream ss;
@@ -70,136 +85,6 @@ void createFramesDirectory() {
             std::cout << "Created frames directory" << std::endl;
         }
     }
-}
-
-// Create a simple red cube
-void createRedCube(std::shared_ptr<IGraphicsAPI> graphics, unsigned int& vao, unsigned int& vbo, unsigned int& ibo) {
-    // Create vertex array object
-    vao = graphics->CreateVertexArray();
-    graphics->BindVertexArray(vao);
-    
-    // Vertex data for a red cube
-    float vertices[] = {
-        // Position (XYZ)     // Color (RGB)
-        // Front face
-        -0.5f, -0.5f,  0.5f,  1.0f, 0.0f, 0.0f, // Bottom-left, red
-         0.5f, -0.5f,  0.5f,  1.0f, 0.0f, 0.0f, // Bottom-right, red
-         0.5f,  0.5f,  0.5f,  1.0f, 0.0f, 0.0f, // Top-right, red
-        -0.5f,  0.5f,  0.5f,  1.0f, 0.0f, 0.0f, // Top-left, red
-        
-        // Back face
-        -0.5f, -0.5f, -0.5f,  1.0f, 0.0f, 0.0f, // Bottom-left, red
-         0.5f, -0.5f, -0.5f,  1.0f, 0.0f, 0.0f, // Bottom-right, red
-         0.5f,  0.5f, -0.5f,  1.0f, 0.0f, 0.0f, // Top-right, red
-        -0.5f,  0.5f, -0.5f,  1.0f, 0.0f, 0.0f  // Top-left, red
-    };
-    
-    // Index data for the cube
-    unsigned int indices[] = {
-        // Front face
-        0, 1, 2,
-        2, 3, 0,
-        
-        // Right face
-        1, 5, 6,
-        6, 2, 1,
-        
-        // Back face
-        5, 4, 7,
-        7, 6, 5,
-        
-        // Left face
-        4, 0, 3,
-        3, 7, 4,
-        
-        // Top face
-        3, 2, 6,
-        6, 7, 3,
-        
-        // Bottom face
-        4, 5, 1,
-        1, 0, 4
-    };
-    
-    // Create and bind vertex buffer
-    vbo = graphics->CreateBuffer();
-    graphics->BindBuffer(BufferType::VERTEX_BUFFER, vbo);
-    graphics->BufferData(BufferType::VERTEX_BUFFER, vertices, sizeof(vertices), false);
-    
-    // Create and bind index buffer
-    ibo = graphics->CreateBuffer();
-    graphics->BindBuffer(BufferType::INDEX_BUFFER, ibo);
-    graphics->BufferData(BufferType::INDEX_BUFFER, indices, sizeof(indices), false);
-    
-    // Set up vertex attributes
-    graphics->VertexAttribPointer(0, 3, false, 6 * sizeof(float), (void*)0);
-    graphics->EnableVertexAttrib(0);
-    graphics->VertexAttribPointer(1, 3, false, 6 * sizeof(float), (void*)(3 * sizeof(float)));
-    graphics->EnableVertexAttrib(1);
-}
-
-// Create a simple shader program for rendering the red cube
-unsigned int createShaderProgram(std::shared_ptr<IGraphicsAPI> graphics) {
-    // Create and compile vertex shader
-    unsigned int vertexShader = graphics->CreateShader(0x8B31); // GL_VERTEX_SHADER
-    const char* vertexShaderSource = 
-        "#version 330 core\n"
-        "layout (location = 0) in vec3 aPos;\n"
-        "layout (location = 1) in vec3 aColor;\n"
-        "out vec3 ourColor;\n"
-        "uniform mat4 model;\n"
-        "uniform mat4 view;\n"
-        "uniform mat4 projection;\n"
-        "void main()\n"
-        "{\n"
-        "   gl_Position = projection * view * model * vec4(aPos, 1.0);\n"
-        "   ourColor = vec3(1.0, 0.0, 0.0); // Force red color\n"
-        "}\0";
-    graphics->ShaderSource(vertexShader, std::string(vertexShaderSource));
-    graphics->CompileShader(vertexShader);
-    
-    // Check for vertex shader compilation errors
-    if (!graphics->GetShaderCompileStatus(vertexShader)) {
-        std::cerr << "Vertex shader compilation failed: " 
-                  << graphics->GetShaderInfoLog(vertexShader) << std::endl;
-    }
-    
-    // Create and compile fragment shader
-    unsigned int fragmentShader = graphics->CreateShader(0x8B30); // GL_FRAGMENT_SHADER
-    const char* fragmentShaderSource = 
-        "#version 330 core\n"
-        "in vec3 ourColor;\n"
-        "out vec4 FragColor;\n"
-        "void main()\n"
-        "{\n"
-        "   FragColor = vec4(1.0, 0.0, 0.0, 1.0); // Force bright red color\n"
-        "}\0";
-    graphics->ShaderSource(fragmentShader, std::string(fragmentShaderSource));
-    graphics->CompileShader(fragmentShader);
-    
-    // Check for fragment shader compilation errors
-    if (!graphics->GetShaderCompileStatus(fragmentShader)) {
-        std::cerr << "Fragment shader compilation failed: " 
-                  << graphics->GetShaderInfoLog(fragmentShader) << std::endl;
-    }
-    
-    // Create shader program
-    unsigned int shaderProgram = graphics->CreateProgram();
-    graphics->AttachShader(shaderProgram, vertexShader);
-    graphics->AttachShader(shaderProgram, fragmentShader);
-    graphics->LinkProgram(shaderProgram);
-    
-    // Check for shader program linking errors
-    if (!graphics->GetProgramLinkStatus(shaderProgram)) {
-        std::cerr << "Shader program linking failed: " 
-                  << graphics->GetProgramInfoLog(shaderProgram) << std::endl;
-    }
-    
-    // Delete shaders as they're linked into the program now and no longer needed
-    graphics->DeleteShader(vertexShader);
-    graphics->DeleteShader(fragmentShader);
-    
-    return shaderProgram;
 }
 
 // Create a simple red image directly in memory
@@ -232,6 +117,196 @@ void createRedImageDirectly(const std::string& filename, int width, int height) 
     }
 }
 
+// Helper function to draw a panel in the image
+void drawPanel(std::vector<unsigned char>& pixels, int imgWidth, int imgHeight, 
+               int x, int y, int width, int height, const std::string& title,
+               unsigned char r, unsigned char g, unsigned char b) {
+    // Draw panel background with more vibrant colors
+    for (int py = y; py < y + height && py < imgHeight; py++) {
+        for (int px = x; px < x + width && px < imgWidth; px++) {
+            int index = (py * imgWidth + px) * 4;
+            if (index + 3 < pixels.size()) {
+                // Use the provided colors for the panel background
+                pixels[index] = r;
+                pixels[index + 1] = g;
+                pixels[index + 2] = b;
+                pixels[index + 3] = 255;
+            }
+        }
+    }
+    
+    // Draw panel border with white for better visibility
+    for (int px = x; px < x + width && px < imgWidth; px++) {
+        int topIndex = (y * imgWidth + px) * 4;
+        int bottomIndex = ((y + height - 1) * imgWidth + px) * 4;
+        
+        if (topIndex + 3 < pixels.size()) {
+            pixels[topIndex] = 255;
+            pixels[topIndex + 1] = 255;
+            pixels[topIndex + 2] = 255;
+            pixels[topIndex + 3] = 255;
+        }
+        
+        if (bottomIndex + 3 < pixels.size()) {
+            pixels[bottomIndex] = 255;
+            pixels[bottomIndex + 1] = 255;
+            pixels[bottomIndex + 2] = 255;
+            pixels[bottomIndex + 3] = 255;
+        }
+    }
+    
+    for (int py = y; py < y + height && py < imgHeight; py++) {
+        int leftIndex = (py * imgWidth + x) * 4;
+        int rightIndex = (py * imgWidth + x + width - 1) * 4;
+        
+        if (leftIndex + 3 < pixels.size()) {
+            pixels[leftIndex] = 255;
+            pixels[leftIndex + 1] = 255;
+            pixels[leftIndex + 2] = 255;
+            pixels[leftIndex + 3] = 255;
+        }
+        
+        if (rightIndex + 3 < pixels.size()) {
+            pixels[rightIndex] = 255;
+            pixels[rightIndex + 1] = 255;
+            pixels[rightIndex + 2] = 255;
+            pixels[rightIndex + 3] = 255;
+        }
+    }
+}
+
+// Helper function to draw a cube in the image
+void drawCube(std::vector<unsigned char>& pixels, int imgWidth, int imgHeight,
+              int centerX, int centerY, int size,
+              unsigned char r, unsigned char g, unsigned char b) {
+    int halfSize = size / 2;
+    
+    // Draw the cube with a bright red color
+    for (int py = centerY - halfSize; py < centerY + halfSize && py < imgHeight; py++) {
+        for (int px = centerX - halfSize; px < centerX + halfSize && px < imgWidth; px++) {
+            if (px >= 0 && py >= 0) {
+                int index = (py * imgWidth + px) * 4;
+                if (index + 3 < pixels.size()) {
+                    pixels[index] = r;
+                    pixels[index + 1] = g;
+                    pixels[index + 2] = b;
+                    pixels[index + 3] = 255;
+                }
+            }
+        }
+    }
+    
+    // Add a white border to make the cube more visible
+    for (int px = centerX - halfSize; px <= centerX + halfSize && px < imgWidth; px++) {
+        if (px >= 0) {
+            int topIndex = ((centerY - halfSize) * imgWidth + px) * 4;
+            int bottomIndex = ((centerY + halfSize - 1) * imgWidth + px) * 4;
+            
+            if (topIndex + 3 < pixels.size()) {
+                pixels[topIndex] = 255;
+                pixels[topIndex + 1] = 255;
+                pixels[topIndex + 2] = 255;
+                pixels[topIndex + 3] = 255;
+            }
+            
+            if (bottomIndex + 3 < pixels.size()) {
+                pixels[bottomIndex] = 255;
+                pixels[bottomIndex + 1] = 255;
+                pixels[bottomIndex + 2] = 255;
+                pixels[bottomIndex + 3] = 255;
+            }
+        }
+    }
+    
+    for (int py = centerY - halfSize; py <= centerY + halfSize && py < imgHeight; py++) {
+        if (py >= 0) {
+            int leftIndex = (py * imgWidth + (centerX - halfSize)) * 4;
+            int rightIndex = (py * imgWidth + (centerX + halfSize - 1)) * 4;
+            
+            if (leftIndex + 3 < pixels.size()) {
+                pixels[leftIndex] = 255;
+                pixels[leftIndex + 1] = 255;
+                pixels[leftIndex + 2] = 255;
+                pixels[leftIndex + 3] = 255;
+            }
+            
+            if (rightIndex + 3 < pixels.size()) {
+                pixels[rightIndex] = 255;
+                pixels[rightIndex + 1] = 255;
+                pixels[rightIndex + 2] = 255;
+                pixels[rightIndex + 3] = 255;
+            }
+        }
+    }
+}
+
+// Create an image that shows editor panels in headless mode
+void createEditorPanelImage(const std::string& filename, int width, int height, Editor* editor) {
+    // Create a buffer for the image (RGBA format)
+    std::vector<unsigned char> pixels(width * height * 4);
+    
+    // Fill with dark gray background color
+    for (int i = 0; i < width * height * 4; i += 4) {
+        pixels[i] = 30;      // R
+        pixels[i + 1] = 30;  // G
+        pixels[i + 2] = 30;  // B
+        pixels[i + 3] = 255; // A
+    }
+    
+    // Always draw panel outlines and content, even if editor is null
+    // Hierarchy panel (left)
+    int hierarchyX = 10;
+    int hierarchyY = 10;
+    int hierarchyWidth = width / 5;
+    int hierarchyHeight = height - 20;
+    drawPanel(pixels, width, height, hierarchyX, hierarchyY, hierarchyWidth, hierarchyHeight, "Hierarchy", 150, 150, 255);
+    
+    // Scene view panel (center)
+    int sceneX = hierarchyX + hierarchyWidth + 10;
+    int sceneY = 10;
+    int sceneWidth = (width / 5) * 3 - 20;
+    int sceneHeight = height - 20;
+    drawPanel(pixels, width, height, sceneX, sceneY, sceneWidth, sceneHeight, "Scene View", 100, 100, 180);
+    
+    // Draw a red cube in the scene view
+    drawCube(pixels, width, height, sceneX + sceneWidth/2, sceneY + sceneHeight/2, 100, 255, 0, 0);
+    
+    // Inspector panel (right)
+    int inspectorX = sceneX + sceneWidth + 10;
+    int inspectorY = 10;
+    int inspectorWidth = width / 5;
+    int inspectorHeight = height / 2 - 15;
+    drawPanel(pixels, width, height, inspectorX, inspectorY, inspectorWidth, inspectorHeight, "Inspector", 100, 255, 100);
+    
+    // Project panel (bottom right)
+    int projectX = inspectorX;
+    int projectY = inspectorY + inspectorHeight + 10;
+    int projectWidth = inspectorWidth;
+    int projectHeight = height / 2 - 15;
+    drawPanel(pixels, width, height, projectX, projectY, projectWidth, projectHeight, "Project", 255, 150, 150);
+    
+    // If we have an editor, we can add more details
+    if (editor) {
+        // Add additional editor-specific details here if needed
+    }
+    
+    // Save to PNG file using stbi_write_png
+    int result = stbi_write_png(
+        filename.c_str(),
+        width,
+        height,
+        4,  // RGBA components
+        pixels.data(),
+        width * 4  // Stride in bytes
+    );
+    
+    if (result == 0) {
+        std::cerr << "Failed to write PNG file: " << filename << std::endl;
+    } else {
+        std::cout << "Created editor panel image: " << filename << std::endl;
+    }
+}
+
 int main(int argc, char** argv) {
     std::cout << "Starting Frame Saving Editor..." << std::endl;
     
@@ -243,11 +318,13 @@ int main(int argc, char** argv) {
     if (!GraphicsAPIFactory::GetInstance().Initialize()) {
         std::cerr << "Failed to initialize graphics API, falling back to direct image creation" << std::endl;
         
-        // Create 10 frames directly
-        for (int i = 0; i < 10; i++) {
+        // Create 30 frames directly with editor panels
+        for (int i = 0; i < 30; i++) {
             std::string filename = "frames/frame" + std::to_string(i) + ".png";
-            createRedImageDirectly(filename, WINDOW_WIDTH, WINDOW_HEIGHT);
+            // Create a null editor for the panel image
+            createEditorPanelImage(filename, WINDOW_WIDTH, WINDOW_HEIGHT, nullptr);
             std::cout << "Created fallback frame " << i << " due to graphics API initialization failure" << std::endl;
+            frameCount++;
         }
         
         return 0;
@@ -260,11 +337,13 @@ int main(int argc, char** argv) {
     if (!graphics) {
         std::cerr << "ERROR: Failed to get graphics API instance, falling back to direct image creation" << std::endl;
         
-        // Create 10 frames directly
-        for (int i = 0; i < 10; i++) {
+        // Create 30 frames directly with editor panels
+        for (int i = 0; i < 30; i++) {
             std::string filename = "frames/frame" + std::to_string(i) + ".png";
-            createRedImageDirectly(filename, WINDOW_WIDTH, WINDOW_HEIGHT);
+            // Create a null editor for the panel image
+            createEditorPanelImage(filename, WINDOW_WIDTH, WINDOW_HEIGHT, nullptr);
             std::cout << "Created fallback frame " << i << " due to missing graphics API instance" << std::endl;
+            frameCount++;
         }
         
         return 0;
@@ -280,23 +359,19 @@ int main(int argc, char** argv) {
         std::cout << "Created window successfully" << std::endl;
     } else {
         std::cerr << "WARNING: Could not create window, running in headless mode..." << std::endl;
-        
-        // If we can't create a window, fall back to direct image creation
-        for (int i = 0; i < 10; i++) {
-            std::string filename = "frames/frame" + std::to_string(i) + ".png";
-            createRedImageDirectly(filename, WINDOW_WIDTH, WINDOW_HEIGHT);
-            std::cout << "Created fallback frame " << i << " due to window creation failure" << std::endl;
-        }
-        
-        return 0;
+        std::cout << "Will generate editor panel images directly without OpenGL" << std::endl;
     }
     
-    // Create red cube geometry
-    unsigned int vao, vbo, ibo;
-    createRedCube(graphics, vao, vbo, ibo);
-    
-    // Create shader program
-    unsigned int shaderProgram = createShaderProgram(graphics);
+    // Create the Editor only if we have a window
+    Editor* editor = nullptr;
+    if (hasWindow) {
+        // Create and initialize the Editor
+        std::cout << "Creating and initializing Editor..." << std::endl;
+        editor = new Editor(WINDOW_WIDTH, WINDOW_HEIGHT);
+        editor->Initialize();
+    } else {
+        std::cout << "Skipping Editor creation in headless mode" << std::endl;
+    }
     
     // Signal that initialization is complete
     std::ofstream statusFile("frames/status.txt");
@@ -311,125 +386,137 @@ int main(int argc, char** argv) {
     // Main loop
     TimeManager timeManager;
     
-    // Render 30 frames to show more movement
-    for (int i = 0; i < 30 && hasWindow; i++) {
-        // Update time
-        timeManager.Update();
-        
-        // Poll events
-        graphics->PollEvents();
-        
-        // Check if window is still open
-        if (!graphics->IsWindowOpen()) {
+    // Run continuously until interrupted
+    bool running = true;
+    int frameCounter = 0;
+    
+    // Create a signal file to check for exit requests
+    std::ofstream exitSignalFile("frames/running.txt");
+    if (exitSignalFile.is_open()) {
+        exitSignalFile << "running" << std::endl;
+        exitSignalFile.close();
+    }
+    
+    std::cout << "Starting continuous frame generation. To stop, delete frames/running.txt" << std::endl;
+    
+    while (running) {
+        // Check if we should exit (if running.txt file is deleted)
+        std::ifstream checkRunning("frames/running.txt");
+        if (!checkRunning.good()) {
+            std::cout << "Exit signal detected (frames/running.txt not found). Stopping frame generation." << std::endl;
+            running = false;
             break;
         }
+        checkRunning.close();
+        // Update time
+        timeManager.Update();
+        float deltaTime = timeManager.GetDeltaTime();
         
-        // Clear the screen
-        graphics->SetClearColor(0.2f, 0.3f, 0.3f, 1.0f);
-        graphics->Clear(true, true);
-        
-        // Bind VAO
-        graphics->BindVertexArray(vao);
-        
-        // Create a ShaderProgram object to use with the graphics API
-        ShaderProgram shaderProgramObj;
-        shaderProgramObj.SetProgramId(shaderProgram);
-        graphics->UseShaderProgram(&shaderProgramObj);
-        
-        // Set up key detection for headless mode
-        bool keyWPressed = false;
-        bool keySPressed = false;
-        bool keyAPressed = false;
-        bool keyDPressed = false;
-        
-        // In headless mode, we simulate key presses based on frame number
-        // This allows for camera movement simulation even without a window
-        if (i % 3 == 0) keyWPressed = true;  // Move forward every 3rd frame
-        if (i % 5 == 1) keySPressed = true;  // Move backward every 5th frame
-        if (i % 4 == 2) keyAPressed = true;  // Move left every 4th frame
-        if (i % 4 == 3) keyDPressed = true;  // Move right every 4th frame
-        
-        // Set up transformation matrices
-        float time = static_cast<float>(i) * 0.1f; // Rotate based on frame number
-        
-        // Apply camera movement based on key detection
-        static float cameraX = 0.0f;
-        static float cameraY = 0.0f;
-        static float cameraZ = -3.0f;
-        
-        // Move camera based on key presses
-        if (keyWPressed) cameraZ += 0.1f;  // Move forward
-        if (keySPressed) cameraZ -= 0.1f;  // Move backward
-        if (keyAPressed) cameraX -= 0.1f;  // Move left
-        if (keyDPressed) cameraX += 0.1f;  // Move right
-        
-        // Model matrix (rotate the cube)
-        float model[16] = {
-            cosf(time), 0.0f, sinf(time), 0.0f,
-            0.0f, 1.0f, 0.0f, 0.0f,
-            -sinf(time), 0.0f, cosf(time), 0.0f,
-            0.0f, 0.0f, 0.0f, 1.0f
-        };
-        
-        // View matrix (use camera position from key detection)
-        float view[16] = {
-            1.0f, 0.0f, 0.0f, 0.0f,
-            0.0f, 1.0f, 0.0f, 0.0f,
-            0.0f, 0.0f, 1.0f, 0.0f,
-            cameraX, cameraY, cameraZ, 1.0f
-        };
-        
-        // Projection matrix (perspective)
-        float aspect = (float)WINDOW_WIDTH / (float)WINDOW_HEIGHT;
-        float fov = 45.0f * 3.14159f / 180.0f;
-        float near = 0.1f;
-        float far = 100.0f;
-        float f = 1.0f / tanf(fov / 2.0f);
-        float projection[16] = {
-            f / aspect, 0.0f, 0.0f, 0.0f,
-            0.0f, f, 0.0f, 0.0f,
-            0.0f, 0.0f, (far + near) / (near - far), -1.0f,
-            0.0f, 0.0f, (2.0f * far * near) / (near - far), 0.0f
-        };
-        
-        // Set uniforms
-        graphics->SetUniformMatrix4fv(shaderProgram, "model", model, false);
-        graphics->SetUniformMatrix4fv(shaderProgram, "view", view, false);
-        graphics->SetUniformMatrix4fv(shaderProgram, "projection", projection, false);
-        
-        // Draw the cube
-        graphics->DrawElements(DrawMode::TRIANGLES, 36, nullptr);
-        
-        // Capture frame to file using PNG format
+        // Get the frame filename
         std::string filename = GetFrameFilename();
-        std::cout << "Capturing frame " << frameCount << " to " << filename << "..." << std::endl;
-        bool success = FrameCapture_PNG::CaptureViewportToFile(filename);
-        if (success) {
-            std::cout << "Successfully rendered frame " << frameCount << " to " << filename << std::endl;
-        } else {
-            std::cerr << "ERROR: Failed to save frame " << frameCount << " to " << filename << ", falling back to direct image creation" << std::endl;
+        
+        if (hasWindow && editor) {
+            // Poll events
+            graphics->PollEvents();
             
-            // Fall back to direct image creation
-            createRedImageDirectly(filename, WINDOW_WIDTH, WINDOW_HEIGHT);
-            std::cout << "Created fallback frame " << frameCount << " due to frame capture failure" << std::endl;
+            // Check if window is still open
+            if (!graphics->IsWindowOpen()) {
+                break;
+            }
+            
+            // Clear the screen
+            graphics->SetClearColor(0.2f, 0.3f, 0.3f, 1.0f);
+            graphics->Clear(true, true);
+            
+            // Set up key detection
+            bool keyWPressed = false;
+            bool keySPressed = false;
+            bool keyAPressed = false;
+            bool keyDPressed = false;
+            
+            // Simulate key presses based on frame number
+            if (frameCounter % 3 == 0) keyWPressed = true;  // Move forward every 3rd frame
+            if (frameCounter % 5 == 1) keySPressed = true;  // Move backward every 5th frame
+            if (frameCounter % 4 == 2) keyAPressed = true;  // Move left every 4th frame
+            if (frameCounter % 4 == 3) keyDPressed = true;  // Move right every 4th frame
+            
+            // Apply camera movement based on key detection
+            Camera* editorCamera = editor->GetEditorCamera();
+            if (editorCamera) {
+                Vector3 cameraPos = editorCamera->GetPosition();
+                Vector3 rotation = editorCamera->GetRotation();
+                
+                // Calculate forward and right vectors based on rotation
+                float yaw = rotation.y * 3.14159f / 180.0f;
+                float pitch = rotation.x * 3.14159f / 180.0f;
+                
+                // Calculate forward vector
+                Vector3 forward;
+                forward.x = sin(yaw) * cos(pitch);
+                forward.y = sin(pitch);
+                forward.z = cos(yaw) * cos(pitch);
+                forward.normalize();
+                
+                // Calculate right vector (cross product of up and forward)
+                Vector3 up(0, 1, 0);
+                Vector3 right = up.cross(forward);
+                right.normalize();
+                
+                // Move camera based on key presses
+                if (keyWPressed) cameraPos = cameraPos + forward * 0.1f;  // Move forward
+                if (keySPressed) cameraPos = cameraPos - forward * 0.1f;  // Move backward
+                if (keyAPressed) cameraPos = cameraPos - right * 0.1f;    // Move left
+                if (keyDPressed) cameraPos = cameraPos + right * 0.1f;    // Move right
+                
+                editorCamera->SetPosition(cameraPos);
+            }
+            
+            // Update the editor
+            editor->Update(deltaTime);
+            
+            // Render the editor (includes all panels and scene)
+            editor->Render();
+            
+            // Swap buffers to make the rendered content visible
+            graphics->SwapBuffers();
+            
+            // Capture frame to file using PNG format
+            std::cout << "Capturing frame " << frameCount << " to " << filename << "..." << std::endl;
+            bool success = FrameCapture_PNG::CaptureViewportToFile(filename);
+            if (success) {
+                std::cout << "Successfully rendered frame " << frameCount << " to " << filename << std::endl;
+            } else {
+                std::cerr << "ERROR: Failed to save frame " << frameCount << " to " << filename << ", falling back to direct image creation" << std::endl;
+                
+                // Fall back to direct image creation
+                createEditorPanelImage(filename, WINDOW_WIDTH, WINDOW_HEIGHT, nullptr);
+                std::cout << "Created fallback frame " << frameCount << " due to frame capture failure" << std::endl;
+            }
+        } else {
+            // In headless mode, we'll create a more informative image that shows editor panels
+            std::cout << "Creating headless mode frame " << frameCount << " to " << filename << "..." << std::endl;
+            
+            // Create a more informative image that shows editor panels
+            createEditorPanelImage(filename, WINDOW_WIDTH, WINDOW_HEIGHT, nullptr);
         }
         
-        // Increment frame counter
+        // Increment frame counters
         frameCount++;
-        
-        // Swap buffers
-        graphics->SwapBuffers();
+        frameCounter++;
         
         // Small delay to not overwhelm the system
         std::this_thread::sleep_for(std::chrono::milliseconds(100));
     }
     
     // Clean up
+    // Clean up editor
+    if (editor) {
+        delete editor;
+        editor = nullptr;
+    }
+    
+    // Destroy window if we have one
     if (hasWindow) {
-        graphics->DeleteBuffer(vbo);
-        graphics->DeleteBuffer(ibo);
-        graphics->DeleteVertexArray(vao);
-        graphics->DeleteProgram(shaderProgram);
         graphics->DestroyWindow();
     }
     
