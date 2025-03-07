@@ -16,6 +16,7 @@ class Face;
 #include "Texture.h"
 #include "platform.h"
 #include "Graphics/Core/IGraphicsAPI.h"
+#include <map>
 
 // Forward declarations
 class PointLight;
@@ -149,6 +150,28 @@ private:
     
     // Clean up graphics objects
     void CleanupGL();
+    
+    // Helper methods for OBJ loading
+    void parseVertexIndices(const std::string& v1, const std::string& v2, const std::string& v3,
+                           std::vector<unsigned int>& vertexIndices, 
+                           std::vector<unsigned int>& uvIndices, 
+                           std::vector<unsigned int>& normalIndices,
+                           size_t vertexCount, size_t uvCount, size_t normalCount);
+    void parseVertex(const std::string& vertexStr, 
+                    std::vector<unsigned int>& vertexIndices, 
+                    std::vector<unsigned int>& uvIndices, 
+                    std::vector<unsigned int>& normalIndices,
+                    size_t vertexCount, size_t uvCount, size_t normalCount);
+    void loadMTL(const std::string& mtlFilename, const std::string& objPath, 
+                std::map<std::string, Vector3>& materials);
+    void processModelData(const std::vector<Vector3>& temp_vertices,
+                         const std::vector<Vector3>& temp_normals,
+                         const std::vector<Vector2>& temp_uvs,
+                         const std::vector<unsigned int>& vertexIndices,
+                         const std::vector<unsigned int>& normalIndices,
+                         const std::vector<unsigned int>& uvIndices,
+                         const std::map<std::string, Vector3>& materials,
+                         const std::string& currentMaterial);
 };
 
 #endif // MODEL_H
