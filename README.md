@@ -89,34 +89,211 @@ The engine is structured around these core components:
 
 GameEngineSavi includes full support for Visual Studio 2022, making it easy to develop games on Windows.
 
-### Quick Setup
+### Prerequisites
 
-1. **Prerequisites**:
-   - Visual Studio 2022 (Community, Professional, or Enterprise)
-   - Desktop development with C++ workload installed
-   - Windows 10 or 11
+1. **Visual Studio 2022**:
+   - Download and install [Visual Studio 2022](https://visualstudio.microsoft.com/vs/) (Community, Professional, or Enterprise)
+   - During installation, select the "Desktop development with C++" workload
+   - Also select the following individual components:
+     - MSVC v143 - VS 2022 C++ x64/x86 build tools
+     - Windows 10/11 SDK
+     - C++ CMake tools for Windows
+     - C++ ATL for latest v143 build tools
+     - C++ MFC for latest v143 build tools
+     - C++ AddressSanitizer
 
-2. **Open the Solution**:
-   - Clone the repository
-   - Open `GameEngineSavi.sln` in Visual Studio 2022
+2. **System Requirements**:
+   - Windows 10 (version 1909 or higher) or Windows 11
+   - 8GB RAM minimum (16GB recommended)
+   - 4-core CPU minimum
+   - DirectX 11 compatible graphics card
+   - 10GB free disk space
 
-3. **Build and Run**:
-   - Select your desired configuration (Debug/Release) and platform (x64/Win32)
-   - Press F7 to build or F5 to build and run
+### Setting Up the Project
 
-### Detailed Documentation
+1. **Clone the Repository**:
+   ```batch
+   git clone https://github.com/ignaciosgithub/GameEngineSavi.git
+   cd GameEngineSavi
+   ```
 
-For comprehensive Visual Studio 2022 setup instructions, debugging tips, performance optimization, and more, see our [detailed Visual Studio 2022 guide](VS2022_GUIDE.md).
+2. **Generate Visual Studio Solution**:
+   - If the solution file doesn't exist, run the provided script:
+   ```batch
+   generate_vs2022_solution.bat
+   ```
+   - This will create `GameEngineSavi.sln` in the root directory
 
-This guide covers:
-- Complete project setup
-- Building configurations
-- Debugging techniques
-- Project structure
-- Creating new games
-- Using advanced features
-- Troubleshooting common issues
-- Performance optimization
+3. **Open the Solution**:
+   - Double-click on `GameEngineSavi.sln` or open it from Visual Studio
+   - Visual Studio will load the project structure and dependencies
+
+4. **Configure Build Settings**:
+   - In the Solution Explorer, right-click on the solution and select "Properties"
+   - Set the startup project to "Editor" or your game project
+   - Configure the build settings:
+     - Set the platform to "x64" (recommended) or "Win32"
+     - Set the configuration to "Debug" for development or "Release" for performance
+
+### Building and Running
+
+1. **Build the Engine**:
+   - Press F7 or select Build > Build Solution
+   - Check the Output window for any build errors
+   - The build process will compile all engine components and dependencies
+
+2. **Run the Editor**:
+   - Press F5 or select Debug > Start Debugging to run with debugging
+   - Press Ctrl+F5 or select Debug > Start Without Debugging for better performance
+   - The editor will launch with a default scene containing a cube and lighting
+
+3. **Build Configurations**:
+   - **Debug**: Includes debug symbols, no optimization, runtime checks
+   - **Release**: Optimized for performance, no debug symbols
+   - **RelWithDebInfo**: Optimized with debug symbols for profiling
+   - **MinSizeRel**: Optimized for minimal executable size
+
+### Project Structure in Visual Studio
+
+The solution is organized into several projects:
+
+1. **Engine Core**:
+   - Contains the core engine functionality (Scene, GameObject, etc.)
+   - Located in the root directory
+
+2. **Graphics**:
+   - DirectX and OpenGL implementations
+   - Located in the Graphics/ directory
+
+3. **Editor**:
+   - The game editor interface
+   - Located in the Editor/ directory
+
+4. **Physics**:
+   - Physics simulation and collision detection
+   - Located in the root directory (RigidBody.cpp, CollisionSystem.cpp, etc.)
+
+5. **Tests**:
+   - Unit tests for engine components
+   - Located in the TestSuite/ directory
+
+### Debugging Techniques
+
+1. **Breakpoints**:
+   - Set breakpoints by clicking in the left margin or pressing F9
+   - Use conditional breakpoints for complex scenarios (right-click > Conditions)
+
+2. **Watch Windows**:
+   - Add variables to the Watch window to monitor their values
+   - Use the Immediate window (Ctrl+Alt+I) to evaluate expressions
+
+3. **Memory and Performance Analysis**:
+   - Use the Memory Usage tool (Debug > Windows > Memory Usage)
+   - Use the CPU Profiler (Debug > Performance Profiler)
+   - Use the GPU Usage tool for graphics performance
+
+4. **Output and Error Handling**:
+   - Check the Output window for build and runtime messages
+   - Set the Debugger to break on exceptions (Debug > Windows > Exception Settings)
+
+### Common Issues and Solutions
+
+1. **Linker Errors**:
+   - Ensure all dependencies are properly included
+   - Check library paths in project properties
+   - Verify that the correct platform (x86/x64) is selected
+
+2. **Graphics API Issues**:
+   - DirectX requires Windows 10/11 with appropriate SDK
+   - OpenGL fallback is available if DirectX fails to initialize
+   - Check Graphics API initialization in the Output window
+
+3. **Performance Problems**:
+   - Use Release configuration for performance testing
+   - Enable the Visual Studio GPU profiler to identify bottlenecks
+   - Check for excessive debug logging in performance-critical code
+
+4. **Build Errors**:
+   - Update Visual Studio to the latest version
+   - Install missing components through Visual Studio Installer
+   - Check for platform-specific code that may not compile on Windows
+
+### Advanced Features
+
+1. **Custom Build Steps**:
+   - Add pre-build or post-build events in project properties
+   - Use for asset processing, code generation, or deployment
+
+2. **External Dependencies**:
+   - Manage external libraries through project properties
+   - Set include directories and library paths appropriately
+
+3. **Code Analysis**:
+   - Enable Code Analysis (Project > Properties > Code Analysis)
+   - Use static analysis to identify potential issues
+
+4. **Source Control Integration**:
+   - Use the built-in Git tools (View > Git Changes)
+   - Commit, branch, and merge directly from Visual Studio
+
+### Performance Optimization
+
+1. **Compiler Optimization Settings**:
+   - Configure in Project Properties > C/C++ > Optimization
+   - Use "Maximum Optimization (Favor Speed)" for release builds
+   - Enable "Whole Program Optimization" for best performance
+
+2. **Profiling Tools**:
+   - CPU Usage: Identify CPU-intensive functions
+   - GPU Usage: Find graphics bottlenecks
+   - Memory Usage: Detect memory leaks and excessive allocations
+
+3. **Parallel Debugging**:
+   - Use the Parallel Stacks window for multi-threaded code
+   - Use the Parallel Watch window to monitor variables across threads
+
+4. **Graphics Debugging**:
+   - Use the Graphics Debugger (Alt+F5) to capture frames
+   - Analyze shader performance and rendering issues
+
+### Creating a New Game Project
+
+1. **Create a New Project**:
+   - Right-click on the solution > Add > New Project
+   - Select "C++ Console Application" or "Empty Project"
+   - Name your project and click Create
+
+2. **Configure Project Dependencies**:
+   - Right-click on your project > Properties
+   - Add references to the Engine Core project
+   - Set include directories and library paths
+
+3. **Minimal Game Code**:
+   ```cpp
+   #include "Scene.h"
+   #include "GameObject.h"
+   #include "Camera.h"
+   #include "PointLight.h"
+   #include "DirectionalLight.h"
+   
+   int main() {
+       // Create a scene
+       auto scene = std::make_unique<Scene>();
+       scene->Load();
+       
+       // Add a game object
+       auto gameObject = std::make_unique<GameObject>("MyObject");
+       scene->AddGameObject(std::move(gameObject));
+       
+       // Run the game
+       scene->Run();
+       return 0;
+   }
+   ```
+
+4. **Build and Run Your Game**:
+   - Set your game project as the startup project
+   - Press F5 to build and run
 
 ## Creating a New Project
 
