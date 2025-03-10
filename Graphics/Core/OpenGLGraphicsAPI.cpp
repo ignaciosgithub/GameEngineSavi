@@ -650,7 +650,7 @@ bool OpenGLGraphicsAPI::CreateWindow(int width, int height, const char* title) {
     
     XSetWindowAttributes swa;
     swa.colormap = cmap;
-    swa.event_mask = ExposureMask | KeyPressMask;
+    swa.event_mask = ExposureMask | KeyPressMask | StructureNotifyMask; // Added StructureNotifyMask for window events
     
     window = XCreateWindow(
         display, root,
@@ -658,6 +658,10 @@ bool OpenGLGraphicsAPI::CreateWindow(int width, int height, const char* title) {
         vi->depth, InputOutput,
         vi->visual, CWColormap | CWEventMask, &swa
     );
+    
+    // Set WM_DELETE_WINDOW atom to handle window close events properly
+    Atom wmDeleteWindow = XInternAtom(display, "WM_DELETE_WINDOW", False);
+    XSetWMProtocols(display, window, &wmDeleteWindow, 1);
     
     XMapWindow(display, window);
     XStoreName(display, window, title);
@@ -780,11 +784,32 @@ void OpenGLGraphicsAPI::PollEvents() {
     XEvent event;
     while (XPending(display)) {
         XNextEvent(display, &event);
-        if (event.type == KeyPress) {
-            KeySym key = XLookupKeysym(&event.xkey, 0);
-            if (key == XK_Escape) {
+        
+        // Handle different event types
+        switch (event.type) {
+            case KeyPress:
+                {
+                    KeySym key = XLookupKeysym(&event.xkey, 0);
+                    if (key == XK_Escape) {
+                        windowOpen = false;
+                    }
+                }
+                break;
+                
+            case ClientMessage:
+                {
+                    // Check if it's a window close event (WM_DELETE_WINDOW)
+                    Atom wmDeleteWindow = XInternAtom(display, "WM_DELETE_WINDOW", False);
+                    if ((Atom)event.xclient.data.l[0] == wmDeleteWindow) {
+                        windowOpen = false;
+                    }
+                }
+                break;
+                
+            case DestroyNotify:
+                // Window was destroyed
                 windowOpen = false;
-            }
+                break;
         }
     }
 #endif

@@ -1580,3 +1580,32 @@ void DirectXGraphicsAPI::GetViewport(int* viewport) {
     viewport[3] = 600;
 #endif
 }
+
+// Matrix operations
+void DirectXGraphicsAPI::SetProjectionMatrix(const Matrix4x4& matrix) {
+#ifdef PLATFORM_WINDOWS
+    // In a real implementation, we would update a constant buffer with the projection matrix
+    std::cout << "Setting projection matrix" << std::endl;
+#endif
+}
+
+void DirectXGraphicsAPI::SetViewMatrix(const Matrix4x4& matrix) {
+#ifdef PLATFORM_WINDOWS
+    // In a real implementation, we would update a constant buffer with the view matrix
+    std::cout << "Setting view matrix" << std::endl;
+#endif
+}
+
+void DirectXGraphicsAPI::SetModelMatrix(const Matrix4x4& matrix) {
+#ifdef PLATFORM_WINDOWS
+    // In a real implementation, we would update a constant buffer with the model matrix
+    std::cout << "Setting model matrix" << std::endl;
+#endif
+}
+
+void DirectXGraphicsAPI::UseDefaultRedShader() {
+#ifdef PLATFORM_WINDOWS
+    // In a real implementation, we would use a simple red shader
+    std::cout << "Using default red shader" << std::endl;
+#endif
+}
