@@ -125,17 +125,18 @@ private:
     
     // Window management
     HWND hWnd;
-    bool windowOpen;
     
     // Helper methods
     void CreateDeviceAndSwapChain(HWND hwnd);
     void CreateRenderTargetView();
     void CreateDepthStencilView(int width, int height);
 #endif
+
     
     // Tracking state
     unsigned int currentVAO;
     unsigned int currentBuffer;
+    bool windowOpen;
 };
 
 #endif // DIRECTX_GRAPHICS_API_H
