@@ -9,6 +9,7 @@
 #include <X11/X.h>
 #include <X11/Xlib.h>
 #include <X11/keysym.h>
+#include <cstring>
 #include <GL/gl.h>
 #include <GL/glx.h>
 #include <GL/glu.h>
@@ -609,9 +610,15 @@ bool OpenGLGraphicsAPI::CreateWindow(int width, int height, const char* title) {
     return true;
 #else
     // Linux-specific window creation code
-    display = XOpenDisplay(NULL);
+    const char* displayName = getenv("DISPLAY");
+    if (!displayName || strlen(displayName) == 0) {
+        displayName = ":0"; // Default to :0 if DISPLAY is not set
+    }
+    
+    std::cout << "Attempting to connect to X display: " << displayName << std::endl;
+    display = XOpenDisplay(displayName);
     if (!display) {
-        std::cout << "Failed to open X display" << std::endl;
+        std::cout << "Failed to open X display: " << displayName << std::endl;
         return false;
     }
     
