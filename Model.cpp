@@ -455,6 +455,24 @@ void Model::Render(const std::vector<PointLight>& pointLights, const std::vector
         return; // Return early if no shader program is set to prevent segmentation fault
     }
     
+    Matrix4x4 modelMatrix;
+    modelMatrix.identity(); // Start with identity matrix
+    modelMatrix.translate(position.x, position.y, position.z);
+    
+    Matrix4x4 rotationMatrix = Matrix4x4::createRotation(rotation.x, rotation.y, rotation.z);
+    modelMatrix = modelMatrix * rotationMatrix;
+    
+    shaderProgram->SetUniform("model", modelMatrix);
+    
+    Matrix4x4 viewMatrix;
+    Matrix4x4 projectionMatrix;
+    viewMatrix.identity();
+    projectionMatrix.identity();
+    
+    shaderProgram->SetUniform("view", viewMatrix);
+    shaderProgram->SetUniform("projection", projectionMatrix);
+    std::cerr << "Warning: Using default view/projection matrices for model rendering" << std::endl;
+    
     // Set point light uniforms
     int pointLightCount = std::min((int)pointLights.size(), 8); // Limit to 8 point lights
     shaderProgram->SetUniform("numPointLights", pointLightCount);
