@@ -51,6 +51,7 @@ void Scene::CreateDefaultObjects() {
         // Create a game object for the light
         GameObject* lightObj = new GameObject("Default Light");
         lightObj->position = Vector3(0, 5, 0);
+        lightObj->AddLight(light);
         AddGameObject(lightObj);
 
         std::cout << "Created default point light" << std::endl;
