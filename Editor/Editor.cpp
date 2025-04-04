@@ -242,9 +242,6 @@ void Editor::RunMainLoop() {
         return;
     }
     
-    // Initialize time manager
-    TimeManager timeManager;
-    
     // Main loop
     while (windowOpen) {
         // Poll events
@@ -256,9 +253,11 @@ void Editor::RunMainLoop() {
             break;
         }
         
-        // Update time
-        timeManager.Update();
-        float deltaTime = timeManager.GetDeltaTime();
+        float deltaTime = 0.016f; // Default fallback value (60 FPS)
+        if (scene && scene->GetTimeManager()) {
+            scene->GetTimeManager()->Update();
+            deltaTime = scene->GetTimeManager()->GetDeltaTime();
+        }
         
         // Update editor
         Update(deltaTime);

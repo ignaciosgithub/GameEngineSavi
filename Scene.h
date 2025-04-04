@@ -42,6 +42,8 @@ public:
     void SetMainCamera(Camera* camera);
     Camera* GetMainCamera() const { return mainCamera; }
     
+    TimeManager* GetTimeManager() const { return time.get(); }
+    
     void SetPhysicsTimeStep(float timeStep) { physicsTimeStep = timeStep; }
     float GetPhysicsTimeStep() const { return physicsTimeStep; }
     
