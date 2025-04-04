@@ -912,7 +912,13 @@ void OpenGLGraphicsAPI::SwapBuffers() {
 #ifdef PLATFORM_WINDOWS
     ::SwapBuffers(hDC);
 #else
-    glXSwapBuffers(display, window);
+    if (display && window) {
+        glXSwapBuffers(display, window);
+    } else {
+        std::cout << "SwapBuffers - ERROR: Cannot swap buffers, resources not initialized" 
+                  << " (display=" << (display ? "valid" : "null")
+                  << ", window=" << window << ")" << std::endl;
+    }
 #endif
 }
 
