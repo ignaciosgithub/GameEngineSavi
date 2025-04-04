@@ -235,20 +235,29 @@ bool Editor::IsWindowOpen() const {
 }
 
 void Editor::RunMainLoop() {
+    std::cout << "Editor::RunMainLoop - Starting main loop" << std::endl;
+    
     // Get the graphics API
     auto graphics = GraphicsAPIFactory::GetInstance().GetGraphicsAPI();
     if (!graphics) {
-        std::cout << "Failed to get graphics API" << std::endl;
+        std::cout << "Editor::RunMainLoop - Failed to get graphics API" << std::endl;
         return;
     }
     
+    std::cout << "Editor::RunMainLoop - Graphics API obtained successfully" << std::endl;
+    
     // Main loop
     while (windowOpen) {
+        std::cout << "Editor::RunMainLoop - Starting frame" << std::endl;
+        
         // Poll events
+        std::cout << "Editor::RunMainLoop - Polling events" << std::endl;
         graphics->PollEvents();
         
         // Check if window is still open
+        std::cout << "Editor::RunMainLoop - Checking if window is open" << std::endl;
         if (!graphics->IsWindowOpen()) {
+            std::cout << "Editor::RunMainLoop - Window closed, exiting main loop" << std::endl;
             windowOpen = false;
             break;
         }

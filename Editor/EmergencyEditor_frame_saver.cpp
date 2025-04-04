@@ -22,6 +22,9 @@
 #include <iomanip>
 #include <cstdlib> // For system()
 
+#include <GL/glew.h>
+#include <GL/gl.h>
+
 // Platform-specific includes
 #ifdef PLATFORM_WINDOWS
     #include <windows.h>
@@ -264,6 +267,13 @@ int main(int argc, char** argv) {
     // Force software rendering
     putenv((char*)"LIBGL_ALWAYS_SOFTWARE=1");
     std::cout << "Forcing software rendering" << std::endl;
+    
+    GLenum err = glewInit();
+    if (err != GLEW_OK) {
+        std::cerr << "GLEW initialization failed: " << glewGetErrorString(err) << std::endl;
+        return 1;
+    }
+    std::cout << "GLEW version: " << glewGetString(GLEW_VERSION) << std::endl;
     
     // Set up OpenGL for 3D rendering
     glEnable(GL_DEPTH_TEST);

@@ -246,37 +246,59 @@ void Scene::RenderGameObject(GameObject* gameObject, const Matrix4x4& viewMatrix
 }
 
 void Scene::RenderScene() {
+    std::cout << "Scene::RenderScene - Starting scene rendering" << std::endl;
+    
     // Initialize camera manager if not already created
     if (!cameraManager) {
+        std::cout << "Scene::RenderScene - Creating new camera manager" << std::endl;
         cameraManager = std::unique_ptr<CameraManager>(new CameraManager());
 
         // Set main camera if available
         if (mainCamera) {
+            std::cout << "Scene::RenderScene - Setting main camera in new camera manager" << std::endl;
             cameraManager->SetMainCamera(mainCamera);
+        } else {
+            std::cout << "Scene::RenderScene - WARNING: No main camera available" << std::endl;
         }
     }
 
     // Get active cameras
+    std::cout << "Scene::RenderScene - Getting active cameras" << std::endl;
     std::vector<Camera*> cameras = cameraManager->GetActiveCameras();
+    std::cout << "Scene::RenderScene - Found " << cameras.size() << " active cameras" << std::endl;
 
     // Render from all cameras
     for (auto& camera : cameras) {
         if (!camera) {
+            std::cout << "Scene::RenderScene - WARNING: Skipping null camera" << std::endl;
             continue;
         }
+        
+        std::cout << "Scene::RenderScene - Rendering from camera at position: " 
+                  << camera->GetPosition().x << ", " 
+                  << camera->GetPosition().y << ", " 
+                  << camera->GetPosition().z << std::endl;
 
         // Set viewport using the graphics API
         int viewportX = 0;
         int viewportY = 0;
         int viewportWidth = camera->GetViewportWidth();
         int viewportHeight = camera->GetViewportHeight();
+        
+        std::cout << "Scene::RenderScene - Setting viewport: " 
+                  << viewportX << ", " << viewportY << ", " 
+                  << viewportWidth << ", " << viewportHeight << std::endl;
 
         auto graphics = GraphicsAPIFactory::GetInstance().GetGraphicsAPI();
         if (graphics) {
             graphics->SetViewport(viewportX, viewportY, viewportWidth, viewportHeight);
+        } else {
+            std::cout << "Scene::RenderScene - ERROR: Failed to get graphics API" << std::endl;
+            return;
         }
 
         // Get view and projection matrices
+        std::cout << "Scene::RenderScene - Getting view and projection matrices" << std::endl;
         Matrix4x4 viewMatrix = camera->GetViewMatrix();
         Matrix4x4 projectionMatrix = camera->GetProjectionMatrix();
 
@@ -284,25 +306,36 @@ void Scene::RenderScene() {
         Vector3 cameraPosition = camera->GetPosition();
 
         // Render game objects
+        std::cout << "Scene::RenderScene - Rendering " << gameObjects.size() << " game objects" << std::endl;
         for (auto& gameObject : gameObjects) {
             if (gameObject) {
+                std::cout << "Scene::RenderScene - Rendering game object: " << gameObject->GetName() << std::endl;
                 RenderGameObject(gameObject, viewMatrix, projectionMatrix, cameraPosition);
+            } else {
+                std::cout << "Scene::RenderScene - WARNING: Skipping null game object" << std::endl;
             }
         }
 
         // Draw coordinate axes for debugging (only in editor mode)
         if (EngineCondition::IsInEditor()) {
+            std::cout << "Scene::RenderScene - Drawing debug axes (editor mode)" << std::endl;
             DrawDebugAxes();
         }
     }
+    
+    std::cout << "Scene::RenderScene - Scene rendering completed" << std::endl;
 }
 
 void Scene::RenderMesh(Model* mesh, const Matrix4x4& modelMatrix, const Matrix4x4& viewMatrix, const Matrix4x4& projectionMatrix, const Vector3& cameraPosition) {
+    std::cout << "Scene::RenderMesh - Starting mesh rendering" << std::endl;
+    
     if (!mesh) {
+        std::cout << "Scene::RenderMesh - ERROR: Mesh is null" << std::endl;
         return;
     }
 
     // Get all point lights in the scene
+    std::cout << "Scene::RenderMesh - Collecting point lights" << std::endl;
     std::vector<PointLight> pointLights;
     for (auto& gameObject : gameObjects) {
         if (gameObject) {
@@ -311,8 +344,10 @@ void Scene::RenderMesh(Model* mesh, const Matrix4x4& modelMatrix, const Matrix4x
             }
         }
     }
+    std::cout << "Scene::RenderMesh - Collected " << pointLights.size() << " point lights" << std::endl;
 
     // Get all directional lights in the scene
+    std::cout << "Scene::RenderMesh - Collecting directional lights" << std::endl;
     std::vector<DirectionalLight> dirLights;
     for (auto& gameObject : gameObjects) {
         if (gameObject) {
@@ -323,9 +358,12 @@ void Scene::RenderMesh(Model* mesh, const Matrix4x4& modelMatrix, const Matrix4x
     }
     // Add scene-level directional lights
     dirLights.insert(dirLights.end(), directionalLights.begin(), directionalLights.end());
+    std::cout << "Scene::RenderMesh - Collected " << dirLights.size() << " directional lights" << std::endl;
 
     // Render the mesh with the lights
+    std::cout << "Scene::RenderMesh - Calling mesh->Render with collected lights" << std::endl;
     mesh->Render(pointLights, dirLights);
+    std::cout << "Scene::RenderMesh - Mesh rendering completed" << std::endl;
 }
 
 void Scene::DrawDebugAxes() {
