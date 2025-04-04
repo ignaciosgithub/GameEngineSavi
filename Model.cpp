@@ -442,16 +442,22 @@ void Model::CleanupGL() {
 
 // Render the model with both point lights and directional lights
 void Model::Render(const std::vector<PointLight>& pointLights, const std::vector<DirectionalLight>& directionalLights) {
+    std::cout << "Model::Render - Starting render with " << pointLights.size() << " point lights and " 
+              << directionalLights.size() << " directional lights" << std::endl;
+    
     auto graphics = GraphicsAPIFactory::GetInstance().GetGraphicsAPI();
     if (!graphics || vao == 0) {
+        std::cout << "Model::Render - ERROR: Graphics API or VAO is null (graphics=" 
+                  << (graphics ? "valid" : "null") << ", vao=" << vao << ")" << std::endl;
         return;
     }
     
     // Use shader program if available
     if (shaderProgram) {
+        std::cout << "Model::Render - Using shader program with handle: " << shaderProgram->GetHandle() << std::endl;
         graphics->UseShaderProgram(shaderProgram);
     } else {
-        std::cerr << "Warning: No shader program set for model" << std::endl;
+        std::cout << "Model::Render - ERROR: No shader program set for model" << std::endl;
         return; // Return early if no shader program is set to prevent segmentation fault
     }
     

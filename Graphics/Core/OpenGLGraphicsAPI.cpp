@@ -39,6 +39,23 @@ OpenGLGraphicsAPI::OpenGLGraphicsAPI()
 
 OpenGLGraphicsAPI::~OpenGLGraphicsAPI() {
     std::cout << "OpenGLGraphicsAPI destructor called" << std::endl;
+    
+    #ifndef PLATFORM_WINDOWS
+    if (display) {
+        std::cout << "Destructor - Cleaning up X display connection" << std::endl;
+        if (context) {
+            glXMakeCurrent(display, None, NULL);
+            glXDestroyContext(display, context);
+            context = NULL;
+        }
+        if (window) {
+            XDestroyWindow(display, window);
+            window = 0;
+        }
+        XCloseDisplay(display);
+        display = NULL;
+    }
+    #endif
 }
 
 bool OpenGLGraphicsAPI::Initialize() {
@@ -47,6 +64,17 @@ bool OpenGLGraphicsAPI::Initialize() {
     // Note: GLEW initialization should happen after OpenGL context creation
     // This will be done in CreateWindow method after context is created
     
+    #ifndef PLATFORM_WINDOWS
+    if (display) {
+        std::cout << "Initialize - Cleaning up existing X display connection" << std::endl;
+        XCloseDisplay(display);
+        display = NULL;
+    }
+    window = 0;
+    context = NULL;
+    #endif
+    
+    windowOpen = false;
     return true;
 }
 
@@ -168,10 +196,19 @@ void OpenGLGraphicsAPI::LinkProgram(unsigned int program) {
 }
 
 void OpenGLGraphicsAPI::UseShaderProgram(ShaderProgram* program) {
+    std::cout << "OpenGLGraphicsAPI::UseShaderProgram - " 
+              << (program ? "Using program with handle: " + std::to_string(program->GetHandle()) 
+                          : "Using null program (unbinding)") << std::endl;
+    
     if (program) {
-        glUseProgram(program->GetHandle());
-        currentShader = program->GetHandle();
+        unsigned int handle = program->GetHandle();
+        if (handle == 0) {
+            std::cout << "OpenGLGraphicsAPI::UseShaderProgram - WARNING: Program handle is 0" << std::endl;
+        }
+        glUseProgram(handle);
+        currentShader = handle;
     } else {
+        std::cout << "OpenGLGraphicsAPI::UseShaderProgram - Unbinding shader program (using 0)" << std::endl;
         glUseProgram(0);
         currentShader = 0;
     }
@@ -297,10 +334,14 @@ void OpenGLGraphicsAPI::SetClearColor(float r, float g, float b, float a) {
 }
 
 void OpenGLGraphicsAPI::DrawArrays(DrawMode mode, int first, int count) {
+    std::cout << "OpenGLGraphicsAPI::DrawArrays - Drawing " << count << " vertices with mode: " 
+              << static_cast<int>(mode) << " starting at: " << first << std::endl;
     glDrawArrays(ConvertDrawMode(mode), first, count);
 }
 
 void OpenGLGraphicsAPI::DrawElements(DrawMode mode, int count, const void* indices) {
+    std::cout << "OpenGLGraphicsAPI::DrawElements - Drawing " << count << " indices with mode: " 
+              << static_cast<int>(mode) << " indices ptr: " << indices << std::endl;
     glDrawElements(ConvertDrawMode(mode), count, GL_UNSIGNED_INT, indices);
 }
 
@@ -757,10 +798,22 @@ void OpenGLGraphicsAPI::DestroyWindow() {
     ReleaseDC(hWnd, hDC);
     DestroyWindow(hWnd);
 #else
-    glXMakeCurrent(display, None, NULL);
-    glXDestroyContext(display, context);
-    XDestroyWindow(display, window);
-    XCloseDisplay(display);
+    if (display) {
+        std::cout << "DestroyWindow - Cleaning up X11 resources" << std::endl;
+        if (context) {
+            glXMakeCurrent(display, None, NULL);
+            glXDestroyContext(display, context);
+            context = NULL;
+        }
+        if (window) {
+            XDestroyWindow(display, window);
+            window = 0;
+        }
+        XCloseDisplay(display);
+        display = NULL;
+    } else {
+        std::cout << "DestroyWindow - Display already null, nothing to clean up" << std::endl;
+    }
 #endif
     windowOpen = false;
 }
@@ -769,7 +822,14 @@ void OpenGLGraphicsAPI::MakeContextCurrent() {
 #ifdef PLATFORM_WINDOWS
     wglMakeCurrent(hDC, hRC);
 #else
-    glXMakeCurrent(display, window, context);
+    if (display && window && context) {
+        glXMakeCurrent(display, window, context);
+    } else {
+        std::cout << "MakeContextCurrent - ERROR: Cannot make context current, resources not initialized" 
+                  << " (display=" << (display ? "valid" : "null")
+                  << ", window=" << window
+                  << ", context=" << (context ? "valid" : "null") << ")" << std::endl;
+    }
 #endif
 }
 
@@ -788,11 +848,36 @@ void OpenGLGraphicsAPI::PollEvents() {
         }
     }
 #else
-    XEvent event;
-    while (XPending(display)) {
+    std::cout << "OpenGLGraphicsAPI::PollEvents - Starting X11 event polling" << std::endl;
+    
+    if (!display) {
+        std::cout << "OpenGLGraphicsAPI::PollEvents - ERROR: Display is null, cannot poll events" << std::endl;
+        windowOpen = false;
+        return;
+    }
+    
+    if (XConnectionNumber(display) < 0) {
+        std::cout << "OpenGLGraphicsAPI::PollEvents - ERROR: X11 display connection is invalid" << std::endl;
+        windowOpen = false;
+        return;
+    }
+    
+    int pending = 0;
+    try {
+        pending = XPending(display);
+        std::cout << "OpenGLGraphicsAPI::PollEvents - " << pending << " pending X events" << std::endl;
+    } catch (...) {
+        std::cout << "OpenGLGraphicsAPI::PollEvents - ERROR: Exception while checking for pending events" << std::endl;
+        windowOpen = false;
+        return;
+    }
+    
+    while (pending > 0) {
+        XEvent event;
         XNextEvent(display, &event);
         
         // Handle different event types
+        std::cout << "OpenGLGraphicsAPI::PollEvents - Processing event type: " << event.type << std::endl;
         switch (event.type) {
             case KeyPress:
                 {
