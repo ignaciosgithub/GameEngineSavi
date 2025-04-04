@@ -240,23 +240,46 @@ void Editor::RunMainLoop() {
     
     std::cout << "Editor::RunMainLoop - Graphics API obtained successfully" << std::endl;
     
-    // Main loop
+    std::cout << "Editor::RunMainLoop - Performing initial render" << std::endl;
+    float initialDeltaTime = 0.016f;
+    Update(initialDeltaTime);
+    Render();
+    graphics->SwapBuffers();
+    
+    std::thread eventPollingThread([this, graphics]() {
+        std::cout << "Event polling thread started" << std::endl;
+        while (windowOpen) {
+            graphics->PollEvents();
+            
+            // Check if window is still open
+            if (!graphics->IsWindowOpen()) {
+                std::cout << "Event polling thread - Window closed, exiting" << std::endl;
+                windowOpen = false;
+                break;
+            }
+            
+            std::this_thread::sleep_for(std::chrono::milliseconds(16)); // ~60 Hz polling
+        }
+        std::cout << "Event polling thread exited" << std::endl;
+    });
+    
+    const auto frameTime = std::chrono::milliseconds(16); // Target ~60 FPS
+    auto lastFrameTime = std::chrono::high_resolution_clock::now();
+    
+    std::cout << "Editor::RunMainLoop - Starting render loop" << std::endl;
     while (windowOpen) {
-        std::cout << "Editor::RunMainLoop - Starting frame" << std::endl;
+        auto currentTime = std::chrono::high_resolution_clock::now();
+        auto elapsedTime = std::chrono::duration_cast<std::chrono::milliseconds>(currentTime - lastFrameTime);
         
-        // Poll events
-        std::cout << "Editor::RunMainLoop - Polling events" << std::endl;
-        graphics->PollEvents();
-        
-        // Check if window is still open
-        std::cout << "Editor::RunMainLoop - Checking if window is open" << std::endl;
-        if (!graphics->IsWindowOpen()) {
-            std::cout << "Editor::RunMainLoop - Window closed, exiting main loop" << std::endl;
-            windowOpen = false;
-            break;
+        if (elapsedTime < frameTime) {
+            std::this_thread::sleep_for(frameTime - elapsedTime);
+            currentTime = std::chrono::high_resolution_clock::now();
+            elapsedTime = std::chrono::duration_cast<std::chrono::milliseconds>(currentTime - lastFrameTime);
         }
         
-        float deltaTime = 0.016f; // Default fallback value (60 FPS)
+        float deltaTime = elapsedTime.count() / 1000.0f;
+        lastFrameTime = currentTime;
+        
         if (scene && scene->GetTimeManager()) {
             scene->GetTimeManager()->Update();
             deltaTime = scene->GetTimeManager()->GetDeltaTime();
@@ -270,5 +293,11 @@ void Editor::RunMainLoop() {
         
         // Swap buffers
         graphics->SwapBuffers();
+        
+        std::cout << "Frame rendered." << std::endl;
+    }
+    
+    if (eventPollingThread.joinable()) {
+        eventPollingThread.join();
     }
 }
