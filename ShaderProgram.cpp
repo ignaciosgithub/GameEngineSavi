@@ -41,6 +41,8 @@ GLint ShaderProgram::GetUniformLocation(const std::string& name) {
 void ShaderProgram::SetUniform(const std::string& name, int value) {
     auto graphics = GraphicsAPIFactory::GetInstance().GetGraphicsAPI();
     if (graphics) {
+        GLint location = GetUniformLocation(name);
+        std::cout << "ShaderProgram::SetUniform - Setting int uniform '" << name << "' to value: " << value << " at location: " << location << std::endl;
         graphics->SetUniform1i(handle, name, value);
     }
 }
@@ -48,6 +50,8 @@ void ShaderProgram::SetUniform(const std::string& name, int value) {
 void ShaderProgram::SetUniform(const std::string& name, float value) {
     auto graphics = GraphicsAPIFactory::GetInstance().GetGraphicsAPI();
     if (graphics) {
+        GLint location = GetUniformLocation(name);
+        std::cout << "ShaderProgram::SetUniform - Setting float uniform '" << name << "' to value: " << value << " at location: " << location << std::endl;
         graphics->SetUniform1f(handle, name, value);
     }
 }
@@ -55,6 +59,9 @@ void ShaderProgram::SetUniform(const std::string& name, float value) {
 void ShaderProgram::SetUniform(const std::string& name, const Vector3& value) {
     auto graphics = GraphicsAPIFactory::GetInstance().GetGraphicsAPI();
     if (graphics) {
+        GLint location = GetUniformLocation(name);
+        std::cout << "ShaderProgram::SetUniform - Setting Vector3 uniform '" << name << "' to value: (" 
+                  << value.x << ", " << value.y << ", " << value.z << ") at location: " << location << std::endl;
         graphics->SetUniform3f(handle, name, value.x, value.y, value.z);
     }
 }
@@ -62,6 +69,8 @@ void ShaderProgram::SetUniform(const std::string& name, const Vector3& value) {
 void ShaderProgram::SetUniform(const std::string& name, const Matrix4x4& value) {
     auto graphics = GraphicsAPIFactory::GetInstance().GetGraphicsAPI();
     if (graphics) {
+        GLint location = GetUniformLocation(name);
+        std::cout << "ShaderProgram::SetUniform - Setting Matrix4x4 uniform '" << name << "' at location: " << location << std::endl;
         graphics->SetUniformMatrix4fv(handle, name, &value.elements[0][0]);
     }
 }
