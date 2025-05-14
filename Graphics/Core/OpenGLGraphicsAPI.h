@@ -47,6 +47,8 @@ public:
     
     // Viewport and clear
     virtual void SetViewport(int x, int y, int width, int height) override;
+    virtual void Begin2D(); // Add this method to set up 2D GUI rendering
+    virtual void End2D();   // Add this method to restore 3D rendering state
     virtual void Clear(bool colorBuffer, bool depthBuffer) override;
     virtual void SetClearColor(float r, float g, float b, float a) override;
     

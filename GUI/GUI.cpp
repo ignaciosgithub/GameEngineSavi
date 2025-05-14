@@ -88,8 +88,8 @@ Panel::Panel(float x, float y, float w, float h)
 void Panel::Draw() {
     if (!visible) return;
     
-    // Draw panel background
-    glColor3f(0.5f, 0.5f, 0.5f);
+    // Draw panel background with a more distinct color
+    glColor4f(0.3f, 0.3f, 0.3f, 0.8f); // Darker gray with some transparency
     glBegin(GL_QUADS);
     glVertex2f(x, y);
     glVertex2f(x + width, y);
@@ -97,8 +97,8 @@ void Panel::Draw() {
     glVertex2f(x, y + height);
     glEnd();
     
-    // Draw panel border
-    glColor3f(0.0f, 0.0f, 0.0f);
+    // Draw panel border with a more visible color
+    glColor3f(0.7f, 0.7f, 0.7f); // Lighter gray for contrast
     glBegin(GL_LINE_LOOP);
     glVertex2f(x, y);
     glVertex2f(x + width, y);
