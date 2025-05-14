@@ -182,7 +182,8 @@ int main(int argc, char** argv) {
             "out vec4 FragColor;\n"
             "void main()\n"
             "{\n"
-            "   FragColor = vec4(ourColor, 1.0);\n"
+            "   // Use a brighter red color for better visibility\n"
+            "   FragColor = vec4(1.0, 0.2, 0.2, 1.0);\n"
             "}\0";
         graphics->ShaderSource(fragmentShader, std::string(fragmentShaderSource));
         graphics->CompileShader(fragmentShader);
@@ -227,10 +228,10 @@ int main(int argc, char** argv) {
         modelMatrix.identity();
         modelMatrix.rotateY(time * 2.0f);
         
-        // View matrix (move the camera back a bit)
+        // View matrix (position camera behind the light, looking at cube)
         Matrix4x4 viewMatrix;
         viewMatrix.identity();
-        viewMatrix.translate(0.0f, 0.0f, -3.0f);
+        viewMatrix.translate(0.0f, -2.0f, -5.0f); // Match main editor camera position
         
         // Projection matrix (perspective)
         Matrix4x4 projectionMatrix;

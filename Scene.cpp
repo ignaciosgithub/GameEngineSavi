@@ -43,14 +43,14 @@ void Scene::CreateDefaultObjects() {
     if (!hasPointLight) {
         // Create a point light
         PointLight light;
-        light.SetPosition(Vector3(0, 5, 0));
+        light.SetPosition(Vector3(0, 1, 5)); // Position light in front of objects, not directly above
         light.SetColor(Vector3(1, 1, 1));
         light.SetIntensity(1.0f);
         light.SetRange(10.0f);
 
         // Create a game object for the light
         GameObject* lightObj = new GameObject("Default Light");
-        lightObj->position = Vector3(0, 5, 0);
+        lightObj->position = Vector3(0, 1, 5); // Match the position set in the light
         lightObj->AddLight(light);
         AddGameObject(lightObj);
 
@@ -95,7 +95,7 @@ void Scene::CreateDefaultObjects() {
     if (!mainCamera) {
         // Create a camera
         Camera* camera = new Camera();
-        camera->SetPosition(Vector3(0, 2, -5));
+        camera->SetPosition(Vector3(0, 2, 5)); // Position camera behind the light, looking at cube
         // Use LookAt instead of SetTarget
         camera->LookAt(Vector3(0, 0, 0));
         // Use fieldOfView instead of SetFOV
@@ -541,12 +541,32 @@ ShaderProgram* Scene::CreateDefaultShaderProgram() {
         "uniform vec3 viewPos;\n"
         "void main()\n"
         "{\n"
+        "   // Define material properties\n"
+        "   vec3 materialDiffuse = vec3(1.0, 0.2, 0.2);\n" // Bright red diffuse material
+        "   vec3 materialSpecular = vec3(0.5, 0.5, 0.5);\n" // Gray specular highlights
+        "   float materialShininess = 32.0;\n"
+        "   \n"
+        "   // Light properties\n"
+        "   vec3 lightPos = vec3(0.0, 1.0, 5.0);\n" // Match the actual light position
+        "   vec3 lightColor = vec3(1.0, 1.0, 1.0);\n"
+        "   \n"
+        "   // Ambient lighting\n"
+        "   vec3 ambient = 0.1 * materialDiffuse;\n"
+        "   \n"
+        "   // Diffuse lighting\n"
         "   vec3 norm = normalize(Normal);\n"
-        "   vec3 lightDir = normalize(vec3(1.0, 1.0, 1.0));\n"
+        "   vec3 lightDir = normalize(lightPos - FragPos);\n" // Calculate actual light direction
         "   float diff = max(dot(norm, lightDir), 0.0);\n"
-        "   vec3 diffuse = diff * vec3(1.0, 1.0, 1.0);\n"
-        "   vec3 ambient = 0.1 * vec3(1.0, 1.0, 1.0);\n"
-        "   vec3 result = (ambient + diffuse) * vec3(0.7, 0.2, 0.2);\n"
+        "   vec3 diffuse = diff * lightColor * materialDiffuse;\n"
+        "   \n"
+        "   // Specular lighting\n"
+        "   vec3 viewDir = normalize(viewPos - FragPos);\n"
+        "   vec3 reflectDir = reflect(-lightDir, norm);\n"
+        "   float spec = pow(max(dot(viewDir, reflectDir), 0.0), materialShininess);\n"
+        "   vec3 specular = spec * lightColor * materialSpecular;\n"
+        "   \n"
+        "   // Combined result\n"
+        "   vec3 result = ambient + diffuse + specular;\n"
         "   FragColor = vec4(result, 1.0);\n"
         "}\0";
     graphics->ShaderSource(fragmentShader, std::string(fragmentShaderSource));

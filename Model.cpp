@@ -503,6 +503,14 @@ void Model::Render(const std::vector<PointLight>& pointLights, const std::vector
     shaderProgram->SetUniform("view", viewMatrix);
     shaderProgram->SetUniform("projection", projectionMatrix);
     
+    Vector3 viewPos = Vector3(0, 0, 0);
+    Matrix4x4 viewInverse = viewMatrix;
+    viewInverse.invert();
+    viewPos.x = viewInverse.elements[3][0];
+    viewPos.y = viewInverse.elements[3][1];
+    viewPos.z = viewInverse.elements[3][2];
+    shaderProgram->SetUniform("viewPos", viewPos);
+    
     // Set point light uniforms
     int pointLightCount = std::min((int)pointLights.size(), 8); // Limit to 8 point lights
     shaderProgram->SetUniform("numPointLights", pointLightCount);
