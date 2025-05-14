@@ -504,11 +504,25 @@ void Model::Render(const std::vector<PointLight>& pointLights, const std::vector
     shaderProgram->SetUniform("projection", projectionMatrix);
     
     Vector3 viewPos = Vector3(0, 0, 0);
-    Matrix4x4 viewInverse = viewMatrix;
-    viewInverse.invert();
-    viewPos.x = viewInverse.elements[3][0];
-    viewPos.y = viewInverse.elements[3][1];
-    viewPos.z = viewInverse.elements[3][2];
+    
+    float m00 = viewMatrix.elements[0][0];
+    float m01 = viewMatrix.elements[0][1];
+    float m02 = viewMatrix.elements[0][2];
+    float m10 = viewMatrix.elements[1][0];
+    float m11 = viewMatrix.elements[1][1];
+    float m12 = viewMatrix.elements[1][2];
+    float m20 = viewMatrix.elements[2][0];
+    float m21 = viewMatrix.elements[2][1];
+    float m22 = viewMatrix.elements[2][2];
+    
+    float tx = viewMatrix.elements[0][3];
+    float ty = viewMatrix.elements[1][3];
+    float tz = viewMatrix.elements[2][3];
+    
+    viewPos.x = -(tx * m00 + ty * m10 + tz * m20);
+    viewPos.y = -(tx * m01 + ty * m11 + tz * m21);
+    viewPos.z = -(tx * m02 + ty * m12 + tz * m22);
+    
     shaderProgram->SetUniform("viewPos", viewPos);
     
     // Set point light uniforms
