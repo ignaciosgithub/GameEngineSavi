@@ -527,14 +527,27 @@ void Model::Render(const std::vector<PointLight>& pointLights, const std::vector
     
     // Set point light uniforms
     int pointLightCount = std::min((int)pointLights.size(), 8); // Limit to 8 point lights
-    shaderProgram->SetUniform("numPointLights", pointLightCount);
+    std::cout << "Model::Render - Setting pointLightCount: " << pointLightCount << std::endl;
+    shaderProgram->SetUniform("pointLightCount", pointLightCount);
     
     for (int i = 0; i < pointLightCount; i++) {
         std::string prefix = "pointLights[" + std::to_string(i) + "].";
-        shaderProgram->SetUniform(prefix + "position", pointLights[i].GetPosition());
-        shaderProgram->SetUniform(prefix + "color", pointLights[i].GetColor());
-        shaderProgram->SetUniform(prefix + "intensity", pointLights[i].GetIntensity());
-        shaderProgram->SetUniform(prefix + "range", pointLights[i].GetRange());
+        Vector3 lightPos = pointLights[i].GetPosition();
+        Vector3 lightColor = pointLights[i].GetColor();
+        float intensity = pointLights[i].GetIntensity();
+        float range = pointLights[i].GetRange();
+        
+        std::cout << "Model::Render - Light[" << i << "] position: (" 
+                  << lightPos.x << ", " << lightPos.y << ", " << lightPos.z << ")" << std::endl;
+        std::cout << "Model::Render - Light[" << i << "] color: (" 
+                  << lightColor.x << ", " << lightColor.y << ", " << lightColor.z << ")" << std::endl;
+        std::cout << "Model::Render - Light[" << i << "] intensity: " << intensity << std::endl;
+        std::cout << "Model::Render - Light[" << i << "] range: " << range << std::endl;
+        
+        shaderProgram->SetUniform(prefix + "position", lightPos);
+        shaderProgram->SetUniform(prefix + "color", lightColor);
+        shaderProgram->SetUniform(prefix + "intensity", intensity);
+        shaderProgram->SetUniform(prefix + "range", range);
     }
     
     // Set directional light uniforms
