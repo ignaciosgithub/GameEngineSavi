@@ -20,13 +20,14 @@ void HierarchyPanel::Update(float deltaTime) {
 }
 
 void HierarchyPanel::Draw() {
-    
     Scene* scene = GetScene();
     if (!scene) {
         return;
     }
     
-    std::cout << "Hierarchy Panel" << std::endl;
+    Panel::Draw();
+    
+    std::cout << "Rendering Hierarchy Panel" << std::endl;
     
     // Draw each game object in the hierarchy
     for (auto gameObject : gameObjects) {
@@ -39,10 +40,10 @@ void HierarchyPanel::DrawGameObjectHierarchy(GameObject* gameObject, int indentL
         return;
     }
     
-    int yPos = y + 20 + (indentLevel * 10);
+    float yPos = y + 20 + (indentLevel * 10);
     
     if (gameObject == selectedGameObject) {
-        std::cout << "Selected: ";
+        std::cout << "Drawing selection highlight for: " << gameObject->GetName() << std::endl;
     }
     
     for (int i = 0; i < indentLevel; i++) {
@@ -50,11 +51,10 @@ void HierarchyPanel::DrawGameObjectHierarchy(GameObject* gameObject, int indentL
     }
     
     if (renamingObject && gameObject == selectedGameObject) {
-        std::cout << "Renaming: " << renameBuffer << std::endl;
+        std::cout << "Rendering rename field for: " << renameBuffer << std::endl;
     } else {
-        std::cout << gameObject->GetName() << std::endl;
+        std::cout << "Rendering object name: " << gameObject->GetName() << std::endl;
     }
-    
 }
 
 bool HierarchyPanel::HandleInput(int mouseX, int mouseY, bool clicked) {
@@ -150,5 +150,17 @@ GameObject* HierarchyPanel::GetSelectedGameObject() const {
 }
 
 Scene* HierarchyPanel::GetScene() const {
-    return nullptr;
+    return Editor::GetInstance()->GetScene();
+}
+void HierarchyPanel::UpdateFromScene() {
+    Scene* scene = GetScene();
+    if (!scene) {
+        return;
+    }
+    
+    gameObjects.clear();
+    
+    for (auto& gameObject : scene->GetGameObjects()) {
+        AddGameObject(gameObject);
+    }
 }
