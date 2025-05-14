@@ -18,6 +18,7 @@ public:
     void Update(float deltaTime);
     void Render();
     void Resize(int newWidth, int newHeight);
+    void HandleInput(int x, int y, bool clicked);
     
     Camera* GetEditorCamera() const { return editorCamera; }
     Scene* GetScene() const { return scene; }
