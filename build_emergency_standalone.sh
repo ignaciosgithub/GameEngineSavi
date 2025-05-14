@@ -18,7 +18,7 @@ g++ -std=c++11 -o bin/linux/EmergencyEditor_standalone \
     -DGL_GLEXT_PROTOTYPES \
     -DPLATFORM_LINUX \
     -DGLEW_STATIC \
-    -lGL -lGLU -lglut -lX11 -lGLEW
+    -lGL -lGLU -lglut -lGLEW -lX11 -ldl -lpthread
 
 # Check if build was successful
 if [ $? -eq 0 ]; then
