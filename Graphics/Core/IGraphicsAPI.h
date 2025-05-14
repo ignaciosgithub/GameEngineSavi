@@ -129,6 +129,10 @@ public:
     virtual void SetViewMatrix(const Matrix4x4& matrix) = 0;
     virtual void SetModelMatrix(const Matrix4x4& matrix) = 0;
     virtual bool SupportsMatrixOperations() const = 0;
+    
+    // Input handling
+    virtual void GetMousePosition(int& x, int& y) = 0;
+    virtual bool IsMouseButtonPressed(int button) = 0;
 };
 
 #endif // IGRAPHICS_API_H

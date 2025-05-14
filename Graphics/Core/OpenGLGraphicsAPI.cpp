@@ -974,3 +974,51 @@ void OpenGLGraphicsAPI::UseDefaultRedShader() {
 }
 
 // Note: Uniform setters are already defined above
+
+void OpenGLGraphicsAPI::GetMousePosition(int& x, int& y) {
+#ifdef PLATFORM_WINDOWS
+    // Windows implementation would go here
+    x = 0;
+    y = 0;
+#else
+    if (display && window) {
+        Window root_return, child_return;
+        int root_x_return, root_y_return;
+        unsigned int mask_return;
+        
+        XQueryPointer(display, window, &root_return, &child_return,
+                      &root_x_return, &root_y_return, &x, &y, &mask_return);
+    } else {
+        x = 0;
+        y = 0;
+    }
+#endif
+}
+
+bool OpenGLGraphicsAPI::IsMouseButtonPressed(int button) {
+#ifdef PLATFORM_WINDOWS
+    // Windows implementation would go here
+    return false;
+#else
+    if (display && window) {
+        Window root_return, child_return;
+        int root_x_return, root_y_return, win_x_return, win_y_return;
+        unsigned int mask_return;
+        
+        XQueryPointer(display, window, &root_return, &child_return,
+                      &root_x_return, &root_y_return, &win_x_return, &win_y_return, &mask_return);
+        
+        unsigned int buttonMask = 0;
+        switch (button) {
+            case 0: buttonMask = Button1Mask; break; // Left button
+            case 1: buttonMask = Button2Mask; break; // Middle button
+            case 2: buttonMask = Button3Mask; break; // Right button
+            default: return false;
+        }
+        
+        return (mask_return & buttonMask) != 0;
+    } else {
+        return false;
+    }
+#endif
+}

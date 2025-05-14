@@ -6,7 +6,8 @@
 #include <algorithm>
 
 HierarchyPanel::HierarchyPanel(int x, int y, int width, int height)
-    : Panel(x, y, width, height), selectedGameObject(nullptr), draggingObject(false), renamingObject(false), dragStartY(0) {
+    : Panel(static_cast<float>(x), static_cast<float>(y), static_cast<float>(width), static_cast<float>(height)), 
+      selectedGameObject(nullptr), draggingObject(false), renamingObject(false), dragStartY(0) {
     std::cout << "Creating hierarchy panel..." << std::endl;
 }
 
