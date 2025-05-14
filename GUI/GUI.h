@@ -2,6 +2,7 @@
 #define GUI_H
 
 #include "../platform.h"
+#include "../Vector3.h"
 #include <vector>
 #include <memory>
 #include <string>
