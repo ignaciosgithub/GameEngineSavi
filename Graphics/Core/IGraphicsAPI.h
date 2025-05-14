@@ -56,6 +56,8 @@ public:
     
     // Viewport and clear
     virtual void SetViewport(int x, int y, int width, int height) = 0;
+    virtual void Begin2D() = 0; // Set up 2D GUI rendering
+    virtual void End2D() = 0;   // Restore 3D rendering state
     virtual void Clear(bool colorBuffer, bool depthBuffer) = 0;
     virtual void SetClearColor(float r, float g, float b, float a) = 0;
     
