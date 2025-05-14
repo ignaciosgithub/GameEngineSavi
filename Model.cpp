@@ -461,6 +461,37 @@ void Model::Render(const std::vector<PointLight>& pointLights, const std::vector
         return; // Return early if no shader program is set to prevent segmentation fault
     }
     
+    Matrix4x4 viewMatrix;
+    Matrix4x4 projectionMatrix;
+    viewMatrix.identity();
+    projectionMatrix.identity();
+    
+    // Call the version with explicit matrices
+    Render(pointLights, directionalLights, viewMatrix, projectionMatrix);
+    std::cerr << "Warning: Using default view/projection matrices for model rendering" << std::endl;
+}
+
+// Render the model with both point lights and directional lights and specific view/projection matrices
+void Model::Render(const std::vector<PointLight>& pointLights, const std::vector<DirectionalLight>& directionalLights, const Matrix4x4& viewMatrix, const Matrix4x4& projectionMatrix) {
+    std::cout << "Model::Render - Starting render with " << pointLights.size() << " point lights and " 
+              << directionalLights.size() << " directional lights and custom matrices" << std::endl;
+    
+    auto graphics = GraphicsAPIFactory::GetInstance().GetGraphicsAPI();
+    if (!graphics || vao == 0) {
+        std::cout << "Model::Render - ERROR: Graphics API or VAO is null (graphics=" 
+                  << (graphics ? "valid" : "null") << ", vao=" << vao << ")" << std::endl;
+        return;
+    }
+    
+    // Use shader program if available
+    if (shaderProgram) {
+        std::cout << "Model::Render - Using shader program with handle: " << shaderProgram->GetHandle() << std::endl;
+        graphics->UseShaderProgram(shaderProgram);
+    } else {
+        std::cout << "Model::Render - ERROR: No shader program set for model" << std::endl;
+        return; // Return early if no shader program is set to prevent segmentation fault
+    }
+    
     Matrix4x4 modelMatrix;
     modelMatrix.identity(); // Start with identity matrix
     modelMatrix.translate(position.x, position.y, position.z);
@@ -469,15 +500,8 @@ void Model::Render(const std::vector<PointLight>& pointLights, const std::vector
     modelMatrix = modelMatrix * rotationMatrix;
     
     shaderProgram->SetUniform("model", modelMatrix);
-    
-    Matrix4x4 viewMatrix;
-    Matrix4x4 projectionMatrix;
-    viewMatrix.identity();
-    projectionMatrix.identity();
-    
     shaderProgram->SetUniform("view", viewMatrix);
     shaderProgram->SetUniform("projection", projectionMatrix);
-    std::cerr << "Warning: Using default view/projection matrices for model rendering" << std::endl;
     
     // Set point light uniforms
     int pointLightCount = std::min((int)pointLights.size(), 8); // Limit to 8 point lights

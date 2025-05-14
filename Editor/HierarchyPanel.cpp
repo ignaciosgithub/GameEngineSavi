@@ -57,13 +57,20 @@ void HierarchyPanel::DrawGameObjectHierarchy(GameObject* gameObject, int indentL
         std::cout << "  ";
     }
     
-    glColor3f(0.9f, 0.9f, 0.9f); // Light gray text for contrast
-    glRasterPos2f(x + 10 + (indentLevel * 10), yPos);
+    float textX = x + 10 + (indentLevel * 10);
     
     if (renamingObject && gameObject == selectedGameObject) {
+        Panel::RenderText(renameBuffer, textX, yPos, 1.0f, Vector3(1.0f, 1.0f, 0.0f));
         std::cout << "Rendering rename field for: " << renameBuffer << std::endl;
     } else {
+        Panel::RenderText(gameObject->GetName(), textX, yPos, 1.0f, Vector3(0.9f, 0.9f, 0.9f));
         std::cout << "Rendering object name: " << gameObject->GetName() << std::endl;
+    }
+    
+    for (auto& child : gameObject->GetChildren()) {
+        if (child) {
+            DrawGameObjectHierarchy(child, indentLevel + 1);
+        }
     }
 }
 

@@ -52,6 +52,13 @@ public:
     bool HandleInput(int x, int y, bool clicked) override;
     void AddElement(GUIElement* element);
     void AddElement(std::unique_ptr<GUIElement> element);
+    
+    // Text rendering methods
+    static void RenderText(const std::string& text, float x, float y, float scale = 1.0f, const Vector3& color = Vector3(1.0f, 1.0f, 1.0f));
+    
+private:
+    // Simple bitmap font data for text rendering
+    static void DrawCharacter(char c, float x, float y, float scale, const Vector3& color);
 };
 
 class GUI {

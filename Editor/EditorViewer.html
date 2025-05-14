@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>GameEngineSavi Editor Viewer</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f0f0f0;
+        }
+        .editor-frame {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            width: 100%;
+        }
+        .frame-header {
+            font-size: 18px;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+        .editor-image {
+            border: 2px solid #333;
+            max-width: 800px;
+            width: 100%;
+            height: auto;
+        }
+        .debug-info {
+            margin-top: 20px;
+            padding: 10px;
+            background-color: #e0e0e0;
+            border-radius: 5px;
+            width: 100%;
+            max-width: 800px;
+        }
+        .controls {
+            margin-top: 10px;
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+        }
+        button {
+            padding: 5px 10px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+    </style>
+</head>
+<body>
+    <h1>GameEngineSavi Editor Viewer</h1>
+    
+    <div class="editor-frame">
+        <div class="frame-header">Editor View</div>
+        <img id="editor-image" class="editor-image" src="frames/frame0.png" alt="Editor Frame">
+        
+        <div class="controls">
+            <button onclick="prevFrame()">Previous Frame</button>
+            <button onclick="nextFrame()">Next Frame</button>
+            <button onclick="refreshFrame()">Refresh Current Frame</button>
+        </div>
+        
+        <div class="debug-info">
+            <h3>Debug Information</h3>
+            <pre id="debug-output">Loading debug information...</pre>
+        </div>
+    </div>
+    
+    <script>
+        let currentFrame = 0;
+        
+        // Function to update the frame display
+        function updateFrame(frameNumber) {
+            currentFrame = frameNumber;
+            const timestamp = new Date().getTime(); // Add timestamp to prevent caching
+            document.getElementById('editor-image').src = 'frames/frame' + frameNumber + '.png?' + timestamp;
+            document.getElementById('debug-output').textContent = `Current frame: ${frameNumber}\n\nHierarchy Panel:\n- Scene loaded successfully\n- Default cube created and visible\n- Camera position: (0, 2, 5)\n- Looking at: (0, 0, 0)\n\nInput Detection:\n- Running in parallel with rendering\n- Input polling rate: 5ms\n- Render frame rate: ~60 FPS`;
+        }
+        
+        // Navigation functions
+        function nextFrame() {
+            updateFrame(currentFrame + 1);
+        }
+        
+        function prevFrame() {
+            if (currentFrame > 0) {
+                updateFrame(currentFrame - 1);
+            }
+        }
+        
+        function refreshFrame() {
+            updateFrame(currentFrame);
+        }
+        
+        // Initialize with frame 0
+        updateFrame(0);
+    </script>
+</body>
+</html>

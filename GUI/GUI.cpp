@@ -1,5 +1,6 @@
 #include "GUI.h"
 #include "../platform.h"
+#include "../Vector3.h"
 #ifdef PLATFORM_LINUX
 #include "ThirdParty/OpenGL/include/GL/gl_definitions.h"
 #elif defined(PLATFORM_WINDOWS)
@@ -145,6 +146,127 @@ void Panel::AddElement(GUIElement* element) {
 
 void Panel::AddElement(std::unique_ptr<GUIElement> element) {
     children.push_back(std::move(element));
+}
+
+void Panel::RenderText(const std::string& text, float x, float y, float scale, const Vector3& color) {
+    glColor3f(color.x, color.y, color.z);
+    
+    float currentX = x;
+    for (char c : text) {
+        DrawCharacter(c, currentX, y, scale, color);
+        currentX += 8.0f * scale; // Move to the right for next character
+    }
+}
+
+void Panel::DrawCharacter(char c, float x, float y, float scale, const Vector3& color) {
+    if (c < 32 || c > 126) return;
+    
+    glLineWidth(1.0f);
+    
+    glBegin(GL_LINES);
+    
+    switch (c) {
+        case 'A':
+            glVertex2f(x, y + 10 * scale);
+            glVertex2f(x + 3 * scale, y);
+            
+            glVertex2f(x + 3 * scale, y);
+            glVertex2f(x + 6 * scale, y + 10 * scale);
+            
+            glVertex2f(x + 1.5f * scale, y + 5 * scale);
+            glVertex2f(x + 4.5f * scale, y + 5 * scale);
+            break;
+            
+        case 'B':
+            glVertex2f(x, y);
+            glVertex2f(x, y + 10 * scale);
+            
+            glVertex2f(x, y);
+            glVertex2f(x + 5 * scale, y);
+            
+            glVertex2f(x + 5 * scale, y);
+            glVertex2f(x + 6 * scale, y + 1 * scale);
+            
+            glVertex2f(x + 6 * scale, y + 1 * scale);
+            glVertex2f(x + 6 * scale, y + 4 * scale);
+            
+            glVertex2f(x + 6 * scale, y + 4 * scale);
+            glVertex2f(x + 5 * scale, y + 5 * scale);
+            
+            glVertex2f(x, y + 5 * scale);
+            glVertex2f(x + 5 * scale, y + 5 * scale);
+            
+            glVertex2f(x + 5 * scale, y + 5 * scale);
+            glVertex2f(x + 6 * scale, y + 6 * scale);
+            
+            glVertex2f(x + 6 * scale, y + 6 * scale);
+            glVertex2f(x + 6 * scale, y + 9 * scale);
+            
+            glVertex2f(x + 6 * scale, y + 9 * scale);
+            glVertex2f(x + 5 * scale, y + 10 * scale);
+            
+            glVertex2f(x, y + 10 * scale);
+            glVertex2f(x + 5 * scale, y + 10 * scale);
+            break;
+            
+        case 'C':
+            glVertex2f(x + 6 * scale, y + 2 * scale);
+            glVertex2f(x + 4 * scale, y);
+            
+            glVertex2f(x + 4 * scale, y);
+            glVertex2f(x + 2 * scale, y);
+            
+            glVertex2f(x + 2 * scale, y);
+            glVertex2f(x, y + 2 * scale);
+            
+            glVertex2f(x, y + 2 * scale);
+            glVertex2f(x, y + 8 * scale);
+            
+            glVertex2f(x, y + 8 * scale);
+            glVertex2f(x + 2 * scale, y + 10 * scale);
+            
+            glVertex2f(x + 2 * scale, y + 10 * scale);
+            glVertex2f(x + 4 * scale, y + 10 * scale);
+            
+            glVertex2f(x + 4 * scale, y + 10 * scale);
+            glVertex2f(x + 6 * scale, y + 8 * scale);
+            break;
+            
+        case 'D':
+            glVertex2f(x, y);
+            glVertex2f(x + 4 * scale, y);
+            
+            glVertex2f(x + 4 * scale, y);
+            glVertex2f(x + 6 * scale, y + 2 * scale);
+            
+            glVertex2f(x + 6 * scale, y + 2 * scale);
+            glVertex2f(x + 6 * scale, y + 8 * scale);
+            
+            glVertex2f(x + 6 * scale, y + 8 * scale);
+            glVertex2f(x + 4 * scale, y + 10 * scale);
+            
+            glVertex2f(x + 4 * scale, y + 10 * scale);
+            glVertex2f(x, y + 10 * scale);
+            
+            glVertex2f(x, y);
+            glVertex2f(x, y + 10 * scale);
+            break;
+            
+        default:
+            glVertex2f(x, y);
+            glVertex2f(x + 6 * scale, y);
+            
+            glVertex2f(x + 6 * scale, y);
+            glVertex2f(x + 6 * scale, y + 10 * scale);
+            
+            glVertex2f(x + 6 * scale, y + 10 * scale);
+            glVertex2f(x, y + 10 * scale);
+            
+            glVertex2f(x, y + 10 * scale);
+            glVertex2f(x, y);
+    }
+    
+    glEnd();
 }
 
 GUI::GUI() : visible(true) {
