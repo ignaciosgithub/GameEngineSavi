@@ -19,7 +19,7 @@ mkdir -p build
 
 # Find all .cpp files that exist in the repository
 EXISTING_CPP_FILES=""
-for file in Editor/EditorMain.cpp Editor/Editor.cpp Editor/HierarchyPanel.cpp Editor/InspectorPanel.cpp Editor/ProjectPanel.cpp Editor/SceneViewPanel.cpp Scene.cpp GameObject.cpp Vector3.cpp Matrix4x4.cpp Camera.cpp CameraManager.cpp Model.cpp Texture.cpp PointLight.cpp Debugger.cpp FrameCapture.cpp FrameCapture_png.cpp TimeManager.cpp PhysicsSystem.cpp RedundancyDetector.cpp EngineCondition.cpp Graphics/Core/OpenGLGraphicsAPI.cpp Graphics/Core/DirectXGraphicsAPI.cpp Graphics/Core/GraphicsAPIFactory.cpp Shaders/Core/ShaderProgram.cpp Shaders/Core/Shader.cpp Shaders/Core/ShaderError.cpp ThirdParty/stb/stb_image_write_impl.cpp; do
+for file in Editor/EditorMain.cpp Editor/Editor.cpp Editor/HierarchyPanel.cpp Editor/InspectorPanel.cpp Editor/ProjectPanel.cpp Editor/SceneViewPanel.cpp Scene.cpp GameObject.cpp Vector3.cpp Matrix4x4.cpp Camera.cpp CameraManager.cpp Model.cpp Texture.cpp PointLight.cpp Debugger.cpp FrameCapture.cpp FrameCapture_png.cpp TimeManager.cpp PhysicsSystem.cpp RedundancyDetector.cpp EngineCondition.cpp Graphics/Core/OpenGLGraphicsAPI.cpp Graphics/Core/GraphicsAPIFactory.cpp Shaders/Core/ShaderProgram.cpp Shaders/Core/Shader.cpp Shaders/Core/ShaderError.cpp ThirdParty/stb/stb_image_write_impl.cpp; do
     if [ -f "$file" ]; then
         EXISTING_CPP_FILES="$EXISTING_CPP_FILES $file"
     fi
