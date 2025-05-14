@@ -5,7 +5,7 @@ echo Building GameEngineSavi for Windows...
 
 REM Set compiler options
 set CFLAGS=-std=c++11 -Wall -Wextra -g
-set INCLUDES=-I. -IThirdParty/OpenGL/include -IThirdParty/DirectX/include
+set INCLUDES=-I. -IThirdParty/OpenGL/include
 
 REM Create output directory if it doesn't exist
 if not exist bin\windows mkdir bin\windows
@@ -15,33 +15,22 @@ echo Cleaning previous build...
 if exist bin\windows\*.o del /Q bin\windows\*.o
 if exist bin\windows\*.a del /Q bin\windows\*.a
 
-REM Set DirectX flag to true by default
-set USE_DIRECTX=true
+REM Always use OpenGL instead of DirectX
+set USE_DIRECTX=false
 
 REM Compile the engine components in the correct order
 echo Compiling engine components...
 
-REM First, try to compile the DirectX components
-echo Attempting to compile DirectX components...
-echo Compiling DirectXGraphicsAPI...
-g++ %CFLAGS% %INCLUDES% -c Graphics\Core\DirectXGraphicsAPI.cpp -o bin\windows\DirectXGraphicsAPI.o -DPLATFORM_WINDOWS -DUSE_DIRECTX
+REM Skip DirectX compilation and use OpenGL
+echo Compiling OpenGLGraphicsAPI...
+g++ %CFLAGS% %INCLUDES% -c Graphics\Core\OpenGLGraphicsAPI.cpp -o bin\windows\OpenGLGraphicsAPI.o -DPLATFORM_WINDOWS
 if %ERRORLEVEL% NEQ 0 (
-    echo Warning: DirectX compilation failed, falling back to OpenGL
-    set USE_DIRECTX=false
-    echo Compiling OpenGLGraphicsAPI as fallback...
-    g++ %CFLAGS% %INCLUDES% -c Graphics\Core\OpenGLGraphicsAPI.cpp -o bin\windows\OpenGLGraphicsAPI.o -DPLATFORM_WINDOWS
-    if %ERRORLEVEL% NEQ 0 (
-        echo Error: OpenGL fallback compilation also failed
-        exit /b 1
-    )
+    echo Error: OpenGL compilation failed
+    exit /b 1
 )
 
 echo Compiling GraphicsAPIFactory...
-if "%USE_DIRECTX%"=="true" (
-    g++ %CFLAGS% %INCLUDES% -c Graphics\Core\GraphicsAPIFactory.cpp -o bin\windows\GraphicsAPIFactory.o -DPLATFORM_WINDOWS -DUSE_DIRECTX
-) else (
-    g++ %CFLAGS% %INCLUDES% -c Graphics\Core\GraphicsAPIFactory.cpp -o bin\windows\GraphicsAPIFactory.o -DPLATFORM_WINDOWS
-)
+g++ %CFLAGS% %INCLUDES% -c Graphics\Core\GraphicsAPIFactory.cpp -o bin\windows\GraphicsAPIFactory.o -DPLATFORM_WINDOWS
 if %ERRORLEVEL% NEQ 0 (
     echo Error: GraphicsAPIFactory compilation failed
     exit /b 1
@@ -71,11 +60,7 @@ if %ERRORLEVEL% NEQ 0 (
 
 REM Then compile the model and rendering components
 echo Compiling Model...
-if "%USE_DIRECTX%"=="true" (
-    g++ %CFLAGS% %INCLUDES% -c Model.cpp -o bin\windows\Model.o -DPLATFORM_WINDOWS -DUSE_DIRECTX
-) else (
-    g++ %CFLAGS% %INCLUDES% -c Model.cpp -o bin\windows\Model.o -DPLATFORM_WINDOWS
-)
+g++ %CFLAGS% %INCLUDES% -c Model.cpp -o bin\windows\Model.o -DPLATFORM_WINDOWS
 if %ERRORLEVEL% NEQ 0 (
     echo Error: Model compilation failed
     exit /b 1
@@ -156,11 +141,7 @@ if %ERRORLEVEL% NEQ 0 (
 
 REM Try to compile Scene, but don't fail if it doesn't work
 echo Compiling Scene...
-if "%USE_DIRECTX%"=="true" (
-    g++ %CFLAGS% %INCLUDES% -c Scene.cpp -o bin\windows\Scene.o -DPLATFORM_WINDOWS -DUSE_DIRECTX
-) else (
-    g++ %CFLAGS% %INCLUDES% -c Scene.cpp -o bin\windows\Scene.o -DPLATFORM_WINDOWS
-)
+g++ %CFLAGS% %INCLUDES% -c Scene.cpp -o bin\windows\Scene.o -DPLATFORM_WINDOWS
 if %ERRORLEVEL% NEQ 0 (
     echo Warning: Scene compilation failed, but continuing...
 )
@@ -182,11 +163,7 @@ if %ERRORLEVEL% NEQ 0 (
 
 REM Create a static library with the components that compiled successfully
 echo Creating static library...
-if "%USE_DIRECTX%"=="true" (
-    ar rcs bin\windows\libGameEngineSavi.a bin\windows\DirectXGraphicsAPI.o bin\windows\GraphicsAPIFactory.o bin\windows\Vector3.o bin\windows\Matrix4x4.o bin\windows\Model.o bin\windows\GameObject.o bin\windows\Camera.o bin\windows\DirectionalLight.o bin\windows\Raycast.o bin\windows\TimeManager.o bin\windows\NavMesh.o bin\windows\NavMeshManager.o bin\windows\AIEntity.o bin\windows\ProjectSettings.o
-) else (
-    ar rcs bin\windows\libGameEngineSavi.a bin\windows\OpenGLGraphicsAPI.o bin\windows\GraphicsAPIFactory.o bin\windows\Vector3.o bin\windows\Matrix4x4.o bin\windows\Model.o bin\windows\GameObject.o bin\windows\Camera.o bin\windows\DirectionalLight.o bin\windows\Raycast.o bin\windows\TimeManager.o bin\windows\NavMesh.o bin\windows\NavMeshManager.o bin\windows\AIEntity.o bin\windows\ProjectSettings.o
-)
+ar rcs bin\windows\libGameEngineSavi.a bin\windows\OpenGLGraphicsAPI.o bin\windows\GraphicsAPIFactory.o bin\windows\Vector3.o bin\windows\Matrix4x4.o bin\windows\Model.o bin\windows\GameObject.o bin\windows\Camera.o bin\windows\DirectionalLight.o bin\windows\Raycast.o bin\windows\TimeManager.o bin\windows\NavMesh.o bin\windows\NavMeshManager.o bin\windows\AIEntity.o bin\windows\ProjectSettings.o
 
 REM Add optional components if they compiled successfully
 if exist bin\windows\RigidBody.o (
@@ -241,79 +218,41 @@ if exist build_tilted_navmesh_demo.bat (
 
 REM Build the editor
 echo Building Editor...
-if "%USE_DIRECTX%"=="true" (
-    echo Building Editor with DirectX support...
-    g++ %CFLAGS% %INCLUDES% -o bin\windows\editor.exe ^
-        Editor\EditorMain.cpp ^
-        Editor\Editor.cpp ^
-        Editor\HierarchyPanel.cpp ^
-        Editor\InspectorPanel.cpp ^
-        Editor\ProjectPanel.cpp ^
-        Editor\SceneViewPanel.cpp ^
-        Editor\Vector3Field.cpp ^
-        Editor\TextField.cpp ^
-        GameObject.cpp ^
-        Vector3.cpp ^
-        Matrix4x4.cpp ^
-        Camera.cpp ^
-        Model.cpp ^
-        MonoBehaviourLike.cpp ^
-        TimeManager.cpp ^
-        Raycast.cpp ^
-        RigidBody.cpp ^
-        CollisionSystem.cpp ^
-        PhysicsSystem.cpp ^
-        Scene.cpp ^
-        PointLight.cpp ^
-        CameraManager.cpp ^
-        Shaders\Core\ShaderProgram.cpp ^
-        Shaders\Core\Shader.cpp ^
-        Shaders\Core\ShaderError.cpp ^
-        Texture.cpp ^
-        EngineCondition.cpp ^
-        FrameCapture.cpp ^
-        ProjectSettings\ProjectSettings.cpp ^
-        ProjectSettings\ProjectManager.cpp ^
-        Profiler.cpp ^
-        -DPLATFORM_WINDOWS -DUSE_DIRECTX ^
-        -L./ThirdParty/DirectX/lib -ld3d11 -ldxgi -ld3dcompiler
-) else (
-    echo Building Editor with OpenGL fallback...
-    g++ %CFLAGS% %INCLUDES% -o bin\windows\editor.exe ^
-        Editor\EditorMain.cpp ^
-        Editor\Editor.cpp ^
-        Editor\HierarchyPanel.cpp ^
-        Editor\InspectorPanel.cpp ^
-        Editor\ProjectPanel.cpp ^
-        Editor\SceneViewPanel.cpp ^
-        Editor\Vector3Field.cpp ^
-        Editor\TextField.cpp ^
-        GameObject.cpp ^
-        Vector3.cpp ^
-        Matrix4x4.cpp ^
-        Camera.cpp ^
-        Model.cpp ^
-        MonoBehaviourLike.cpp ^
-        TimeManager.cpp ^
-        Raycast.cpp ^
-        RigidBody.cpp ^
-        CollisionSystem.cpp ^
-        PhysicsSystem.cpp ^
-        Scene.cpp ^
-        PointLight.cpp ^
-        CameraManager.cpp ^
-        Shaders\Core\ShaderProgram.cpp ^
-        Shaders\Core\Shader.cpp ^
-        Shaders\Core\ShaderError.cpp ^
-        Texture.cpp ^
-        EngineCondition.cpp ^
-        FrameCapture.cpp ^
-        ProjectSettings\ProjectSettings.cpp ^
-        ProjectSettings\ProjectManager.cpp ^
-        Profiler.cpp ^
-        -DPLATFORM_WINDOWS ^
-        -lopengl32 -lglu32
-)
+echo Building Editor with OpenGL...
+g++ %CFLAGS% %INCLUDES% -o bin\windows\editor.exe ^
+    Editor\EditorMain.cpp ^
+    Editor\Editor.cpp ^
+    Editor\HierarchyPanel.cpp ^
+    Editor\InspectorPanel.cpp ^
+    Editor\ProjectPanel.cpp ^
+    Editor\SceneViewPanel.cpp ^
+    Editor\Vector3Field.cpp ^
+    Editor\TextField.cpp ^
+    GameObject.cpp ^
+    Vector3.cpp ^
+    Matrix4x4.cpp ^
+    Camera.cpp ^
+    Model.cpp ^
+    MonoBehaviourLike.cpp ^
+    TimeManager.cpp ^
+    Raycast.cpp ^
+    RigidBody.cpp ^
+    CollisionSystem.cpp ^
+    PhysicsSystem.cpp ^
+    Scene.cpp ^
+    PointLight.cpp ^
+    CameraManager.cpp ^
+    Shaders\Core\ShaderProgram.cpp ^
+    Shaders\Core\Shader.cpp ^
+    Shaders\Core\ShaderError.cpp ^
+    Texture.cpp ^
+    EngineCondition.cpp ^
+    FrameCapture.cpp ^
+    ProjectSettings\ProjectSettings.cpp ^
+    ProjectSettings\ProjectManager.cpp ^
+    Profiler.cpp ^
+    -DPLATFORM_WINDOWS ^
+    -lopengl32 -lglu32
 if %ERRORLEVEL% NEQ 0 (
     echo Warning: Editor build failed, but continuing...
 ) else (
@@ -321,11 +260,7 @@ if %ERRORLEVEL% NEQ 0 (
 )
 
 echo Build process completed.
-if "%USE_DIRECTX%"=="true" (
-    echo Successfully built with DirectX support.
-) else (
-    echo Built with OpenGL fallback due to DirectX compilation failure.
-)
+echo Successfully built with OpenGL support.
 echo Note: Some components may have failed to compile, but the build process continued.
 echo Check the output above for any warnings or errors.
 

@@ -143,7 +143,7 @@ void Editor::Render() {
     
     // Render panels
     if (hierarchyPanel) {
-        hierarchyPanel->Render();
+        hierarchyPanel->Draw(); // Using Draw() instead of Render() to match Panel interface
     }
     
     if (inspectorPanel) {
@@ -228,6 +228,44 @@ bool Editor::IsWindowOpen() const {
     return windowOpen;
 }
 
+void Editor::HandleInput(int x, int y, bool clicked) {
+    
+    // Check if the mouse is over the hierarchy panel
+    if (hierarchyPanel) {
+        if (x >= 0 && x < 200 && y >= 0 && y < height) {
+            if (hierarchyPanel->HandleInput(x, y, clicked)) {
+                // Update selected game object from hierarchy panel
+                GameObject* selectedObject = hierarchyPanel->GetSelectedGameObject();
+                if (selectedObject != selectedGameObject) {
+                    SetSelectedGameObject(selectedObject);
+                }
+                return;
+            }
+        }
+    }
+    
+    // Check if the mouse is over the inspector panel
+    if (inspectorPanel) {
+        if (x >= width - 300 && x < width && y >= 0 && y < height) {
+            return;
+        }
+    }
+    
+    // Check if the mouse is over the project panel
+    if (projectPanel) {
+        if (x >= 200 && x < width - 300 && y >= height - 200 && y < height) {
+            return;
+        }
+    }
+    
+    // Check if the mouse is over the scene view panel
+    if (sceneViewPanel) {
+        if (x >= 200 && x < width - 300 && y >= 0 && y < height - 200) {
+            return;
+        }
+    }
+}
+
 void Editor::RunMainLoop() {
     std::cout << "Editor::RunMainLoop - Starting main loop" << std::endl;
     
@@ -250,6 +288,16 @@ void Editor::RunMainLoop() {
         std::cout << "Event polling thread started" << std::endl;
         while (windowOpen) {
             graphics->PollEvents();
+            
+            // Get mouse position and button state from graphics API
+            int mouseX = 0, mouseY = 0;
+            bool mouseClicked = false;
+            
+            // In a real implementation, we would get these from the graphics API
+            graphics->GetMousePosition(mouseX, mouseY);
+            mouseClicked = graphics->IsMouseButtonPressed(0); // Left mouse button
+            
+            HandleInput(mouseX, mouseY, mouseClicked);
             
             // Check if window is still open
             if (!graphics->IsWindowOpen()) {

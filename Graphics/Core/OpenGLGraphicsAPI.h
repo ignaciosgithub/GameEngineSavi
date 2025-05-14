@@ -120,6 +120,10 @@ public:
     virtual void SetViewMatrix(const Matrix4x4& matrix) override;
     virtual void SetModelMatrix(const Matrix4x4& matrix) override;
     virtual bool SupportsMatrixOperations() const override { return true; }
+    
+    // Input handling
+    virtual void GetMousePosition(int& x, int& y) override;
+    virtual bool IsMouseButtonPressed(int button) override;
 
     // Conversion methods
     GLenum ConvertBufferType(BufferType type);
