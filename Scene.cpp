@@ -57,8 +57,16 @@ void Scene::CreateDefaultObjects() {
         std::cout << "Created default point light" << std::endl;
     }
 
-    // Create a default cube if no game objects exist
-    if (gameObjects.size() <= 1) {
+    // Create a default cube if it doesn't already exist
+    bool hasDefaultCube = false;
+    for (auto& gameObject : gameObjects) {
+        if (gameObject->GetName() == "Default Cube") {
+            hasDefaultCube = true;
+            break;
+        }
+    }
+    
+    if (!hasDefaultCube) {
         // Create a cube
         GameObject* cubeObj = new GameObject("Default Cube");
 

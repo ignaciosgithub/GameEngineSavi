@@ -108,6 +108,8 @@ void Editor::Update(float deltaTime) {
     
     // Update panels
     if (hierarchyPanel) {
+        // Update hierarchy panel with scene objects before updating
+        hierarchyPanel->UpdateFromScene();
         hierarchyPanel->Update(deltaTime);
     }
     
@@ -284,20 +286,27 @@ void Editor::RunMainLoop() {
     Render();
     graphics->SwapBuffers();
     
-    std::thread eventPollingThread([this, graphics]() {
+    std::atomic<int> mouseX(0);
+    std::atomic<int> mouseY(0);
+    std::atomic<bool> mouseClicked(false);
+    
+    std::thread eventPollingThread([this, graphics, &mouseX, &mouseY, &mouseClicked]() {
         std::cout << "Event polling thread started" << std::endl;
         while (windowOpen) {
             graphics->PollEvents();
             
             // Get mouse position and button state from graphics API
-            int mouseX = 0, mouseY = 0;
-            bool mouseClicked = false;
+            int x = 0, y = 0;
+            bool clicked = false;
             
             // In a real implementation, we would get these from the graphics API
-            graphics->GetMousePosition(mouseX, mouseY);
-            mouseClicked = graphics->IsMouseButtonPressed(0); // Left mouse button
+            graphics->GetMousePosition(x, y);
+            clicked = graphics->IsMouseButtonPressed(0); // Left mouse button
             
-            HandleInput(mouseX, mouseY, mouseClicked);
+            // Update atomic variables for main thread to use
+            mouseX.store(x);
+            mouseY.store(y);
+            mouseClicked.store(clicked);
             
             // Check if window is still open
             if (!graphics->IsWindowOpen()) {
@@ -306,18 +315,25 @@ void Editor::RunMainLoop() {
                 break;
             }
             
-            std::this_thread::sleep_for(std::chrono::milliseconds(16)); // ~60 Hz polling
+            std::this_thread::sleep_for(std::chrono::milliseconds(5)); // Higher polling rate
         }
         std::cout << "Event polling thread exited" << std::endl;
     });
     
     const auto frameTime = std::chrono::milliseconds(16); // Target ~60 FPS
     auto lastFrameTime = std::chrono::high_resolution_clock::now();
+    auto lastInputTime = lastFrameTime;
     
     std::cout << "Editor::RunMainLoop - Starting render loop" << std::endl;
     while (windowOpen) {
         auto currentTime = std::chrono::high_resolution_clock::now();
         auto elapsedTime = std::chrono::duration_cast<std::chrono::milliseconds>(currentTime - lastFrameTime);
+        auto inputElapsedTime = std::chrono::duration_cast<std::chrono::milliseconds>(currentTime - lastInputTime);
+        
+        if (inputElapsedTime >= std::chrono::milliseconds(8)) {
+            HandleInput(mouseX.load(), mouseY.load(), mouseClicked.load());
+            lastInputTime = currentTime;
+        }
         
         if (elapsedTime < frameTime) {
             std::this_thread::sleep_for(frameTime - elapsedTime);
@@ -336,7 +352,7 @@ void Editor::RunMainLoop() {
         // Update editor
         Update(deltaTime);
         
-        // Render editor
+        // Render editor - this now happens independently of input processing
         Render();
         
         // Swap buffers

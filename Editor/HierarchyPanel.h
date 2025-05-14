@@ -22,6 +22,7 @@ public:
     void RemoveGameObject(GameObject* gameObject);
     void RenameGameObject(GameObject* gameObject, const std::string& newName);
     GameObject* GetSelectedGameObject() const;
+    void UpdateFromScene();
     
 private:
     std::vector<GameObject*> gameObjects;
