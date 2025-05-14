@@ -12,6 +12,7 @@
 #include <iostream>
 #include <thread>
 #include <chrono>
+#include <atomic>
 
 // Initialize static instance
 Editor* Editor::instance = nullptr;

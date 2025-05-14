@@ -160,7 +160,7 @@ void HierarchyPanel::UpdateFromScene() {
     
     gameObjects.clear();
     
-    for (auto& gameObject : scene->GetGameObjects()) {
+    for (auto& gameObject : scene->gameObjects) {
         AddGameObject(gameObject);
     }
 }
