@@ -144,6 +144,9 @@ void Editor::Render() {
         scene->RenderScene();
     }
     
+    // Set up 2D rendering for GUI elements
+    graphics->Begin2D();
+    
     // Render panels
     if (hierarchyPanel) {
         hierarchyPanel->Draw(); // Using Draw() instead of Render() to match Panel interface
@@ -160,6 +163,8 @@ void Editor::Render() {
     if (sceneViewPanel) {
         sceneViewPanel->Render();
     }
+    
+    graphics->End2D();
 }
 
 void Editor::Resize(int newWidth, int newHeight) {

@@ -43,12 +43,22 @@ void HierarchyPanel::DrawGameObjectHierarchy(GameObject* gameObject, int indentL
     float yPos = y + 20 + (indentLevel * 10);
     
     if (gameObject == selectedGameObject) {
+        glColor4f(0.2f, 0.5f, 0.8f, 0.5f); // Blue highlight for selected object
+        glBegin(GL_QUADS);
+        glVertex2f(x + 5, yPos - 5);
+        glVertex2f(x + width - 5, yPos - 5);
+        glVertex2f(x + width - 5, yPos + 10);
+        glVertex2f(x + 5, yPos + 10);
+        glEnd();
         std::cout << "Drawing selection highlight for: " << gameObject->GetName() << std::endl;
     }
     
     for (int i = 0; i < indentLevel; i++) {
         std::cout << "  ";
     }
+    
+    glColor3f(0.9f, 0.9f, 0.9f); // Light gray text for contrast
+    glRasterPos2f(x + 10 + (indentLevel * 10), yPos);
     
     if (renamingObject && gameObject == selectedGameObject) {
         std::cout << "Rendering rename field for: " << renameBuffer << std::endl;

@@ -379,6 +379,44 @@ void OpenGLGraphicsAPI::SetViewport(int x, int y, int width, int height) {
     glViewport(x, y, width, height);
 }
 
+void OpenGLGraphicsAPI::Begin2D() {
+    // Save current OpenGL state
+    glPushAttrib(GL_ENABLE_BIT | GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
+    
+    // Disable depth testing so GUI elements aren't occluded
+    glDisable(GL_DEPTH_TEST);
+    
+    // Set up orthographic projection for 2D rendering
+    glMatrixMode(GL_PROJECTION);
+    glPushMatrix();
+    glLoadIdentity();
+    
+    GLint viewport[4];
+    glGetIntegerv(GL_VIEWPORT, viewport);
+    glOrtho(0, viewport[2], viewport[3], 0, -1, 1);
+    
+    // Set modelview matrix to identity
+    glMatrixMode(GL_MODELVIEW);
+    glPushMatrix();
+    glLoadIdentity();
+    
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+}
+
+void OpenGLGraphicsAPI::End2D() {
+    // Restore modelview matrix
+    glMatrixMode(GL_MODELVIEW);
+    glPopMatrix();
+    
+    // Restore projection matrix
+    glMatrixMode(GL_PROJECTION);
+    glPopMatrix();
+    
+    // Restore previous OpenGL state
+    glPopAttrib();
+}
+
 GLenum OpenGLGraphicsAPI::ConvertBufferType(BufferType type) {
     switch (type) {
         case BufferType::VERTEX_BUFFER:
