@@ -369,9 +369,9 @@ void Scene::RenderMesh(Model* mesh, const Matrix4x4& modelMatrix, const Matrix4x
     dirLights.insert(dirLights.end(), directionalLights.begin(), directionalLights.end());
     std::cout << "Scene::RenderMesh - Collected " << dirLights.size() << " directional lights" << std::endl;
 
-    // Render the mesh with the lights
-    std::cout << "Scene::RenderMesh - Calling mesh->Render with collected lights" << std::endl;
-    mesh->Render(pointLights, dirLights);
+    // Render the mesh with the lights and camera matrices
+    std::cout << "Scene::RenderMesh - Calling mesh->Render with collected lights and matrices" << std::endl;
+    mesh->Render(pointLights, dirLights, viewMatrix, projectionMatrix);
     std::cout << "Scene::RenderMesh - Mesh rendering completed" << std::endl;
 }
 

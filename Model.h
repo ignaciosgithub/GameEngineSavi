@@ -83,6 +83,9 @@ public:
     // Render the model with directional lights
     void Render(const std::vector<PointLight>& pointLights, const std::vector<DirectionalLight>& directionalLights);
     
+    // Render the model with directional lights and specific view/projection matrices
+    void Render(const std::vector<PointLight>& pointLights, const std::vector<DirectionalLight>& directionalLights, const Matrix4x4& viewMatrix, const Matrix4x4& projectionMatrix);
+    
     // Update uniforms
     void UpdateUniforms(const Matrix4x4& viewMatrix, const Matrix4x4& projectionMatrix);
     
